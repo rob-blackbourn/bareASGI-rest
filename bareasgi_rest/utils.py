@@ -7,11 +7,25 @@ import json
 from typing import (
     Any,
     Dict,
+    Generic,
     List,
     Optional,
-    Tuple
+    Tuple,
+    TypeVar
 )
 import pytypes
+
+T = TypeVar('T')
+
+class NullIter(Generic[T]):
+    """An iterator containing no items"""
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self) -> T:
+        raise StopAsyncIteration
+
 
 def _is_supported_optional(annotation) -> bool:
     return (
@@ -34,7 +48,7 @@ def _coerce(value: str, annotation: Any) -> Any:
         elif annotation is Decimal:
             return Decimal(single_value)
         elif annotation is datetime:
-            return datetime.fromisoformat(single_value)
+            return datetime.fromisoformat(single_value[:-1])
         else:
             raise TypeError
     if pytypes.is_subtype(annotation, Optional[str]):
@@ -111,7 +125,7 @@ def make_args(
 def as_datetime(dct):
     for k, v in dct.items():
         try:
-            dt = datetime.fromisoformat(v)
+            dt = datetime.fromisoformat(v[:-1])
             dct[k] = dt
         except:
             pass
