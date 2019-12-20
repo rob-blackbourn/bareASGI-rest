@@ -31,7 +31,7 @@ from baretypes import (
 )
 import bareutils.header as header
 
-from .utils import make_args, as_datetime, JSONEncoderEx
+from .utils import make_args, JSONEncoderEx
 
 LOGGER = logging.getLogger(__name__)
 

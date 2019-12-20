@@ -6,15 +6,7 @@ from datetime import datetime
 import logging
 from typing import Any, Dict, List, Optional, Tuple
 
-from bareasgi import (
-    Application,
-    Scope,
-    Info,
-    RouteMatches,
-    Content,
-    HttpResponse,
-    text_writer
-)
+from bareasgi import Application
 from bareasgi_rest import RestHttpRouter
 
 logging.basicConfig(level=logging.DEBUG)

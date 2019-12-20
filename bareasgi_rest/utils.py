@@ -127,12 +127,12 @@ def as_datetime(dct):
         try:
             dt = datetime.fromisoformat(v[:-1])
             dct[k] = dt
-        except:
+        except: # pylint: disable=bare-except
             pass
     return dct
 
 class JSONEncoderEx(json.JSONEncoder):
-    def default(self, obj):  # pylint: disable=method-hidden
+    def default(self, obj):  # pylint: disable=method-hidden,arguments-differ
         if isinstance(obj, datetime):
             return obj.isoformat() + ('Z' if not obj.tzinfo else '')
         elif isinstance(obj, Decimal):
