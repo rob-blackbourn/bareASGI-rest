@@ -31,7 +31,7 @@ from baretypes import (
 )
 import bareutils.header as header
 
-from .utils import make_args, JSONEncoderEx
+from .utils import make_args, JSONEncoderEx, camelize_object
 
 LOGGER = logging.getLogger(__name__)
 
@@ -40,17 +40,25 @@ WriterFactory = Callable[
     Tuple[bytes, Optional[AsyncIterator[bytes]]]
 ]
 
+
 def _make_writer(
         data: Optional[Any],
         accept: Mapping[bytes, Tuple[bytes, Any]]
 ) -> Tuple[bytes, Optional[AsyncIterator[bytes]]]:
     if any(key.startswith(b'application/json') or key.startswith(b'*/*') for key in accept.keys()):
-        writer = None if data is None else  text_writer(json.dumps(data, cls=JSONEncoderEx))
+        writer = None if data is None else text_writer(
+            json.dumps(
+                camelize_object(data),
+                cls=JSONEncoderEx
+            )
+        )
         return b'application/json', writer
     elif any(key.startswith(b'text/plain') for key in accept.keys()):
-        writer = None if data is None else text_writer(data if isinstance(data, str) else str(data))
+        writer = None if data is None else text_writer(
+            data if isinstance(data, str) else str(data))
         return b'text/plain', writer
     raise TypeError
+
 
 async def _get_body_args(
         method: str,
@@ -60,7 +68,8 @@ async def _get_body_args(
     if method in {'GET'}:
         return {}
 
-    media_type, params = header.content_type(headers) or (b'', cast(Dict[bytes, Any], {}))
+    media_type, params = header.content_type(
+        headers) or (b'', cast(Dict[bytes, Any], {}))
     if media_type.startswith(b'application/json'):
         body = await text_reader(content)
         return json.loads(body)
@@ -73,17 +82,17 @@ async def _get_body_args(
     else:
         raise TypeError
 
+
 class RestHttpRouter(BasicHttpRouter):
     """A REST router"""
 
     def __init__(
-            self,
-            not_found_response: HttpResponse,
-            writer_factory: Optional[WriterFactory] = None
-        ) -> None:
+        self,
+        not_found_response: HttpResponse,
+        writer_factory: Optional[WriterFactory] = None
+    ) -> None:
         super().__init__(not_found_response)
         self._writer_factory = writer_factory or _make_writer
-
 
     def add_rest(
             self,

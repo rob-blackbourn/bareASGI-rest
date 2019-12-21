@@ -6,16 +6,66 @@ from inspect import Parameter, Signature
 import json
 from typing import (
     Any,
+    Callable,
     Dict,
     Generic,
     List,
     Optional,
     Tuple,
-    TypeVar
+    TypeVar,
+    cast
 )
+
+from inflection import camelize, underscore
 import pytypes
 
 T = TypeVar('T')  # pylint: disable=invalid-name
+
+
+def _rename_dict(dct: Dict[str, Any], rename: Callable[[str], str]) -> Dict[str, Any]:
+    return {
+        rename(name): _rename_object(obj, rename)
+        for name, obj in dct.items()
+    }
+
+
+def _rename_list(lst: List[Any], rename: Callable[[str], str]) -> List[Any]:
+    return [_rename_object(obj, rename) for obj in lst]
+
+
+def _rename_object(obj: T, rename: Callable[[str], str]) -> T:
+    if isinstance(obj, dict):
+        return cast(T, _rename_dict(cast(Dict[str, Any], obj), rename))
+    elif isinstance(obj, list):
+        return cast(T, _rename_list(cast(List[Any], obj), rename))
+    else:
+        return obj
+
+
+def _camelize(text: str) -> str:
+    return camelize(text, uppercase_first_letter=False)
+
+
+def camelize_object(obj: T) -> T:
+    """Convert any dictionary keys in the object to camelcase
+
+    :param obj: The object
+    :type obj: T
+    :return: The object with keys converted to camelcase
+    :rtype: T
+    """
+    return _rename_object(obj, _camelize)
+
+
+def underscore_object(obj: T) -> T:
+    """Convert any dictionary keys in the object to underscore
+
+    :param obj: The object
+    :type obj: T
+    :return: The object with keys converted to underscore
+    :rtype: T
+    """
+    return _rename_object(obj, underscore)
 
 
 class NullIter(Generic[T]):
@@ -103,12 +153,13 @@ def make_args(
     args: List[Any] = []
 
     for param in sig.parameters.values():
-        if param.name in matches:
-            value = _coerce(matches[param.name], param.annotation)
-        elif param.name in query:
-            value = _coerce(query[param.name], param.annotation)
-        elif param.name in body:
-            value = _coerce(body[param.name], param.annotation)
+        camelcase_name = camelize(param.name, uppercase_first_letter=False)
+        if camelcase_name in matches:
+            value = _coerce(matches[camelcase_name], param.annotation)
+        elif camelcase_name in query:
+            value = _coerce(query[camelcase_name], param.annotation)
+        elif camelcase_name in body:
+            value = _coerce(body[camelcase_name], param.annotation)
         elif _is_supported_optional(param.annotation):
             continue
         else:
@@ -117,6 +168,7 @@ def make_args(
         if param.kind == Parameter.POSITIONAL_ONLY or param.kind == Parameter.POSITIONAL_OR_KEYWORD:
             args.append(value)
         else:
+            # Use the non-camelcased name
             kwargs[param.name] = value
 
     bound_args = sig.bind(*args, **kwargs)

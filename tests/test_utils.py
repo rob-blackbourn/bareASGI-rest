@@ -6,7 +6,8 @@ import json
 import inspect
 from typing import Any, Dict, List, Optional
 
-from bareasgi_rest.utils import make_args, as_datetime, JSONEncoderEx
+from bareasgi_rest.utils import make_args, as_datetime, JSONEncoderEx, camelize_object, underscore_object
+
 
 def test_make_args():
     """Test for make_args"""
@@ -48,6 +49,7 @@ def test_make_args():
         'arg5': None
     }
 
+
 def test_as_datetime():
     """Test for as_datetime"""
     orig = {
@@ -60,3 +62,32 @@ def test_as_datetime():
     text = json.dumps(orig, cls=JSONEncoderEx)
     roundtrip = json.loads(text)
     assert orig == roundtrip
+
+
+def test_casing():
+    """Tests for camelize and underscore"""
+    orig_dct = {
+        'first_name': 'rob',
+        'addresses': [
+            {
+                'street_name': 'my street'
+            },
+            {
+                'street_name': 'my other street'
+            }
+        ]
+    }
+    camel_dct = camelize_object(orig_dct)
+    assert camel_dct == {
+        'firstName': 'rob',
+        'addresses': [
+            {
+                'streetName': 'my street'
+            },
+            {
+                'streetName': 'my other street'
+            }
+        ]
+    }
+    underscore_dct = underscore_object(camel_dct)
+    assert underscore_dct == orig_dct
