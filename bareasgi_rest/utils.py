@@ -15,7 +15,8 @@ from typing import (
 )
 import pytypes
 
-T = TypeVar('T')
+T = TypeVar('T')  # pylint: disable=invalid-name
+
 
 class NullIter(Generic[T]):
     """An iterator containing no items"""
@@ -36,8 +37,9 @@ def _is_supported_optional(annotation) -> bool:
         pytypes.is_subtype(annotation, Optional[datetime])
     )
 
+
 def _coerce(value: str, annotation: Any) -> Any:
-    if type(annotation) is type:
+    if type(annotation) is type:  # pylint: disable=unidiomatic-typecheck
         single_value = value[0] if isinstance(value, list) else value
         if annotation is str:
             return single_value
@@ -122,23 +124,29 @@ def make_args(
 
     return bound_args.args, bound_args.kwargs
 
+
 def as_datetime(dct):
-    for k, v in dct.items():
+    """Convert datetime like strings"""
+    for key, value in dct.items():
         try:
-            dt = datetime.fromisoformat(v[:-1])
-            dct[k] = dt
-        except: # pylint: disable=bare-except
+            timestamp = datetime.fromisoformat(value[:-1])
+            dct[key] = timestamp
+        except:  # pylint: disable=bare-except
             pass
     return dct
 
+
 class JSONEncoderEx(json.JSONEncoder):
+    """Encode json"""
+
     def default(self, obj):  # pylint: disable=method-hidden,arguments-differ
         if isinstance(obj, datetime):
             return obj.isoformat() + ('Z' if not obj.tzinfo else '')
         elif isinstance(obj, Decimal):
-            # return float(str(obj.quantize(Decimal(1)) if obj == obj.to_integral() else obj.normalize()))
-            # return {'type{decimal}': str(obj)}
-            return float(str(obj.quantize(Decimal(1)) if obj == obj.to_integral() else obj.normalize()))
+            return float(
+                str(obj.quantize(Decimal(1))
+                    if obj == obj.to_integral() else
+                    obj.normalize())
+            )
         else:
             return super(JSONEncoderEx, self).default(obj)
-    

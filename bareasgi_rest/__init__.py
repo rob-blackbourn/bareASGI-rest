@@ -1,4 +1,4 @@
-"""bareASGI-swagger"""
+"""bareASGI-rest"""
 
 from .rest_router import RestHttpRouter
 
