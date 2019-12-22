@@ -11,3 +11,4 @@ dist
 .history
 pip-wheel-metadata
 .mypy_cache/
+node_modules

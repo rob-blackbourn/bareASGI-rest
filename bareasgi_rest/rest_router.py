@@ -30,10 +30,14 @@ from baretypes import (
     Headers
 )
 import bareutils.header as header
+import bareasgi_jinja2
 
 from .utils import make_args, JSONEncoderEx, camelize_object
 
 LOGGER = logging.getLogger(__name__)
+
+DEFAULT_SWAGGER_BASE_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/3.24.2"
+DEFAULT_TYPEFACE_URL = "https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
 
 WriterFactory = Callable[
     [Optional[Any], Mapping[bytes, Tuple[bytes, Any]]],
@@ -89,10 +93,17 @@ class RestHttpRouter(BasicHttpRouter):
     def __init__(
         self,
         not_found_response: HttpResponse,
-        writer_factory: Optional[WriterFactory] = None
+        *,
+        title: str = 'REST API',
+        writer_factory: Optional[WriterFactory] = None,
+        swagger_base_url: Optional[str] = None,
+        typeface_url: Optional[str] = None
     ) -> None:
         super().__init__(not_found_response)
         self._writer_factory = writer_factory or _make_writer
+        self.title = title
+        self.swagger_base_url = swagger_base_url or DEFAULT_SWAGGER_BASE_URL
+        self.typeface_url = typeface_url or DEFAULT_TYPEFACE_URL
 
     def add_rest(
             self,
@@ -143,3 +154,69 @@ class RestHttpRouter(BasicHttpRouter):
             return status_code, headers, writer
 
         self.add({method}, path, http_request_callback)
+
+    async def swagger_json(
+            self,
+            _scope: Scope,
+            _info: Info,
+            _matches: RouteMatches,
+            _content: Content
+    ) -> HttpResponse:
+        spec = """
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Sample API",
+    "description": "API description in Markdown.",
+    "version": "1.0.0"
+  },
+  "host": "api.example.com",
+  "basePath": "/v1",
+  "schemes": [
+      "http",
+      "https"
+  ],
+  "paths": {
+    "/users": {
+      "get": {
+        "summary": "Returns a list of users.",
+        "description": "Optional extended description in Markdown.",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  }
+}
+"""
+        return 200, [(b'content-type', b'application/json')], text_writer(spec)
+
+    @bareasgi_jinja2.template('swagger.html')
+    async def swagger_ui(
+            self,
+            _scope: Scope,
+            _info: Info,
+            _matches: RouteMatches,
+            _content: Content
+    ) -> Dict[str, Any]:
+        """The swagger view"""
+        return {
+            "title": self.title,
+            "specs_url": "/api/1/swagger.json",
+            'swagger_base_url': self.swagger_base_url,
+            "swagger_oauth_client_id": False,
+            "swagger_oauth_realm": None,
+            "swagger_oauth_app_name": None,
+            "swagger_oauth2_redirect_url": None,
+            "swagger_validator_url": None,
+            "swagger_supported_submit_methods": None,
+            "swagger_operation_id": None,
+            "swagger_request_duration": None,
+            "swagger_doc_expansion": None,
+            'typeface_url': self.typeface_url,
+        }
