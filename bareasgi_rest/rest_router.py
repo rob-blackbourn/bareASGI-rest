@@ -36,7 +36,8 @@ from .utils import make_args, JSONEncoderEx, camelize_object
 
 LOGGER = logging.getLogger(__name__)
 
-DEFAULT_SWAGGER_BASE_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/3.24.2"
+# DEFAULT_SWAGGER_BASE_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/3.24.2"
+DEFAULT_SWAGGER_BASE_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/3.4.0"
 DEFAULT_TYPEFACE_URL = "https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
 
 WriterFactory = Callable[
@@ -164,34 +165,47 @@ class RestHttpRouter(BasicHttpRouter):
     ) -> HttpResponse:
         spec = """
 {
-  "swagger": "2.0",
-  "info": {
-    "title": "Sample API",
-    "description": "API description in Markdown.",
-    "version": "1.0.0"
-  },
-  "host": "api.example.com",
-  "basePath": "/v1",
-  "schemes": [
-      "http",
-      "https"
-  ],
-  "paths": {
-    "/users": {
-      "get": {
-        "summary": "Returns a list of users.",
-        "description": "Optional extended description in Markdown.",
-        "produces": [
-          "application/json"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
+    "swagger": "2.0",
+    "basePath": "/",
+    "paths": {
+        "/hello": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_hello_world",
+                "tags": [
+                    "default"
+                ]
+            }
         }
-      }
+    },
+    "info": {
+        "title": "API",
+        "version": "1.0"
+    },
+    "produces": [
+        "application/json"
+    ],
+    "consumes": [
+        "application/json"
+    ],
+    "tags": [
+        {
+            "name": "default",
+            "description": "Default namespace"
+        }
+    ],
+    "responses": {
+        "ParseError": {
+            "description": "When a mask can't be parsed"
+        },
+        "MaskError": {
+            "description": "When any error occurs on mask"
+        }
     }
-  }
 }
 """
         return 200, [(b'content-type', b'application/json')], text_writer(spec)
@@ -213,10 +227,10 @@ class RestHttpRouter(BasicHttpRouter):
             "swagger_oauth_realm": None,
             "swagger_oauth_app_name": None,
             "swagger_oauth2_redirect_url": None,
-            "swagger_validator_url": None,
+            "swagger_validator_url": "https://validator.swagger.io/validator",
             "swagger_supported_submit_methods": None,
-            "swagger_operation_id": None,
+            "swagger_operation_id": False,
             "swagger_request_duration": None,
-            "swagger_doc_expansion": None,
+            "swagger_doc_expansion": "none",
             'typeface_url': self.typeface_url,
         }
