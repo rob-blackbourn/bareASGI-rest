@@ -36,7 +36,6 @@ from .utils import make_args, JSONEncoderEx, camelize_object
 
 LOGGER = logging.getLogger(__name__)
 
-# DEFAULT_SWAGGER_BASE_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/3.24.2"
 DEFAULT_SWAGGER_BASE_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/3.4.0"
 DEFAULT_TYPEFACE_URL = "https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
 
@@ -95,7 +94,10 @@ class RestHttpRouter(BasicHttpRouter):
         self,
         not_found_response: HttpResponse,
         *,
-        title: str = 'REST API',
+        title: str,
+        version: str,
+        description: Optional[str] = None,
+        base_path: str = '',
         writer_factory: Optional[WriterFactory] = None,
         swagger_base_url: Optional[str] = None,
         typeface_url: Optional[str] = None
@@ -103,8 +105,14 @@ class RestHttpRouter(BasicHttpRouter):
         super().__init__(not_found_response)
         self._writer_factory = writer_factory or _make_writer
         self.title = title
+        self.version = version
+        self.description = description
+        self.base_path = base_path
         self.swagger_base_url = swagger_base_url or DEFAULT_SWAGGER_BASE_URL
         self.typeface_url = typeface_url or DEFAULT_TYPEFACE_URL
+
+        self.add({'GET'}, base_path + '/swagger.json', self.swagger_json)
+        self.add({'GET'}, base_path + '/swagger', self.swagger_ui)
 
     def add_rest(
             self,
@@ -154,7 +162,7 @@ class RestHttpRouter(BasicHttpRouter):
             ]
             return status_code, headers, writer
 
-        self.add({method}, path, http_request_callback)
+        self.add({method}, self.base_path + path, http_request_callback)
 
     async def swagger_json(
             self,
@@ -163,6 +171,10 @@ class RestHttpRouter(BasicHttpRouter):
             _matches: RouteMatches,
             _content: Content
     ) -> HttpResponse:
+        dct = {
+            'swagger': '2.0',
+            'basePath': self.base_path
+        }
         spec = """
 {
     "swagger": "2.0",

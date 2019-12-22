@@ -23,10 +23,10 @@ class BookController:
         self.next_id = 0
 
     def add_routes(self, router: RestHttpRouter):
-        router.add_rest({'GET'}, '/api/1/books', self.get_books)
-        router.add_rest({'GET'}, '/api/1/books/{bookId:int}', self.get_book)
-        router.add_rest({'POST'}, '/api/1/books', self.create_book)
-        router.add_rest({'PUT'}, '/api/1/books/{bookId:int}', self.update_book)
+        router.add_rest({'GET'}, '/books', self.get_books)
+        router.add_rest({'GET'}, '/books/{bookId:int}', self.get_book)
+        router.add_rest({'POST'}, '/books', self.create_book)
+        router.add_rest({'PUT'}, '/books/{bookId:int}', self.update_book)
 
     async def get_books(self) -> Tuple[int, List[Any]]:
         """A request handler which returns some text"""
@@ -83,12 +83,15 @@ if __name__ == "__main__":
         enable_async=True
     )
 
-    rest_router = RestHttpRouter(None)
+    rest_router = RestHttpRouter(
+        None,
+        title="Books",
+        version="1",
+        description="A book api",
+        base_path='/api/1'
+    )
     app = Application(http_router=rest_router)
     bareasgi_jinja2.add_jinja2(app, env)
-
-    rest_router.add({'GET'}, '/api/1/swagger.json', rest_router.swagger_json)
-    rest_router.add({'GET'}, '/api/1/swagger', rest_router.swagger_ui)
 
     controller = BookController()
     controller.add_routes(rest_router)
