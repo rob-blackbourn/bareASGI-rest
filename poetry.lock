@@ -49,7 +49,7 @@ description = "A lightweight ASGI framework"
 name = "bareasgi"
 optional = false
 python-versions = ">=3.7,<4.0"
-version = "3.4.2"
+version = "3.5.0"
 
 [package.dependencies]
 baretypes = ">=3.1,<4.0"
@@ -102,6 +102,14 @@ name = "colorama"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 version = "0.4.3"
+
+[[package]]
+category = "main"
+description = ""
+name = "docstring-parser"
+optional = false
+python-versions = "*"
+version = "0.3"
 
 [[package]]
 category = "dev"
@@ -480,7 +488,7 @@ version = "0.6.0"
 more-itertools = "*"
 
 [metadata]
-content-hash = "725b6283281beb2ca25c8343d2e9a7f44d28e237deae2cf991c0d1325d203723"
+content-hash = "683f304474d1b7166200523e2b43c7afd1b4849982281a2725a5c3a9a5610c2e"
 python-versions = "^3.7"
 
 [metadata.hashes]
@@ -488,12 +496,13 @@ astroid = ["71ea07f44df9568a75d0f354c49143a4575d90645e9fead6dfb52c26a85ed13a", "
 atomicwrites = ["03472c30eb2c5d1ba9227e4c2ca66ab8287fbfbbda3888aa93dc2e28fc6811b4", "75a9445bac02d8d058d5e1fe689654ba5a6556a1dfd8ce6ec55a0ed79866cfa6"]
 attrs = ["08a96c641c3a74e44eb59afb61a24f2cb9f4d7188748e76ba4bb5edfa3cb7d1c", "f7b7ce16570fe9965acd6d30101a28f62fb4a7f9e926b3bbc9b61f8b04247e72"]
 autopep8 = ["4d8eec30cc81bc5617dbf1218201d770dc35629363547f17577c61683ccfb3ee"]
-bareasgi = ["3aae8f483208ebe69b8e94d3c46d8299ceb7de997ab89d8fee45dd766a1f7510", "d625b9bcd1571d10ac67250b745a8b7070518d5d239b6c14a235379d78b3a50c"]
+bareasgi = ["2a8760bea20133b47c505539ff7c072da7b98c80018ac300431ccec227adfba7", "82372c7d183f3f3d7a313e066abd3a1f828773f25ff1f3d41c6e5eb664ddb80e"]
 bareasgi-jinja2 = ["145764d66caab089862e0fbbb6da5591e427dd35646afe8efa277e8894f58246", "c15fcbd540749bb230aa344daa45dc94bc7fd196f596e919e0632296f7096c10"]
 baretypes = ["125e6b05ed0f930d4f4a0c88d68435a94950ff7202310daf74ce5d01841400bf", "ab6f8535c76bdf03a601e7923593c6df9e2e3e35c18b4b1cd26f74247ccc8565"]
 bareutils = ["8cedca60962c56808112b8bc216c292ad922fdad0ac9bd437de050b5289d1982", "9ba913d31732c79d0ab8ea73603f40a0150698634e40ef11d4bbe8337f4b6255"]
 click = ["2335065e6395b9e67ca716de5f7526736bfa6ceead690adf616d925bdc622b13", "5b94b49521f6456670fdb30cd82a4eca9412788a93fa6dd6df72c94d5a8ff2d7"]
 colorama = ["7d73d2a99753107a36ac6b455ee49046802e59d9d076ef8e47b61499fa29afff", "e96da0d330793e2cb9485e9ddfd918d456036c7149416295932478192f4436a1"]
+docstring-parser = ["06e012a6e4410427423d401928709f5b10f1bd3f07d947c5dc5a27aa86df272e"]
 h11 = ["33d4bca7be0fa039f4e84d50ab00531047e53d6ee8ffbc83501ea602c169cae1", "4bc6d6a1238b7615b266ada57e0618568066f57dd6fa967d1290ec9309b2f2f1"]
 h2 = ["ac377fcf586314ef3177bfd90c12c7826ab0840edeb03f0f24f511858326049e", "b8a32bd282594424c0ac55845377eea13fa54fe4a8db012f3a198ed923dc3ab4"]
 hpack = ["0edd79eda27a53ba5be2dfabf3b15780928a0dff6eb0c60a3d6767720e970c89", "8eec9c1f4bfae3408a3f30500261f7e6a65912dc138526ea054f9ad98892e9d2"]

@@ -16,6 +16,7 @@ from typing import (
     cast
 )
 
+from bareasgi.basic_router.path_definition import PathDefinition
 from inflection import camelize, underscore
 import pytypes
 

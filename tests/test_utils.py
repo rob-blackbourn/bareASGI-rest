@@ -6,7 +6,14 @@ import json
 import inspect
 from typing import Any, Dict, List, Optional
 
-from bareasgi_rest.utils import make_args, as_datetime, JSONEncoderEx, camelize_object, underscore_object
+from bareasgi.basic_router.path_definition import PathDefinition
+
+from bareasgi_rest.utils import (
+    make_args,
+    JSONEncoderEx,
+    camelize_object,
+    underscore_object
+)
 
 
 def test_make_args():

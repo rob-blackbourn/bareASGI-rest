@@ -3,6 +3,7 @@
 from cgi import parse_multipart
 import io
 import inspect
+from inspect import Signature
 import logging
 import json
 from typing import (
@@ -12,6 +13,7 @@ from typing import (
     Awaitable,
     Callable,
     Dict,
+    List,
     Mapping,
     Optional,
     Tuple,
@@ -20,7 +22,7 @@ from typing import (
 from urllib.parse import parse_qs
 
 from bareasgi import text_reader, text_writer
-from bareasgi.basic_router.http_router import BasicHttpRouter
+from bareasgi.basic_router.http_router import BasicHttpRouter, PathDefinition
 from baretypes import (
     RouteMatches,
     Scope,
@@ -38,6 +40,8 @@ LOGGER = logging.getLogger(__name__)
 
 DEFAULT_SWAGGER_BASE_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/3.4.0"
 DEFAULT_TYPEFACE_URL = "https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+DEFAULT_CONSUMES = ['application/json']
+DEFAULT_PRODUCES = ['application/json']
 
 WriterFactory = Callable[
     [Optional[Any], Mapping[bytes, Tuple[bytes, Any]]],
@@ -98,6 +102,8 @@ class RestHttpRouter(BasicHttpRouter):
         version: str,
         description: Optional[str] = None,
         base_path: str = '',
+        consumes: List[str] = DEFAULT_CONSUMES,
+        produces: List[str] = DEFAULT_PRODUCES,
         writer_factory: Optional[WriterFactory] = None,
         swagger_base_url: Optional[str] = None,
         typeface_url: Optional[str] = None
@@ -107,6 +113,8 @@ class RestHttpRouter(BasicHttpRouter):
         self.title = title
         self.version = version
         self.description = description
+        self.consumes = consumes
+        self.produces = produces
         self.base_path = base_path
         self.swagger_base_url = swagger_base_url or DEFAULT_SWAGGER_BASE_URL
         self.typeface_url = typeface_url or DEFAULT_TYPEFACE_URL
@@ -141,8 +149,9 @@ class RestHttpRouter(BasicHttpRouter):
             callback: Callable[..., Awaitable[Tuple[int, Any]]]
     ) -> None:
         sig = inspect.signature(callback)
+        path_definition = PathDefinition(self.base_path + path)
 
-        async def http_request_callback(
+        async def rest_callback(
                 scope: Scope,
                 _info: Info,
                 matches: RouteMatches,
@@ -162,7 +171,7 @@ class RestHttpRouter(BasicHttpRouter):
             ]
             return status_code, headers, writer
 
-        self.add({method}, self.base_path + path, http_request_callback)
+        self.add_route(method, path_definition, rest_callback)
 
     async def swagger_json(
             self,
@@ -173,53 +182,45 @@ class RestHttpRouter(BasicHttpRouter):
     ) -> HttpResponse:
         dct = {
             'swagger': '2.0',
-            'basePath': self.base_path
-        }
-        spec = """
-{
-    "swagger": "2.0",
-    "basePath": "/",
-    "paths": {
-        "/hello": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
+            'basePath': self.base_path,
+            'info': {
+                'title': self.title,
+                'version': self.version,
+                'description': self.description
+            },
+            'produces': self.produces,
+            'consumes': self.consumes,
+            'tags': [
+                {
+                    'name': 'default',
+                    'description': 'default namespace'
+                }
+            ],
+            "responses": {
+                "ParseError": {
+                    "description": "When a mask can't be parsed"
                 },
-                "operationId": "get_hello_world",
-                "tags": [
-                    "default"
-                ]
-            }
+                "MaskError": {
+                    "description": "When any error occurs on mask"
+                }
+            },
+            "paths": {
+                "/hello": {
+                    "get": {
+                        "responses": {
+                            "200": {
+                                "description": "Success"
+                            }
+                        },
+                        "operationId": "get_hello_world",
+                        "tags": [
+                            "default"
+                        ]
+                    }
+                }
+            },
         }
-    },
-    "info": {
-        "title": "API",
-        "version": "1.0"
-    },
-    "produces": [
-        "application/json"
-    ],
-    "consumes": [
-        "application/json"
-    ],
-    "tags": [
-        {
-            "name": "default",
-            "description": "Default namespace"
-        }
-    ],
-    "responses": {
-        "ParseError": {
-            "description": "When a mask can't be parsed"
-        },
-        "MaskError": {
-            "description": "When any error occurs on mask"
-        }
-    }
-}
-"""
+        spec = json.dumps(dct)
         return 200, [(b'content-type', b'application/json')], text_writer(spec)
 
     @bareasgi_jinja2.template('swagger.html')

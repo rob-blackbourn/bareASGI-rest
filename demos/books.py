@@ -29,14 +29,14 @@ class BookController:
         router.add_rest({'PUT'}, '/books/{bookId:int}', self.update_book)
 
     async def get_books(self) -> Tuple[int, List[Any]]:
-        """A request handler which returns some text"""
+        """Get all the books"""
         return 200, list(self.books.values())
 
     async def get_book(
             self,
             book_id: int
     ) -> Tuple[int, Optional[Dict[str, Any]]]:
-        """A request handler which returns some text"""
+        """Get a book for a given id"""
         if book_id in self.books:
             return 200, self.books[book_id]
         else:
@@ -48,6 +48,7 @@ class BookController:
             title: str,
             published: datetime
     ) -> Tuple[int, int]:
+        """Add a book"""
         self.next_id += 1
         self.books[self.next_id] = {
             'book_id': self.next_id,
@@ -64,6 +65,7 @@ class BookController:
             title: str,
             published: datetime
     ) -> Tuple[int, Any]:
+        """Update a book"""
         if id in self.books:
             self.books[book_id]['title'] = title
             self.books[book_id]['author'] = author
