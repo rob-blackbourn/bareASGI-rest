@@ -8,7 +8,8 @@ from typing import (
     Dict,
     List,
     Optional,
-    Tuple
+    Tuple,
+    cast
 )
 
 from bareasgi.basic_router.path_definition import PathDefinition
@@ -118,6 +119,17 @@ TYPE_DEFINITIONS = {
 }
 
 
+def _check_is_required(
+        param: Parameter,
+        docstring_param: DocstringParam
+) -> bool:
+    type_def = TYPE_DEFINITIONS[param.annotation]
+    is_required: bool = cast(bool, type_def['is_required']) or (
+        docstring_param is not None and not docstring_param.is_optional
+    )
+    return is_required
+
+
 def _make_swagger_parameter(
         source: str,
         param: Parameter,
@@ -125,6 +137,8 @@ def _make_swagger_parameter(
         docstring_param: Optional[DocstringParam]
 ) -> Dict[str, Any]:
     type_def = TYPE_DEFINITIONS[param.annotation]
+    is_required = _check_is_required(param, docstring_param)
+
     parameter = {
         'name': param.name,
         'type': 'array' if type_def['is_list'] else type_def['type']
@@ -144,7 +158,7 @@ def _make_swagger_parameter(
 
     if source != 'body':
         parameter['in'] = source
-        parameter['required'] = type_def['is_required']
+        parameter['required'] = is_required
 
     if param.default != Parameter.empty:
         parameter['default'] = param.default
@@ -162,8 +176,8 @@ def _make_swagger_schema(
         'type': 'object',
         'required': [
             param.name
-            for param, _ in params
-            if TYPE_DEFINITIONS[param.annotation]['is_required']
+            for param, docstring_param in params
+            if _check_is_required(param, docstring_param)
         ],
         'properties': {
             param.name: _make_swagger_parameter(
@@ -185,6 +199,29 @@ def _find_docstring_param(
         if param.arg_name == name:
             return param
     return None
+
+
+def _make_swagger_parameters_inline(
+        source: str,
+        sig: Signature,
+        path_definition: PathDefinition,
+        docstring: Docstring,
+        collection_format: str
+) -> List[Dict[str, Any]]:
+    """Make inline paramters for query or form"""
+    parameters: List[Dict[str, Any]] = []
+    for param in sig.parameters.values():
+        if param.name in path_definition.segments:
+            continue
+        argdoc = _find_docstring_param(param.name, docstring)
+        parameter = _make_swagger_parameter(
+            source,
+            param,
+            collection_format,
+            argdoc
+        )
+        parameters.append(parameter)
+    return parameters
 
 
 def make_swagger_parameters(
@@ -209,22 +246,39 @@ def make_swagger_parameters(
             parameters.append(parameter)
 
     if method == 'GET':
-        source = 'query'
-    elif accept in (b'application/x-www-form-urlencoded', b'multipart/form-data'):
-        source = 'formData'
-    else:
-        source = 'body'
-
-    for param in sig.parameters.values():
-        if param.name in path_definition.segments:
-            continue
-        argdoc = _find_docstring_param(param.name, docstring)
-        parameter = _make_swagger_parameter(
-            source,
-            param,
-            collection_format,
-            argdoc
+        parameters.extend(
+            _make_swagger_parameters_inline(
+                'query',
+                sig,
+                path_definition,
+                docstring,
+                collection_format
+            )
         )
-        parameters.append(parameter)
+    elif accept in (b'application/x-www-form-urlencoded', b'multipart/form-data'):
+        parameters.extend(
+            _make_swagger_parameters_inline(
+                'formData',
+                sig,
+                path_definition,
+                docstring,
+                collection_format
+            )
+        )
+    else:
+        params = [
+            (param, _find_docstring_param(param.name, docstring))
+            for param in sig.parameters.values()
+        ]
+        schema = _make_swagger_schema(
+            params,
+            collection_format
+        )
+        parameters.append({
+            'in': 'body',
+            'name': 'schema',
+            'description': 'The body schema',
+            'schema': schema
+        })
 
     return parameters

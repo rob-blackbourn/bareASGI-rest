@@ -13,7 +13,8 @@ from bareasgi_rest.swagger import (
     make_swagger_path,
     _make_swagger_parameter,
     _find_docstring_param,
-    _make_swagger_schema
+    _make_swagger_schema,
+    make_swagger_parameters
 )
 
 
@@ -195,3 +196,71 @@ def test_make_swagger_schema():
             }
         },
     }
+
+
+def test_swagger_params():
+    """Test for make_swagger_parameters"""
+    sig = inspect.signature(mock_func)
+    docstring = parse(inspect.getdoc(mock_func), Style.auto)
+    accept = b'application/json'
+    path_definition = PathDefinition('/foo/bar/{arg1:str}')
+    collection_format = 'multi'
+    get_params = make_swagger_parameters(
+        'GET',
+        accept,
+        path_definition,
+        sig,
+        docstring,
+        collection_format
+    )
+    assert get_params == [
+        {
+            'name': 'arg1',
+            'type': 'string',
+            'in': 'path',
+            'required': True,
+            'description': 'The first arg'
+        },
+        {
+            'name': 'arg1',
+            'type': 'string',
+            'in': 'query',
+            'required': True,
+            'description': 'The first arg'
+        },
+        {
+            'name': 'arg2',
+            'type': 'array',
+            'collectionFormat': 'multi',
+            'items': {
+                'type': 'integer'
+            },
+            'in': 'query',
+            'required': True,
+            'description': 'The second arg'
+        },
+        {
+            'name': 'arg3',
+            'type': 'string',
+            'format': 'date',
+            'in': 'query',
+            'required': True,
+            'description': 'The third arg'
+        },
+        {
+            'name': 'arg4',
+            'type': 'number',
+            'in': 'query',
+            'required': False,
+            'default': Decimal('1'),
+            'description': "The fourth arg. Defaults to Decimal('1')."
+        },
+        {
+            'name': 'arg5',
+            'type': 'number',
+            'in': 'query',
+            'required': False,
+            'default': None,
+            'description': 'The fifth arg. Defaults to None.'
+        }
+    ]
