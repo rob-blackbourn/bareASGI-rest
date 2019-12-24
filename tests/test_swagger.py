@@ -198,7 +198,7 @@ def test_make_swagger_schema():
     }
 
 
-def test_swagger_params():
+def test_swagger_params_get():
     """Test for make_swagger_parameters"""
     sig = inspect.signature(mock_func)
     docstring = parse(inspect.getdoc(mock_func), Style.auto)
@@ -262,5 +262,146 @@ def test_swagger_params():
             'required': False,
             'default': None,
             'description': 'The fifth arg. Defaults to None.'
+        }
+    ]
+
+
+def test_swagger_params_form():
+    """Test for make_swagger_parameters"""
+    sig = inspect.signature(mock_func)
+    docstring = parse(inspect.getdoc(mock_func), Style.auto)
+    accept = b'application/x-www-form-urlencoded'
+    path_definition = PathDefinition('/foo/bar/{arg1:str}')
+    collection_format = 'multi'
+    get_params = make_swagger_parameters(
+        'POST',
+        accept,
+        path_definition,
+        sig,
+        docstring,
+        collection_format
+    )
+    assert get_params == [
+        {
+            'name': 'arg1',
+            'type': 'string',
+            'in': 'path',
+            'required': True,
+            'description': 'The first arg'
+        },
+        {
+            'name': 'arg1',
+            'type': 'string',
+            'in': 'formData',
+            'required': True,
+            'description': 'The first arg'
+        },
+        {
+            'name': 'arg2',
+            'type': 'array',
+            'collectionFormat': 'multi',
+            'items': {
+                'type': 'integer'
+            },
+            'in': 'formData',
+            'required': True,
+            'description': 'The second arg'
+        },
+        {
+            'name': 'arg3',
+            'type': 'string',
+            'format': 'date',
+            'in': 'formData',
+            'required': True,
+            'description': 'The third arg'
+        },
+        {
+            'name': 'arg4',
+            'type': 'number',
+            'in': 'formData',
+            'required': False,
+            'default': Decimal('1'),
+            'description': "The fourth arg. Defaults to Decimal('1')."
+        },
+        {
+            'name': 'arg5',
+            'type': 'number',
+            'in': 'formData',
+            'required': False,
+            'default': None,
+            'description': 'The fifth arg. Defaults to None.'
+        }
+    ]
+
+
+def test_swagger_params_body():
+    """Test for make_swagger_parameters"""
+    sig = inspect.signature(mock_func)
+    docstring = parse(inspect.getdoc(mock_func), Style.auto)
+    accept = b'application/json'
+    path_definition = PathDefinition('/foo/bar/{arg1:str}')
+    collection_format = 'multi'
+    get_params = make_swagger_parameters(
+        'POST',
+        accept,
+        path_definition,
+        sig,
+        docstring,
+        collection_format
+    )
+    assert get_params == [
+        {
+            'name': 'arg1',
+            'type': 'string',
+            'in': 'path',
+            'required': True,
+            'description': 'The first arg'
+        },
+        {
+            'in': 'body',
+            'name': 'schema',
+            'description': 'The body schema',
+            'schema': {
+                'type': 'object',
+                'required': [
+                    'arg1',
+                    'arg2',
+                    'arg3'
+                ],
+                'properties': {
+                    'arg1': {
+                        'name': 'arg1',
+                        'type': 'string',
+                        'description': 'The first arg'
+                    },
+                    'arg2': {
+                        'name': 'arg2',
+                        'type': 'array',
+                        'collectionFormat': 'multi',
+                        'items': {
+                            'type': 'integer'
+                        },
+                        'description': 'The second arg'
+                    },
+                    'arg3': {
+                        'name': 'arg3',
+                        'type': 'string',
+                        'format': 'date',
+                        'description': 'The third arg'
+                    },
+                    'arg4': {
+                        'name': 'arg4',
+                        'type': 'number',
+                        'default': Decimal('1'),
+                        'description': "The fourth arg. Defaults to Decimal('1')."
+                    },
+                    'arg5': {
+                        'name': 'arg5',
+                        'type': 'number',
+                        'default': None,
+                        'description': 'The fifth arg. Defaults to None.'
+                    }
+                }
+            }
         }
     ]
