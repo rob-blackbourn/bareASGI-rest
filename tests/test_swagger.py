@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional
 
 from bareasgi.basic_router.path_definition import PathDefinition
 
-from docstring_parser.parser import parse, Style
+from docstring_parser import parse, Style
 
 from bareasgi_rest.swagger import (
     make_swagger_path,

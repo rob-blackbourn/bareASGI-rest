@@ -6,11 +6,10 @@ import json
 import inspect
 from typing import Any, Dict, List, Optional
 
-from bareasgi.basic_router.path_definition import PathDefinition
-
 from bareasgi_rest.utils import (
     make_args,
     JSONEncoderEx,
+    as_datetime,
     camelize_object,
     underscore_object
 )
@@ -40,7 +39,7 @@ def test_make_args():
     }
     foo_query = {
         'arg2': ['1', '2'],
-        'arg3': '1967-08-12T00:00:00',
+        'arg3': '1967-08-12T00:00:00Z',
         'arg4': '3.142'
     }
     foo_body = {
@@ -67,7 +66,7 @@ def test_as_datetime():
         }
     }
     text = json.dumps(orig, cls=JSONEncoderEx)
-    roundtrip = json.loads(text)
+    roundtrip = json.loads(text, object_hook=as_datetime)
     assert orig == roundtrip
 
 

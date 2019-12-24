@@ -12,8 +12,7 @@ from typing import (
 )
 
 from bareasgi.basic_router.path_definition import PathDefinition
-from docstring_parser.parser import Docstring
-from docstring_parser.parser.common import DocstringParam
+from docstring_parser import Docstring, DocstringParam
 
 
 def make_swagger_path(path_definition: PathDefinition) -> str:
