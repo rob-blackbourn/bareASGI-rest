@@ -14,6 +14,7 @@ from typing import (
 
 from bareasgi.basic_router.path_definition import PathDefinition
 from docstring_parser import Docstring, DocstringParam
+from inflection import underscore
 
 
 def make_swagger_path(path_definition: PathDefinition) -> str:
@@ -235,7 +236,7 @@ def make_swagger_parameters(
     parameters: List[Dict[str, Any]] = []
     for segment in path_definition.segments:
         if segment.is_variable:
-            param = sig.parameters[segment.name]
+            param = sig.parameters[underscore(segment.name)]
             argdoc = _find_docstring_param(param.name, docstring)
             parameter = _make_swagger_parameter(
                 'path',

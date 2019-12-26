@@ -29,14 +29,25 @@ class BookController:
         router.add_rest({'PUT'}, '/books/{bookId:int}', self.update_book)
 
     async def get_books(self) -> Tuple[int, List[Any]]:
-        """Get all the books"""
+        """Get all the books
+
+        Returns:
+            Tuple[int, List[Any]]: All the books
+        """
         return 200, list(self.books.values())
 
     async def get_book(
             self,
             book_id: int
     ) -> Tuple[int, Optional[Dict[str, Any]]]:
-        """Get a book for a given id"""
+        """Get a book for a given id
+
+        Args:
+            book_id (int): The id of the book
+
+        Returns:
+            Tuple[int, Optional[Dict[str, Any]]]: The book or nothing
+        """
         if book_id in self.books:
             return 200, self.books[book_id]
         else:
@@ -48,7 +59,16 @@ class BookController:
             title: str,
             published: datetime
     ) -> Tuple[int, int]:
-        """Add a book"""
+        """Add a book
+
+        Args:
+            author (str): The author
+            title (str): The title
+            published (datetime): The publication date
+
+        Returns:
+            Tuple[int, int]: The id of the new book
+        """
         self.next_id += 1
         self.books[self.next_id] = {
             'book_id': self.next_id,
@@ -65,7 +85,17 @@ class BookController:
             title: str,
             published: datetime
     ) -> Tuple[int, Any]:
-        """Update a book"""
+        """Update a book
+
+        Args:
+            book_id (int): The id of the book to update
+            author (str): The new author
+            title (str): The title
+            published (datetime): The publication date
+
+        Returns:
+            Tuple[int, Any]: Nothing
+        """
         if id in self.books:
             self.books[book_id]['title'] = title
             self.books[book_id]['author'] = author
