@@ -17,9 +17,7 @@ from typing import (
     cast
 )
 
-from bareasgi.basic_router.path_definition import PathDefinition
 from inflection import camelize, underscore
-import pytypes
 
 T = TypeVar('T')  # pylint: disable=invalid-name
 
@@ -82,11 +80,11 @@ class NullIter(Generic[T]):
 
 def _is_supported_optional(annotation) -> bool:
     return (
-        pytypes.is_subtype(annotation, Optional[str]) or
-        pytypes.is_subtype(annotation, Optional[int]) or
-        pytypes.is_subtype(annotation, Optional[float]) or
-        pytypes.is_subtype(annotation, Optional[Decimal]) or
-        pytypes.is_subtype(annotation, Optional[datetime])
+        annotation is Optional[str] or
+        annotation is Optional[int] or
+        annotation is Optional[float] or
+        annotation is Optional[Decimal] or
+        annotation is Optional[datetime]
     )
 
 
@@ -115,25 +113,25 @@ def _coerce(value: Any, annotation: Any) -> Any:
         single_value = value[0] if isinstance(value, list) else value
         return _coerce_builtin(single_value, annotation)
 
-    if pytypes.is_subtype(annotation, Optional[str]):
+    if annotation is Optional[str]:
         return None if not value else _coerce(value, str)
-    elif pytypes.is_subtype(annotation, Optional[int]):
+    elif annotation is Optional[int]:
         return None if not value else _coerce(value, int)
-    elif pytypes.is_subtype(annotation, Optional[float]):
+    elif annotation is Optional[float]:
         return None if not value else _coerce(value, float)
-    elif pytypes.is_subtype(annotation, Optional[Decimal]):
+    elif annotation is Optional[Decimal]:
         return None if not value else _coerce(value, Decimal)
-    elif pytypes.is_subtype(annotation, Optional[datetime]):
+    elif annotation is Optional[datetime]:
         return None if not value else _coerce(value, datetime)
-    elif pytypes.is_subtype(annotation, List[str]):
+    elif annotation is List[str]:
         contained_type: Any = str
-    elif pytypes.is_subtype(annotation, List[int]):
+    elif annotation is List[int]:
         contained_type = int
-    elif pytypes.is_subtype(annotation, List[float]):
+    elif annotation is List[float]:
         contained_type = float
-    elif pytypes.is_subtype(annotation, List[Decimal]):
+    elif annotation is List[Decimal]:
         contained_type = Decimal
-    elif pytypes.is_subtype(annotation, List[datetime]):
+    elif annotation is List[datetime]:
         contained_type = datetime
     else:
         raise TypeError

@@ -14,7 +14,6 @@ packages = [
 [tool.poetry.dependencies]
 python = "^3.7"
 bareasgi = "^3.5"
-pytypes = {version = "^1.0-beta.1", allows-prereleases = true}
 inflection = "^0.3.1"
 bareasgi-jinja2 = "^3.1"
 docstring-parser = "^0.5"
