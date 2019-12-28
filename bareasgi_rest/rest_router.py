@@ -87,6 +87,11 @@ DEFAULT_PRODUCES: DictProduces = {
 RestCallback = Callable[..., Awaitable[Tuple[int, Any]]]
 
 DEFAULT_COLLECTION_FORMAT = 'multi'
+DEFAULT_RESPONSES = {
+    200: {
+        'description': 'OK'
+    }
+}
 
 
 class RestHttpRouter(BasicHttpRouter):
@@ -154,7 +159,8 @@ class RestHttpRouter(BasicHttpRouter):
             accept=APPLICATION_JSON,
             content_type=APPLICATION_JSON,
             collection_format=DEFAULT_COLLECTION_FORMAT,
-            tags: Optional[List[str]] = None
+            tags: Optional[List[str]] = None,
+            responses: Mapping[int, Mapping[str, Any]] = DEFAULT_RESPONSES
     ) -> None:
         """Add a rest callback"""
         LOGGER.debug('Adding route for %s on "%s"', methods, path)
@@ -173,7 +179,8 @@ class RestHttpRouter(BasicHttpRouter):
                 accept,
                 content_type,
                 collection_format,
-                tags
+                tags,
+                responses
             )
 
     def _add_method(
@@ -222,7 +229,8 @@ class RestHttpRouter(BasicHttpRouter):
             accept: bytes,
             content_type: bytes,
             collection_format: str,
-            tags: Optional[List[str]]
+            tags: Optional[List[str]],
+            responses: Mapping[int, Mapping[str, Any]]
     ):
         path_definition = PathDefinition(path)
         swagger_path = make_swagger_path(path_definition)
@@ -240,11 +248,7 @@ class RestHttpRouter(BasicHttpRouter):
             'parameters': params,
             'produces': [content_type.decode()],
             'consumes': [accept.decode()],
-            'responses': {
-                200: {
-                    'description': 'OK'
-                }
-            }
+            'responses': responses
         }
         if docstring:
             if docstring.short_description:

@@ -28,25 +28,35 @@ class BookController:
             {'GET'},
             '/books',
             self.get_books,
-            tags=tags
+            tags=tags,
+            responses={200: {'description': 'OK'}}
         )
         router.add_rest(
             {'GET'},
             '/books/{bookId:int}',
             self.get_book,
-            tags=tags
+            tags=tags,
+            responses={
+                200: {'description': 'OK'},
+                404: {'description': 'Book not found'}
+            }
         )
         router.add_rest(
             {'POST'},
             '/books',
             self.create_book,
-            tags=tags
+            tags=tags,
+            responses={201: {'description': 'Created'}}
         )
         router.add_rest(
             {'PUT'},
             '/books/{bookId:int}',
             self.update_book,
-            tags=tags
+            tags=tags,
+            responses={
+                204: {'description': 'Updated'},
+                404: {'description': 'Book not found'}
+            }
         )
 
     async def get_books(self) -> Tuple[int, List[Any]]:
