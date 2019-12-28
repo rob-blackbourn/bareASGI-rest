@@ -96,7 +96,7 @@ class BookController:
         Returns:
             Tuple[int, Any]: Nothing
         """
-        if id in self.books:
+        if book_id in self.books:
             self.books[book_id]['title'] = title
             self.books[book_id]['author'] = author
             self.books[book_id]['published'] = published

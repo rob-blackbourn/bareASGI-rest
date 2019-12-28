@@ -48,25 +48,25 @@ def to_json(obj: Any) -> str:
     return json.dumps(obj, cls=JSONEncoderEx)
 
 
-def from_json(text: str, _media_type: bytes, _params: Dict[bytes, bytes]) -> Tuple[bool, Any]:
-    return True, json.loads(text, object_hook=as_datetime)
+def from_json(text: str, _media_type: bytes, _params: Dict[bytes, bytes]) -> Any:
+    return json.loads(text, object_hook=as_datetime)
 
 
-def from_query_string(text: str, _media_type: bytes, _params: Dict[bytes, bytes]) -> Tuple[bool, Any]:
-    return False, parse_qs(text)
+def from_query_string(text: str, _media_type: bytes, _params: Dict[bytes, bytes]) -> Any:
+    return parse_qs(text)
 
 
-def from_form_data(text: str, _media_type: bytes, params: Dict[bytes, bytes]) -> Tuple[bool, Any]:
+def from_form_data(text: str, _media_type: bytes, params: Dict[bytes, bytes]) -> Any:
     if b'boundary' not in params:
         raise RuntimeError('Required "boundary" parameter missing')
     pdict = {
         name.decode(): value
         for name, value in params.items()
     }
-    return False, parse_multipart(io.StringIO(text), pdict)
+    return parse_multipart(io.StringIO(text), pdict)
 
 
-Deserializer = Callable[[str, bytes, Dict[bytes, bytes]], Tuple[bool, Any]]
+Deserializer = Callable[[str, bytes, Dict[bytes, bytes]], Any]
 DictConsumes = Dict[bytes, Deserializer]
 DEFAULT_CONSUMES: DictConsumes = {
     b'application/json': from_json,
@@ -194,14 +194,13 @@ class RestHttpRouter(BasicHttpRouter):
         ) -> HttpResponse:
 
             query_args = parse_qs(scope['query_string'].decode())
-            is_coerced, body_args = await self._get_body_args(method, scope['headers'], content)
+            body_args = await self._get_body_args(method, scope['headers'], content)
 
             args, kwargs = make_args(
                 sig,
                 matches,
                 query_args,
-                body_args,
-                is_coerced
+                body_args
             )
 
             status_code, response = await callback(*args, **kwargs)
@@ -275,7 +274,7 @@ class RestHttpRouter(BasicHttpRouter):
                 serializer = self.produces[APPLICATION_JSON]
         if not serializer:
             raise RuntimeError
-        text = serializer(camelize_object(data)) 
+        text = serializer(camelize_object(data))
         return text_writer(text)
 
     async def _get_body_args(
@@ -283,7 +282,7 @@ class RestHttpRouter(BasicHttpRouter):
             method: str,
             headers: Headers,
             content: Content
-    ) -> Tuple[bool, Dict[str, Any]]:
+    ) -> Any:
         if method in {'GET'}:
             return True, {}
 

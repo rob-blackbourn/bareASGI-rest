@@ -12,6 +12,7 @@ from typing import (
     List,
     Optional,
     Tuple,
+    Type,
     TypeVar,
     cast
 )
@@ -89,21 +90,31 @@ def _is_supported_optional(annotation) -> bool:
     )
 
 
-def _coerce(value: str, annotation: Any) -> Any:
+def _coerce_builtin(value: Any, builtin_type: Type) -> Any:
+    if isinstance(value, builtin_type):
+        return value
+    elif isinstance(value, str):
+        if builtin_type is str:
+            return value
+        elif builtin_type is int:
+            return int(value)
+        elif builtin_type is float:
+            return float(value)
+        elif builtin_type is Decimal:
+            return Decimal(value)
+        elif builtin_type is datetime:
+            return datetime.fromisoformat(value[:-1])
+        else:
+            raise TypeError(f'Unhandled type {builtin_type}')
+    else:
+        raise RuntimeError(f'Unable to coerce value {value}')
+
+
+def _coerce(value: Any, annotation: Any) -> Any:
     if type(annotation) is type:  # pylint: disable=unidiomatic-typecheck
         single_value = value[0] if isinstance(value, list) else value
-        if annotation is str:
-            return single_value
-        elif annotation is int:
-            return int(single_value)
-        elif annotation is float:
-            return float(single_value)
-        elif annotation is Decimal:
-            return Decimal(single_value)
-        elif annotation is datetime:
-            return datetime.fromisoformat(single_value[:-1])
-        else:
-            raise TypeError
+        return _coerce_builtin(single_value, annotation)
+
     if pytypes.is_subtype(annotation, Optional[str]):
         return None if not value else _coerce(value, str)
     elif pytypes.is_subtype(annotation, Optional[int]):
@@ -128,18 +139,12 @@ def _coerce(value: str, annotation: Any) -> Any:
         raise TypeError
     return [_coerce(item, contained_type) for item in value]
 
-def _maybe_coerce(value: str, annotation: Any, is_coerced: bool) -> Any:
-    if is_coerced:
-        return value
-    else:
-        return _coerce(value, annotation)
 
 def make_args(
         sig: Signature,
         matches: Dict[str, str],
         query: Dict[str, Any],
-        body: Dict[str, Any],
-        is_coerced: bool
+        body: Dict[str, Any]
 ) -> Tuple[Tuple[Any, ...], Dict[str, Any]]:
     """Make args and kwargs for the given signature from the route matches,
     query args and body.
@@ -152,8 +157,6 @@ def make_args(
     :type query: Dict[str, Any]
     :param body: A dictionary build from the body
     :type body: Dict[str, Any]
-    :param is_coerced: True if the data is already coerced
-    :type is_coerced: bool
     :raises KeyError: If a parameter was not found
     :return: A tuple for *args and **kwargs
     :rtype: Tuple[Tuple[Any, ...], Dict[str, Any]]
@@ -162,13 +165,13 @@ def make_args(
     args: List[Any] = []
 
     for param in sig.parameters.values():
-        camelcase_name = camelize(param.name, uppercase_first_letter=False)
-        if camelcase_name in matches:
-            value = _coerce(matches[camelcase_name], param.annotation)
-        elif camelcase_name in query:
-            value = _coerce(query[camelcase_name], param.annotation)
-        elif camelcase_name in body:
-            value = _maybe_coerce(body[camelcase_name], param.annotation, is_coerced)
+        name = camelize(param.name, uppercase_first_letter=False)
+        if name in matches:
+            value = _coerce(matches[name], param.annotation)
+        elif name in query:
+            value = _coerce(query[name], param.annotation)
+        elif name in body:
+            value = _coerce(body[name], param.annotation)
         elif _is_supported_optional(param.annotation):
             continue
         else:
