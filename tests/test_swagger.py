@@ -95,7 +95,7 @@ def test_make_swagger_parameter():
         'in': 'query',
         'name': 'arg2',
         'description': 'The second arg',
-        'required': False,
+        'required': True,
         'type': 'array',
         'collectionFormat': 'multi',
         'items': {
@@ -159,6 +159,7 @@ def test_make_swagger_schema():
         'type': 'object',
         'required': [
             'arg1',
+            'arg2',
             'arg3'
         ],
         'properties': {
@@ -222,13 +223,6 @@ def test_swagger_params_get():
             'description': 'The first arg'
         },
         {
-            'name': 'arg1',
-            'type': 'string',
-            'in': 'query',
-            'required': True,
-            'description': 'The first arg'
-        },
-        {
             'name': 'arg2',
             'type': 'array',
             'collectionFormat': 'multi',
@@ -286,13 +280,6 @@ def test_swagger_params_form():
             'name': 'arg1',
             'type': 'string',
             'in': 'path',
-            'required': True,
-            'description': 'The first arg'
-        },
-        {
-            'name': 'arg1',
-            'type': 'string',
-            'in': 'formData',
             'required': True,
             'description': 'The first arg'
         },
@@ -364,16 +351,10 @@ def test_swagger_params_body():
             'schema': {
                 'type': 'object',
                 'required': [
-                    'arg1',
                     'arg2',
                     'arg3'
                 ],
                 'properties': {
-                    'arg1': {
-                        'name': 'arg1',
-                        'type': 'string',
-                        'description': 'The first arg'
-                    },
                     'arg2': {
                         'name': 'arg2',
                         'type': 'array',
