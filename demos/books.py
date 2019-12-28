@@ -4,7 +4,9 @@ A simple request handler.
 
 from datetime import datetime
 import logging
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
+from urllib.error import HTTPError
+
 
 from bareasgi import Application
 from bareasgi_rest import RestHttpRouter
@@ -29,69 +31,67 @@ class BookController:
             '/books',
             self.get_books,
             tags=tags,
-            responses={200: {'description': 'OK'}}
+            status_code=200
         )
         router.add_rest(
             {'GET'},
             '/books/{bookId:int}',
             self.get_book,
             tags=tags,
-            responses={
-                200: {'description': 'OK'},
-                404: {'description': 'Book not found'}
-            }
+            status_code=200
         )
         router.add_rest(
             {'POST'},
             '/books',
             self.create_book,
             tags=tags,
-            responses={201: {'description': 'Created'}}
+            status_code=201
         )
         router.add_rest(
             {'PUT'},
             '/books/{bookId:int}',
             self.update_book,
             tags=tags,
-            responses={
-                204: {'description': 'Updated'},
-                404: {'description': 'Book not found'}
-            }
+            status_code=204
         )
 
-    async def get_books(self) -> Tuple[int, List[Any]]:
+    async def get_books(self) -> List[Any]:
         """Get all the books.
 
         This method gets all the books in the shop.
 
         Returns:
-            Tuple[int, List[Any]]: All the books
+            List[Any]: All the books
         """
-        return 200, list(self.books.values())
+        return list(self.books.values())
 
     async def get_book(
             self,
             book_id: int
-    ) -> Tuple[int, Optional[Dict[str, Any]]]:
+    ) -> Optional[Dict[str, Any]]:
         """Get a book for a given id
 
         Args:
             book_id (int): The id of the book
 
+        Raises:
+            HTTPError: 404, when a book is not found
+
         Returns:
             Tuple[int, Optional[Dict[str, Any]]]: The book or nothing
         """
-        if book_id in self.books:
-            return 200, self.books[book_id]
-        else:
-            return 404, None
+
+        if book_id not in self.books:
+            raise HTTPError(None, 404, None, None, None)
+
+        return self.books[book_id]
 
     async def create_book(
             self,
             author: str,
             title: str,
             published: datetime
-    ) -> Tuple[int, int]:
+    ) -> int:
         """Add a book
 
         Args:
@@ -109,7 +109,7 @@ class BookController:
             'author': author,
             'published': published
         }
-        return 201, self.next_id
+        return self.next_id
 
     async def update_book(
             self,
@@ -117,7 +117,7 @@ class BookController:
             author: str,
             title: str,
             published: datetime
-    ) -> Tuple[int, Any]:
+    ) -> None:
         """Update a book
 
         Args:
@@ -126,16 +126,17 @@ class BookController:
             title (str): The title
             published (datetime): The publication date
 
+        Raises:
+            HTTPError: 404, when a book is not found
+
         Returns:
             Tuple[int, Any]: Nothing
         """
-        if book_id in self.books:
-            self.books[book_id]['title'] = title
-            self.books[book_id]['author'] = author
-            self.books[book_id]['published'] = published
-            return 204, None
-        else:
-            return 404, None
+        if book_id not in self.books:
+            raise HTTPError(None, 404, None, None, None)
+        self.books[book_id]['title'] = title
+        self.books[book_id]['author'] = author
+        self.books[book_id]['published'] = published
 
 
 if __name__ == "__main__":

@@ -289,3 +289,21 @@ def make_swagger_parameters(
         })
 
     return parameters
+
+
+def gather_error_responses(docstring: Docstring) -> Dict[int, Any]:
+    responses: Dict[int, Any] = {}
+    for raises in docstring.raises:
+        if raises.type_name != 'HTTPError':
+            continue
+        first, sep, rest = raises.description.partition(',')
+        if not sep:
+            continue
+        try:
+            error_code = int(first.strip())
+            responses[error_code] = {
+                'description': rest.strip()
+            }
+        except:
+            continue
+    return responses

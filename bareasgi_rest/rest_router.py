@@ -35,7 +35,7 @@ import bareasgi_jinja2
 import docstring_parser
 
 from .utils import make_args, JSONEncoderEx, as_datetime, camelize_object
-from .swagger import make_swagger_path, make_swagger_parameters
+from .swagger import make_swagger_path, make_swagger_parameters, gather_error_responses
 
 LOGGER = logging.getLogger(__name__)
 
@@ -84,7 +84,7 @@ DEFAULT_PRODUCES: DictProduces = {
     b'*/*': to_json
 }
 
-RestCallback = Callable[..., Awaitable[Tuple[int, Any]]]
+RestCallback = Callable[..., Awaitable[Any]]
 
 DEFAULT_COLLECTION_FORMAT = 'multi'
 DEFAULT_RESPONSES = {
@@ -160,7 +160,8 @@ class RestHttpRouter(BasicHttpRouter):
             content_type=APPLICATION_JSON,
             collection_format=DEFAULT_COLLECTION_FORMAT,
             tags: Optional[List[str]] = None,
-            responses: Mapping[int, Mapping[str, Any]] = DEFAULT_RESPONSES
+            status_code: int = 200,
+            status_description: str = 'OK'
     ) -> None:
         """Add a rest callback"""
         LOGGER.debug('Adding route for %s on "%s"', methods, path)
@@ -170,7 +171,8 @@ class RestHttpRouter(BasicHttpRouter):
                 method,
                 path,
                 callback,
-                content_type
+                content_type,
+                status_code
             )
             self._add_swagger_path(
                 method,
@@ -180,7 +182,8 @@ class RestHttpRouter(BasicHttpRouter):
                 content_type,
                 collection_format,
                 tags,
-                responses
+                status_code,
+                status_description
             )
 
     def _add_method(
@@ -188,7 +191,8 @@ class RestHttpRouter(BasicHttpRouter):
             method: str,
             path: str,
             callback: RestCallback,
-            content_type: bytes
+            content_type: bytes,
+            status_code: int
     ) -> None:
         sig = inspect.signature(callback)
         path_definition = PathDefinition(self.base_path + path)
@@ -210,10 +214,10 @@ class RestHttpRouter(BasicHttpRouter):
                 body_args
             )
 
-            status_code, response = await callback(*args, **kwargs)
+            body = await callback(*args, **kwargs)
 
             accept = header.accept(scope['headers'])
-            writer = self._make_writer(response, accept)
+            writer = self._make_writer(body, accept)
             headers = [
                 (b'content-type', content_type)
             ]
@@ -230,7 +234,8 @@ class RestHttpRouter(BasicHttpRouter):
             content_type: bytes,
             collection_format: str,
             tags: Optional[List[str]],
-            responses: Mapping[int, Mapping[str, Any]]
+            status_code: int,
+            status_description: str
     ):
         path_definition = PathDefinition(path)
         swagger_path = make_swagger_path(path_definition)
@@ -248,13 +253,20 @@ class RestHttpRouter(BasicHttpRouter):
             'parameters': params,
             'produces': [content_type.decode()],
             'consumes': [accept.decode()],
-            'responses': responses
+            'responses': {
+                status_code: {
+                    'description': status_description
+                }
+            }
         }
         if docstring:
             if docstring.short_description:
                 entry['summary'] = docstring.short_description
             if docstring.long_description:
                 entry['description'] = docstring.long_description
+            error_responses = gather_error_responses(docstring)
+            responses: Dict[int, Dict[str, Any]] = entry['responses']
+            responses.update(error_responses)
 
         if tags:
             entry['tags'] = tags
