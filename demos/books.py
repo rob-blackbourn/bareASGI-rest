@@ -23,10 +23,31 @@ class BookController:
         self.next_id = 0
 
     def add_routes(self, router: RestHttpRouter):
-        router.add_rest({'GET'}, '/books', self.get_books)
-        router.add_rest({'GET'}, '/books/{bookId:int}', self.get_book)
-        router.add_rest({'POST'}, '/books', self.create_book)
-        router.add_rest({'PUT'}, '/books/{bookId:int}', self.update_book)
+        tags = ['Books']
+        router.add_rest(
+            {'GET'},
+            '/books',
+            self.get_books,
+            tags=tags
+        )
+        router.add_rest(
+            {'GET'},
+            '/books/{bookId:int}',
+            self.get_book,
+            tags=tags
+        )
+        router.add_rest(
+            {'POST'},
+            '/books',
+            self.create_book,
+            tags=tags
+        )
+        router.add_rest(
+            {'PUT'},
+            '/books/{bookId:int}',
+            self.update_book,
+            tags=tags
+        )
 
     async def get_books(self) -> Tuple[int, List[Any]]:
         """Get all the books.
@@ -122,7 +143,13 @@ if __name__ == "__main__":
         title="Books",
         version="1",
         description="A book api",
-        base_path='/api/1'
+        base_path='/api/1',
+        tags=[
+            {
+                'name': 'Books',
+                'description': 'The book store API'
+            }
+        ]
     )
     app = Application(http_router=rest_router)
     bareasgi_jinja2.add_jinja2(app, env)

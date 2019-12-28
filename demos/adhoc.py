@@ -70,3 +70,13 @@ print(param4.annotation is Optional[Decimal])
 param5 = sig.parameters['arg5']
 print(param5.annotation == Optional[float])
 print(param5.annotation is Optional[float])
+
+
+class Person(NamedTuple):
+    first_name: str
+    last_name: str
+
+
+p1 = Person('Rob', 'Blackbourn')
+p2 = Person('Ann-Marie', 'Dutton')
+print(p1)

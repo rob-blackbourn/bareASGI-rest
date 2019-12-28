@@ -12,6 +12,7 @@ from typing import (
     Awaitable,
     Callable,
     Dict,
+    List,
     Mapping,
     Optional,
     Tuple,
@@ -101,6 +102,7 @@ class RestHttpRouter(BasicHttpRouter):
             base_path: str = '',
             consumes: DictConsumes = DEFAULT_CONSUMES,
             produces: DictProduces = DEFAULT_PRODUCES,
+            tags: Optional[List[Mapping[str, Any]]] = None,
             swagger_base_url: Optional[str] = None,
             typeface_url: Optional[str] = None
     ) -> None:
@@ -130,12 +132,6 @@ class RestHttpRouter(BasicHttpRouter):
             },
             'produces': [name.decode() for name in self.produces.keys()],
             'consumes': [name.decode() for name in self.consumes.keys()],
-            'tags': [
-                {
-                    'name': 'default',
-                    'description': 'default namespace'
-                }
-            ],
             "responses": {
                 "ParseError": {
                     "description": "When a mask can't be parsed"
@@ -146,6 +142,8 @@ class RestHttpRouter(BasicHttpRouter):
             },
             "paths": {},
         }
+        if tags:
+            self.swagger_dict['tags'] = tags
 
     def add_rest(
             self,
@@ -155,7 +153,8 @@ class RestHttpRouter(BasicHttpRouter):
             *,
             accept=APPLICATION_JSON,
             content_type=APPLICATION_JSON,
-            collection_format=DEFAULT_COLLECTION_FORMAT
+            collection_format=DEFAULT_COLLECTION_FORMAT,
+            tags: Optional[List[str]] = None
     ) -> None:
         """Add a rest callback"""
         LOGGER.debug('Adding route for %s on "%s"', methods, path)
@@ -173,7 +172,8 @@ class RestHttpRouter(BasicHttpRouter):
                 callback,
                 accept,
                 content_type,
-                collection_format
+                collection_format,
+                tags
             )
 
     def _add_method(
@@ -221,7 +221,8 @@ class RestHttpRouter(BasicHttpRouter):
             callback: RestCallback,
             accept: bytes,
             content_type: bytes,
-            collection_format: str
+            collection_format: str,
+            tags: Optional[List[str]]
     ):
         path_definition = PathDefinition(path)
         swagger_path = make_swagger_path(path_definition)
@@ -250,6 +251,9 @@ class RestHttpRouter(BasicHttpRouter):
                 entry['summary'] = docstring.short_description
             if docstring.long_description:
                 entry['description'] = docstring.long_description
+
+        if tags:
+            entry['tags'] = tags
 
         paths: Dict[str, Any] = self.swagger_dict['paths']
         current_path: Dict[str, Any] = paths.setdefault(swagger_path, {})
