@@ -12,6 +12,7 @@ from typing import (
     Awaitable,
     Callable,
     Dict,
+    Mapping,
     Optional,
     Tuple,
     cast
@@ -47,25 +48,25 @@ def to_json(obj: Any) -> str:
     return json.dumps(obj, cls=JSONEncoderEx)
 
 
-def from_json(text: str, _media_type: bytes, _params: Dict[bytes, bytes]) -> Any:
-    return json.loads(text, object_hook=as_datetime)
+def from_json(text: str, _media_type: bytes, _params: Dict[bytes, bytes]) -> Tuple[bool, Any]:
+    return True, json.loads(text, object_hook=as_datetime)
 
 
-def from_query_string(text: str, _media_type: bytes, _params: Dict[bytes, bytes]) -> Any:
-    return parse_qs(text)
+def from_query_string(text: str, _media_type: bytes, _params: Dict[bytes, bytes]) -> Tuple[bool, Any]:
+    return False, parse_qs(text)
 
 
-def from_form_data(text: str, _media_type: bytes, params: Dict[bytes, bytes]) -> Any:
+def from_form_data(text: str, _media_type: bytes, params: Dict[bytes, bytes]) -> Tuple[bool, Any]:
     if b'boundary' not in params:
         raise RuntimeError('Required "boundary" parameter missing')
     pdict = {
         name.decode(): value
         for name, value in params.items()
     }
-    return parse_multipart(io.StringIO(text), pdict)
+    return False, parse_multipart(io.StringIO(text), pdict)
 
 
-Deserializer = Callable[[str, bytes, Dict[bytes, bytes]], Any]
+Deserializer = Callable[[str, bytes, Dict[bytes, bytes]], Tuple[bool, Any]]
 DictConsumes = Dict[bytes, Deserializer]
 DEFAULT_CONSUMES: DictConsumes = {
     b'application/json': from_json,
@@ -81,6 +82,10 @@ DEFAULT_PRODUCES: DictProduces = {
     b'application/json': to_json,
     b'*/*': to_json
 }
+
+RestCallback = Callable[..., Awaitable[Tuple[int, Any]]]
+
+DEFAULT_COLLECTION_FORMAT = 'multi'
 
 
 class RestHttpRouter(BasicHttpRouter):
@@ -146,10 +151,11 @@ class RestHttpRouter(BasicHttpRouter):
             self,
             methods: AbstractSet[str],
             path: str,
-            callback: Callable[..., Awaitable[Tuple[int, Any]]],
+            callback: RestCallback,
             *,
             accept=APPLICATION_JSON,
-            content_type=APPLICATION_JSON
+            content_type=APPLICATION_JSON,
+            collection_format=DEFAULT_COLLECTION_FORMAT
     ) -> None:
         """Add a rest callback"""
         LOGGER.debug('Adding route for %s on "%s"', methods, path)
@@ -159,19 +165,23 @@ class RestHttpRouter(BasicHttpRouter):
                 method,
                 path,
                 callback,
-                content_type=content_type,
-                default_accept=accept,
+                content_type
+            )
+            self._add_swagger_path(
+                method,
+                path,
+                callback,
+                accept,
+                content_type,
+                collection_format
             )
 
     def _add_method(
             self,
             method: str,
             path: str,
-            callback: Callable[..., Awaitable[Tuple[int, Any]]],
-            *,
-            content_type: bytes = APPLICATION_JSON,
-            default_accept: bytes = APPLICATION_JSON,
-            collection_format: str = 'multi'
+            callback: RestCallback,
+            content_type: bytes
     ) -> None:
         sig = inspect.signature(callback)
         path_definition = PathDefinition(self.base_path + path)
@@ -184,9 +194,15 @@ class RestHttpRouter(BasicHttpRouter):
         ) -> HttpResponse:
 
             query_args = parse_qs(scope['query_string'].decode())
-            body_args = await self._get_body_args(method, scope['headers'], content)
+            is_coerced, body_args = await self._get_body_args(method, scope['headers'], content)
 
-            args, kwargs = make_args(sig, matches, query_args, body_args)
+            args, kwargs = make_args(
+                sig,
+                matches,
+                query_args,
+                body_args,
+                is_coerced
+            )
 
             status_code, response = await callback(*args, **kwargs)
 
@@ -199,12 +215,22 @@ class RestHttpRouter(BasicHttpRouter):
 
         self.add_route(method, path_definition, rest_callback)
 
-        path = make_swagger_path(path_definition)
+    def _add_swagger_path(
+            self,
+            method: str,
+            path: str,
+            callback: RestCallback,
+            accept: bytes,
+            content_type: bytes,
+            collection_format: str
+    ):
+        path_definition = PathDefinition(path)
+        swagger_path = make_swagger_path(path_definition)
         sig = inspect.signature(callback)
         docstring = docstring_parser.parse(inspect.getdoc(callback))
         params = make_swagger_parameters(
             method,
-            default_accept,
+            accept,
             path_definition,
             sig,
             docstring,
@@ -213,7 +239,7 @@ class RestHttpRouter(BasicHttpRouter):
         entry = {
             'parameters': params,
             'produces': [content_type.decode()],
-            'consumes': [default_accept.decode()],
+            'consumes': [accept.decode()],
             'responses': {
                 200: {
                     'description': 'OK'
@@ -227,33 +253,39 @@ class RestHttpRouter(BasicHttpRouter):
                 entry['description'] = docstring.long_description
 
         paths: Dict[str, Any] = self.swagger_dict['paths']
-        current_path: Dict[str, Any] = paths.setdefault(path, {})
+        current_path: Dict[str, Any] = paths.setdefault(swagger_path, {})
         current_path[method.lower()] = entry
 
     def _make_writer(
             self,
             data: Optional[Any],
-            accept: bytes
+            accept: Optional[Mapping[bytes, float]]
     ) -> Optional[AsyncIterator[bytes]]:
         if data is None:
             return None
-        serializer = self.produces.get(accept)
+        # TODO: This is rubbish
+        if not accept:
+            serializer = self.produces[APPLICATION_JSON]
+        else:
+            for media_type in accept.keys():
+                if media_type in self.produces:
+                    serializer = self.produces[media_type]
+                    break
+            else:
+                serializer = self.produces[APPLICATION_JSON]
         if not serializer:
             raise RuntimeError
-        return text_writer(
-            serializer(
-                camelize_object(data)
-            )
-        )
+        text = serializer(camelize_object(data)) 
+        return text_writer(text)
 
     async def _get_body_args(
             self,
             method: str,
             headers: Headers,
             content: Content
-    ) -> Dict[str, Any]:
+    ) -> Tuple[bool, Dict[str, Any]]:
         if method in {'GET'}:
-            return {}
+            return True, {}
 
         media_type, params = header.content_type(
             headers) or (b'', cast(Dict[bytes, Any], {}))

@@ -4,17 +4,19 @@ from datetime import datetime
 from decimal import Decimal
 from inspect import Parameter, Signature
 from typing import (
+    AbstractSet,
     Any,
     Dict,
     List,
     Optional,
+    Set,
     Tuple,
     cast
 )
 
 from bareasgi.basic_router.path_definition import PathDefinition
 from docstring_parser import Docstring, DocstringParam
-from inflection import underscore
+from inflection import underscore, camelize
 
 
 def make_swagger_path(path_definition: PathDefinition) -> str:
@@ -141,7 +143,7 @@ def _make_swagger_parameter(
     is_required = _check_is_required(param, docstring_param)
 
     parameter = {
-        'name': param.name,
+        'name': camelize(param.name, False),
         'type': 'array' if type_def['is_list'] else type_def['type']
     }
 
@@ -205,21 +207,21 @@ def _find_docstring_param(
 def _make_swagger_parameters_inline(
         source: str,
         sig: Signature,
-        path_definition: PathDefinition,
+        path_variables: AbstractSet[str],
         docstring: Docstring,
         collection_format: str
 ) -> List[Dict[str, Any]]:
     """Make inline paramters for query or form"""
     parameters: List[Dict[str, Any]] = []
     for param in sig.parameters.values():
-        if param.name in path_definition.segments:
+        if param.name in path_variables:
             continue
-        argdoc = _find_docstring_param(param.name, docstring)
+        docstring_param = _find_docstring_param(param.name, docstring)
         parameter = _make_swagger_parameter(
             source,
             param,
             collection_format,
-            argdoc
+            docstring_param
         )
         parameters.append(parameter)
     return parameters
@@ -234,15 +236,18 @@ def make_swagger_parameters(
         collection_format: str
 ) -> List[Dict[str, Any]]:
     parameters: List[Dict[str, Any]] = []
+    path_variables: Set[str] = set()
     for segment in path_definition.segments:
         if segment.is_variable:
-            param = sig.parameters[underscore(segment.name)]
-            argdoc = _find_docstring_param(param.name, docstring)
+            path_variable = underscore(segment.name)
+            path_variables.add(path_variable)
+            param = sig.parameters[path_variable]
+            docstring_param = _find_docstring_param(param.name, docstring)
             parameter = _make_swagger_parameter(
                 'path',
                 param,
                 collection_format,
-                argdoc
+                docstring_param
             )
             parameters.append(parameter)
 
@@ -251,7 +256,7 @@ def make_swagger_parameters(
             _make_swagger_parameters_inline(
                 'query',
                 sig,
-                path_definition,
+                path_variables,
                 docstring,
                 collection_format
             )
@@ -261,7 +266,7 @@ def make_swagger_parameters(
             _make_swagger_parameters_inline(
                 'formData',
                 sig,
-                path_definition,
+                path_variables,
                 docstring,
                 collection_format
             )
@@ -270,6 +275,7 @@ def make_swagger_parameters(
         params = [
             (param, _find_docstring_param(param.name, docstring))
             for param in sig.parameters.values()
+            if param.name not in path_variables
         ]
         schema = _make_swagger_schema(
             params,

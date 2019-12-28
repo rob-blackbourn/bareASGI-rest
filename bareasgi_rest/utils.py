@@ -128,12 +128,18 @@ def _coerce(value: str, annotation: Any) -> Any:
         raise TypeError
     return [_coerce(item, contained_type) for item in value]
 
+def _maybe_coerce(value: str, annotation: Any, is_coerced: bool) -> Any:
+    if is_coerced:
+        return value
+    else:
+        return _coerce(value, annotation)
 
 def make_args(
         sig: Signature,
         matches: Dict[str, str],
         query: Dict[str, Any],
-        body: Dict[str, Any]
+        body: Dict[str, Any],
+        is_coerced: bool
 ) -> Tuple[Tuple[Any, ...], Dict[str, Any]]:
     """Make args and kwargs for the given signature from the route matches,
     query args and body.
@@ -146,6 +152,8 @@ def make_args(
     :type query: Dict[str, Any]
     :param body: A dictionary build from the body
     :type body: Dict[str, Any]
+    :param is_coerced: True if the data is already coerced
+    :type is_coerced: bool
     :raises KeyError: If a parameter was not found
     :return: A tuple for *args and **kwargs
     :rtype: Tuple[Tuple[Any, ...], Dict[str, Any]]
@@ -160,7 +168,7 @@ def make_args(
         elif camelcase_name in query:
             value = _coerce(query[camelcase_name], param.annotation)
         elif camelcase_name in body:
-            value = _coerce(body[camelcase_name], param.annotation)
+            value = _maybe_coerce(body[camelcase_name], param.annotation, is_coerced)
         elif _is_supported_optional(param.annotation):
             continue
         else:
