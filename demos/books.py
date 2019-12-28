@@ -29,7 +29,9 @@ class BookController:
         router.add_rest({'PUT'}, '/books/{bookId:int}', self.update_book)
 
     async def get_books(self) -> Tuple[int, List[Any]]:
-        """Get all the books
+        """Get all the books.
+
+        This method gets all the books in the shop.
 
         Returns:
             Tuple[int, List[Any]]: All the books
