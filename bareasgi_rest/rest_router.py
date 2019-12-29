@@ -15,7 +15,6 @@ from typing import (
     List,
     Mapping,
     Optional,
-    Tuple,
     cast
 )
 from urllib.parse import parse_qs
@@ -35,7 +34,12 @@ import bareasgi_jinja2
 import docstring_parser
 
 from .utils import make_args, JSONEncoderEx, as_datetime, camelize_object
-from .swagger import make_swagger_path, make_swagger_parameters, gather_error_responses
+from .swagger import (
+    make_swagger_path,
+    make_swagger_parameters,
+    gather_error_responses,
+    make_swagger_response_schema
+)
 
 LOGGER = logging.getLogger(__name__)
 
@@ -137,14 +141,6 @@ class RestHttpRouter(BasicHttpRouter):
             },
             'produces': [name.decode() for name in self.produces.keys()],
             'consumes': [name.decode() for name in self.consumes.keys()],
-            "responses": {
-                "ParseError": {
-                    "description": "When a mask can't be parsed"
-                },
-                "MaskError": {
-                    "description": "When any error occurs on mask"
-                }
-            },
             "paths": {},
         }
         if tags:
@@ -249,16 +245,29 @@ class RestHttpRouter(BasicHttpRouter):
             docstring,
             collection_format
         )
+
+        response: Dict[str, Any] = {
+            'description': status_description
+        }
+
+        response_schema = make_swagger_response_schema(sig)
+        if response_schema is not None:
+            # response['content'] = {
+            #     'application/json': {
+            #         'schema': response_schema
+            #     }
+            # }
+            response['schema'] = response_schema
+
         entry = {
             'parameters': params,
             'produces': [content_type.decode()],
             'consumes': [accept.decode()],
             'responses': {
-                status_code: {
-                    'description': status_description
-                }
+                status_code: response
             }
         }
+
         if docstring:
             if docstring.short_description:
                 entry['summary'] = docstring.short_description

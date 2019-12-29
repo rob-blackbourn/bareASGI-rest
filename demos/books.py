@@ -4,9 +4,12 @@ A simple request handler.
 
 from datetime import datetime
 import logging
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Dict, List
+try:
+    from typing import TypedDict  # type:ignore
+except:  # pylint: disable=bare-except
+    from typing_extensions import TypedDict
 from urllib.error import HTTPError
-
 
 from bareasgi import Application
 from bareasgi_rest import RestHttpRouter
@@ -18,10 +21,25 @@ import uvicorn
 logging.basicConfig(level=logging.DEBUG)
 
 
+class BookType(TypedDict):
+    """A Book
+
+    Args:
+        book_id (int): The book id
+        title (str): The title
+        author (str): The author
+        published (datetime): The publication date
+    """
+    book_id: int
+    title: str
+    author: str
+    published: datetime
+
+
 class BookController:
 
     def __init__(self):
-        self.books: Dict[int, Dict[str, Any]] = {}
+        self.books: Dict[int, BookType] = {}
         self.next_id = 0
 
     def add_routes(self, router: RestHttpRouter):
@@ -55,7 +73,7 @@ class BookController:
             status_code=204
         )
 
-    async def get_books(self) -> List[Any]:
+    async def get_books(self) -> List[BookType]:
         """Get all the books.
 
         This method gets all the books in the shop.
@@ -68,7 +86,7 @@ class BookController:
     async def get_book(
             self,
             book_id: int
-    ) -> Optional[Dict[str, Any]]:
+    ) -> BookType:
         """Get a book for a given id
 
         Args:
@@ -103,12 +121,13 @@ class BookController:
             Tuple[int, int]: The id of the new book
         """
         self.next_id += 1
-        self.books[self.next_id] = {
-            'book_id': self.next_id,
-            'title': title,
-            'author': author,
-            'published': published
-        }
+        book: BookType = BookType(
+            book_id=self.next_id,
+            title=title,
+            author=author,
+            published=published
+        )
+        self.books[self.next_id] = book
         return self.next_id
 
     async def update_book(

@@ -2,6 +2,7 @@
 
 from datetime import datetime
 from decimal import Decimal
+import inspect
 from inspect import Parameter, Signature
 from typing import (
     AbstractSet,
@@ -15,8 +16,10 @@ from typing import (
 )
 
 from bareasgi.basic_router.path_definition import PathDefinition
+import docstring_parser
 from docstring_parser import Docstring, DocstringParam
 from inflection import underscore, camelize
+import typing_inspect
 
 
 def make_swagger_path(path_definition: PathDefinition) -> str:
@@ -307,3 +310,86 @@ def gather_error_responses(docstring: Docstring) -> Dict[int, Any]:
         except:
             continue
     return responses
+
+
+def _typeddict_schema(
+    schema_type: str,
+    annotations: Dict[str, Any],
+    docstring: Optional[Docstring]
+) -> Dict[str, Any]:
+    properties: Dict[str, Any] = {}
+    for name, value in annotations.items():
+        prop: Dict[str, Any] = {}
+        docstring_param = _find_docstring_param(name, docstring)
+        if docstring_param is not None:
+            prop['description'] = docstring_param.description
+        type_def = TYPE_DEFINITIONS.get(value)
+        if type_def is not None:
+            prop['type'] = type_def['type']
+            if type_def['format'] is not None:
+                prop['format'] = type_def['format']
+        camelcase_name = camelize(name, False)
+        prop['name'] = camelcase_name
+        properties[camelcase_name] = prop
+
+    if schema_type == 'object':
+        return {
+            'type': 'object',
+            'properties': properties
+        }
+    else:
+        return {
+            'type': 'array',
+            'items': {
+                'type': 'object',
+                'properties': properties
+            }
+        }
+
+
+def make_swagger_response_schema(
+        sig: Signature
+) -> Optional[Dict[str, Any]]:
+    if sig.return_annotation is None:
+        return None
+
+    origin = typing_inspect.get_origin(sig.return_annotation)
+    if not origin and issubclass(sig.return_annotation, dict):
+        # could be a typed dict
+        annotations = getattr(sig.return_annotation, '__annotations__', None)
+        if isinstance(annotations, dict):
+            docstring = docstring_parser.parse(
+                inspect.getdoc(sig.return_annotation)
+            )
+            return _typeddict_schema('object', annotations, docstring)
+        else:
+            return None
+    elif origin and origin is list:
+        # could be a list of typed dicts
+        args = typing_inspect.get_args(sig.return_annotation)
+        if len(args) != 1:
+            return None
+        nested_type = args[0]
+        nested_origin = typing_inspect.get_origin(nested_type)
+        if nested_origin and nested_origin is dict:
+            # List[Dict]
+            return None
+        elif not nested_origin and issubclass(nested_type, dict):
+            # A TypedDict
+            annotations = getattr(nested_type, '__annotations__', None)
+            if isinstance(annotations, dict):
+                # List[TypedDict]
+                docstring = docstring_parser.parse(inspect.getdoc(nested_type))
+                return _typeddict_schema('array', annotations, docstring)
+            else:
+                # List[Dict]
+                return None
+        else:
+            # List
+            return None
+    elif origin and origin is dict:
+        # A Dict
+        return None
+
+    # Something else
+    return None

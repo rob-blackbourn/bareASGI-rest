@@ -68,3 +68,5 @@ p2 = Person('Ann-Marie', 'Dutton')
 print(p1)
 sig = inspect.signature(Person)
 print(sig)
+
+print(issubclass(Person, NamedTuple))
