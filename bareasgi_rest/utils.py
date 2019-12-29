@@ -4,6 +4,7 @@ from datetime import datetime
 from decimal import Decimal
 from inspect import Parameter, Signature
 import json
+import re
 from typing import (
     Any,
     Callable,
@@ -187,14 +188,14 @@ def make_args(
     return bound_args.args, bound_args.kwargs
 
 
+DATETIME_ZULU_REGEX = re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$')
+
+
 def as_datetime(dct):
     """Convert datetime like strings"""
     for key, value in dct.items():
-        try:
-            timestamp = datetime.fromisoformat(value[:-1])
-            dct[key] = timestamp
-        except:  # pylint: disable=bare-except
-            pass
+        if isinstance(value, str) and DATETIME_ZULU_REGEX.match(value):
+            dct[key] = datetime.fromisoformat(value[:-1])
     return dct
 
 
