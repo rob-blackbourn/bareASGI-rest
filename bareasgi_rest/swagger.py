@@ -23,6 +23,7 @@ import typing_inspect
 
 
 def make_swagger_path(path_definition: PathDefinition) -> str:
+    """Make a path compatible with swagger"""
     swagger_path = '/' + '/'.join(
         '{' + segment.name + '}' if segment.is_variable else segment.name
         for segment in path_definition.segments
@@ -238,6 +239,7 @@ def make_swagger_parameters(
         docstring: Docstring,
         collection_format: str
 ) -> List[Dict[str, Any]]:
+    """Make the swagger parameters"""
     parameters: List[Dict[str, Any]] = []
     path_variables: Set[str] = set()
     for segment in path_definition.segments:
@@ -295,6 +297,7 @@ def make_swagger_parameters(
 
 
 def gather_error_responses(docstring: Docstring) -> Dict[int, Any]:
+    """Gather error responses"""
     responses: Dict[int, Any] = {}
     for raises in docstring.raises:
         if raises.type_name != 'HTTPError':
@@ -307,15 +310,15 @@ def gather_error_responses(docstring: Docstring) -> Dict[int, Any]:
             responses[error_code] = {
                 'description': rest.strip()
             }
-        except:
+        except:  # pylint: disable=bare-except
             continue
     return responses
 
 
 def _typeddict_schema(
-    schema_type: str,
-    annotations: Dict[str, Any],
-    docstring: Optional[Docstring]
+        schema_type: str,
+        annotations: Dict[str, Any],
+        docstring: Optional[Docstring]
 ) -> Dict[str, Any]:
     properties: Dict[str, Any] = {}
     for name, value in annotations.items():
@@ -350,6 +353,7 @@ def _typeddict_schema(
 def make_swagger_response_schema(
         sig: Signature
 ) -> Optional[Dict[str, Any]]:
+    """Make the swagger response schama"""
     if sig.return_annotation is None:
         return None
 

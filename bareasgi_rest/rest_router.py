@@ -49,19 +49,19 @@ DEFAULT_TYPEFACE_URL = "https://fonts.googleapis.com/css?family=Roboto:300,400,5
 APPLICATION_JSON = b'application/json'
 
 
-def to_json(obj: Any) -> str:
+def _to_json(obj: Any) -> str:
     return json.dumps(obj, cls=JSONEncoderEx)
 
 
-def from_json(text: str, _media_type: bytes, _params: Dict[bytes, bytes]) -> Any:
+def _from_json(text: str, _media_type: bytes, _params: Dict[bytes, bytes]) -> Any:
     return json.loads(text, object_hook=as_datetime)
 
 
-def from_query_string(text: str, _media_type: bytes, _params: Dict[bytes, bytes]) -> Any:
+def _from_query_string(text: str, _media_type: bytes, _params: Dict[bytes, bytes]) -> Any:
     return parse_qs(text)
 
 
-def from_form_data(text: str, _media_type: bytes, params: Dict[bytes, bytes]) -> Any:
+def _from_form_data(text: str, _media_type: bytes, params: Dict[bytes, bytes]) -> Any:
     if b'boundary' not in params:
         raise RuntimeError('Required "boundary" parameter missing')
     pdict = {
@@ -74,18 +74,17 @@ def from_form_data(text: str, _media_type: bytes, params: Dict[bytes, bytes]) ->
 Deserializer = Callable[[str, bytes, Dict[bytes, bytes]], Any]
 DictConsumes = Dict[bytes, Deserializer]
 DEFAULT_CONSUMES: DictConsumes = {
-    b'application/json': from_json,
-    b'*/*': from_json,
-    b'application/x-www-form-urlencoded': from_query_string,
-    b'multipart/form-data': from_form_data
-
+    b'application/json': _from_json,
+    b'*/*': _from_json,
+    b'application/x-www-form-urlencoded': _from_query_string,
+    b'multipart/form-data': _from_form_data
 }
 
 Serializer = Callable[[Any], str]
 DictProduces = Dict[bytes, Serializer]
 DEFAULT_PRODUCES: DictProduces = {
-    b'application/json': to_json,
-    b'*/*': to_json
+    b'application/json': _to_json,
+    b'*/*': _to_json
 }
 
 RestCallback = Callable[..., Awaitable[Any]]
@@ -274,7 +273,7 @@ class RestHttpRouter(BasicHttpRouter):
             if docstring.long_description:
                 entry['description'] = docstring.long_description
             error_responses = gather_error_responses(docstring)
-            responses: Dict[int, Dict[str, Any]] = entry['responses']
+            responses = cast(Dict[int, Dict[str, Any]], entry['responses'])
             responses.update(error_responses)
 
         if tags:
@@ -330,12 +329,9 @@ class RestHttpRouter(BasicHttpRouter):
             _matches: RouteMatches,
             _content: Content
     ) -> HttpResponse:
-        try:
-            spec = json.dumps(self.swagger_dict)
-            return 200, [(b'content-type', b'application/json')], text_writer(spec)
-        except Exception as error:
-            print(error)
-            return 500
+        """Return the json required for the swagger ui"""
+        spec = json.dumps(self.swagger_dict)
+        return 200, [(b'content-type', b'application/json')], text_writer(spec)
 
     @bareasgi_jinja2.template('swagger.html')
     async def swagger_ui(
