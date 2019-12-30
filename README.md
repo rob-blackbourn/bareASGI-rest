@@ -33,6 +33,8 @@ types of request handlers.
 
 We will create a mock book repository.
 
+### Creating typed dictionaries
+
 Here is the type of a book. We use `TypedDict` to allow automatic type discovery
 
 ```python
@@ -60,6 +62,8 @@ class Book(TypedDict):
 ```
 
 Note: the docstring will be used to provide documentation for swagger.
+
+### Creating the API
 
 Now we can build the API.
 
@@ -142,9 +146,6 @@ async def update_book(
 
     Raises:
         HTTPError: 404, when a book is not found
-
-    Returns:
-        Tuple[int, Any]: Nothing
     """
     if book_id not in BOOKS:
         raise HTTPError(None, 404, None, None, None)
@@ -154,7 +155,10 @@ async def update_book(
 ```
 
 We can see that errors are handler by raising HTTPError
-from the `urllib.errors` standard library package.
+from the `urllib.errors` standard library package. A convention has been applied such that the status code MUST
+appear before the message, separated by a comma.
+
+### Adding support for the REST router
 
 Now we must create our application and add support for the router.
 
@@ -182,6 +186,11 @@ add_swagger_ui(app)
 Note the `base-path` argument can be used to prefix all
 paths.
 
+The `RestHttpRouter` is a subclass of the basic router, so
+all those methods are also available.
+
+### Creating the routes
+
 Now we can create the routes:
 
 ```python
@@ -191,6 +200,21 @@ router.add_rest({'GET'}, '/books/{bookId:int}', get_book, tags=tags)
 router.add_rest({'POST'}, '/books', create_book, tags=tags, status_code=201)
 router.add_rest({'PUT'}, '/books/{bookId:int}', update_book, tags=tags, status_code=204)
 ```
+
+First we should note that the paths with be prefix with the
+`base_url_path` provided to the router.
+
+Referring back to the implementation of `get_book` we can
+see  that the camel-case path variable `bookId` has been
+mapped to the snake-case `book_id` parameter. The JSON object provided in the body of the `create_book` will
+similarly map camel-cased properties to the snake-cased
+function parameters.
+
+We can also see how the status codes have been overridden
+for the `POST` and `PUT` endpoints, and all the routes
+have the "Books" tag for grouping in the UI.
+
+### Serving the API
 
 Finally we can serve the API:
 
@@ -202,3 +226,15 @@ Browsing to http://localhost/api/1/swagger we should see:
 
 ![Top Level](screenshot1.png)
 
+When we expand `GET /books/{bookId}` we can see all the
+information provided in the docstring and typing has been
+passed through to the swagger UI.
+
+![GET /books/{bookId}](screenshot2.png)
+
+## Thanks
+
+Thanks to [rr-](https://github.com/rr-) and contributors
+for the excellent
+[docstring-parser](https://github.com/rr-/docstring_parser)
+package.
