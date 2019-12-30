@@ -70,7 +70,7 @@ Note: the docstring will be used to provide documentation for swagger.
 Now we can build the API.
 
 ```python
-from Typing import Dict, List
+from typing import Dict, List
 from urllib.error import HTTPError
 
 
@@ -165,10 +165,11 @@ appear before the message, separated by a comma.
 Now we must create our application and add support for the router.
 
 ```python
-from bareasgi_rest import RestHTTPRouter, add_swagger_ui
+from bareasgi import Application
+from bareasgi_rest import RestHttpRouter, add_swagger_ui
 
 
-rest_router = RestHttpRouter(
+router = RestHttpRouter(
     None,
     title="Books",
     version="1",
@@ -181,7 +182,7 @@ rest_router = RestHttpRouter(
         }
     ]
 )
-app = Application(http_router=rest_router)
+app = Application(http_router=router)
 add_swagger_ui(app)
 ```
 
@@ -221,6 +222,8 @@ have the "Books" tag for grouping in the UI.
 Finally we can serve the API:
 
 ```python
+import uvicorn
+
 uvicorn.run(app, port=9009)
 ```
 
