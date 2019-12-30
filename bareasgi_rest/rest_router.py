@@ -96,6 +96,13 @@ DEFAULT_RESPONSES = {
     }
 }
 
+DEFAULT_NOT_FOUND_RESPONSE: HttpResponse = (
+    404,
+    [(b'content-type', b'text/plain')],
+    text_writer('Not Found'),
+    None
+)
+
 
 class RestHttpRouter(BasicHttpRouter):
     """A REST router"""
@@ -114,7 +121,7 @@ class RestHttpRouter(BasicHttpRouter):
             swagger_base_url: Optional[str] = None,
             typeface_url: Optional[str] = None
     ) -> None:
-        super().__init__(not_found_response)
+        super().__init__(not_found_response or DEFAULT_NOT_FOUND_RESPONSE)
         self.title = title
         self.version = version
         self.description = description
