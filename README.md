@@ -9,6 +9,8 @@ It includes:
 * A router to simplify the creation of REST APIs,
 * A swagger API endpoint
 
+This is a Python 3.7+ package, and is currently pre-release.
+
 ## Installation
 
 The package can be install from pypi.
