@@ -12,11 +12,9 @@ except:  # pylint: disable=bare-except
 from urllib.error import HTTPError
 
 from bareasgi import Application
-from bareasgi_rest import RestHttpRouter
-import bareasgi_jinja2
-import jinja2
-import pkg_resources
 import uvicorn
+
+from bareasgi_rest import RestHttpRouter, add_swagger_ui
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -160,14 +158,6 @@ class BookController:
 
 if __name__ == "__main__":
 
-    TEMPLATES = pkg_resources.resource_filename("bareasgi_rest", "templates")
-
-    env = jinja2.Environment(
-        loader=jinja2.FileSystemLoader(TEMPLATES),
-        autoescape=jinja2.select_autoescape(['html', 'xml']),
-        enable_async=True
-    )
-
     rest_router = RestHttpRouter(
         None,
         title="Books",
@@ -182,7 +172,7 @@ if __name__ == "__main__":
         ]
     )
     app = Application(http_router=rest_router)
-    bareasgi_jinja2.add_jinja2(app, env)
+    add_swagger_ui(app)
 
     controller = BookController()
     controller.add_routes(rest_router)
