@@ -186,7 +186,7 @@ app = Application(http_router=router)
 add_swagger_ui(app)
 ```
 
-Note the `base-path` argument can be used to prefix all
+Note the `base_path` argument can be used to prefix all
 paths.
 
 The `RestHttpRouter` is a subclass of the basic router, so
