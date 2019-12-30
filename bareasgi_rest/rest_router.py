@@ -40,6 +40,7 @@ from .swagger import (
     gather_error_responses,
     make_swagger_response_schema
 )
+from .config import SwaggerConfig
 
 LOGGER = logging.getLogger(__name__)
 
@@ -119,7 +120,8 @@ class RestHttpRouter(BasicHttpRouter):
             produces: DictProduces = DEFAULT_PRODUCES,
             tags: Optional[List[Mapping[str, Any]]] = None,
             swagger_base_url: Optional[str] = None,
-            typeface_url: Optional[str] = None
+            typeface_url: Optional[str] = None,
+            config: Optional[SwaggerConfig] = None
     ) -> None:
         super().__init__(not_found_response or DEFAULT_NOT_FOUND_RESPONSE)
         self.title = title
@@ -130,6 +132,7 @@ class RestHttpRouter(BasicHttpRouter):
         self.base_path = base_path
         self.swagger_base_url = swagger_base_url or DEFAULT_SWAGGER_BASE_URL
         self.typeface_url = typeface_url or DEFAULT_TYPEFACE_URL
+        self.config = config or SwaggerConfig()
 
         self.accepts: Dict[str, Dict[PathDefinition, bytes]] = {}
         self.collection_formats: Dict[str, Dict[PathDefinition, str]] = {}
@@ -353,14 +356,6 @@ class RestHttpRouter(BasicHttpRouter):
             "title": self.title,
             "specs_url": "/api/1/swagger.json",
             'swagger_base_url': self.swagger_base_url,
-            "swagger_oauth_client_id": False,
-            "swagger_oauth_realm": None,
-            "swagger_oauth_app_name": None,
-            "swagger_oauth2_redirect_url": None,
-            "swagger_validator_url": "https://validator.swagger.io/validator",
-            "swagger_supported_submit_methods": None,
-            "swagger_operation_id": False,
-            "swagger_request_duration": None,
-            "swagger_doc_expansion": "none",
             'typeface_url': self.typeface_url,
+            "config": self.config
         }

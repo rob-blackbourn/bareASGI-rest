@@ -73,32 +73,30 @@
     <script type="text/javascript">
         window.onload = function() {
             const ui = window.ui = new SwaggerUIBundle({
-                url: "{{ specs_url }}",
-                {% if swagger_oauth_client_id -%}
-                oauth2RedirectUrl: "{{ swagger_oauth2_redirect_url }}",
-                {%- endif %}
-                validatorUrl: "{{ swagger_validator_url }}" || null,
                 dom_id: "#swagger-ui",
+                url: {{ specs_url | tojson }},
+                validatorUrl: {{ config.validator_url | tojson }},
+                supportedSubmitMethods: {{ config.supported_submit_methods | tojson}},
+                displayOperationId: {{ config.display_operation_id | tojson }},
+                displayRequestDuration: {{ config.display_request_duration | tojson }},
+                docExpansion: {{ config.doc_expansion | tojson }},
+                {% if config.oauth2 -%}
+                oauth2RedirectUrl: {{ config.oauth2.redirect_url | tojson }},
+                {%- endif %}
                 presets: [
                     SwaggerUIBundle.presets.apis,
-                    SwaggerUIStandalonePreset.slice(1) // No Topbar
+                    SwaggerUIStandalonePreset.slice(1)
                 ],
                 plugins: [
                     SwaggerUIBundle.plugins.DownloadUrl
                 ],
-                {% if swagger_supported_submit_methods is defined -%}
-                  supportedSubmitMethods: {{ swagger_supported_submit_methods | tojson}},
-                {%- endif %}
-                displayOperationId: {{ swagger_operation_id|default(False)|tojson }},
-                displayRequestDuration: {{ swagger_request_duration|default(False)|tojson }},
-                docExpansion: "{{ swagger_doc_expansion | default('none') }}"
             })
 
-            {% if swagger_oauth_client_id -%}
+            {% if config.oauth2 -%}
             ui.initOAuth({
-                clientId: "{{ swagger_oauth_client_id }}",
-                realm: "{{ swagger_oauth_realm }}",
-                appName: "{{ swagger_oauth_app_name }}"
+                clientId: "{{ config.oauth2.client_id }}",
+                realm: "{{ config.oauth2.realm }}",
+                appName: "{{ config.oauth2.app_name }}"
             })
             {%- endif %}
         }
