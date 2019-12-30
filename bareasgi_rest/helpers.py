@@ -8,6 +8,11 @@ import pkg_resources
 
 
 def add_swagger_ui(app: Application) -> None:
+    """Add the Swagger UI
+
+    Args:
+        app (Application): The bareASGI application
+    """
     templates = pkg_resources.resource_filename("bareasgi_rest", "templates")
 
     env = jinja2.Environment(

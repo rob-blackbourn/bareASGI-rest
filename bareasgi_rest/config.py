@@ -22,15 +22,22 @@ class SwaggerConfig(NamedTuple):
     """The Swagger UI Configuration
 
     Args:
-        NamedTuple ([type]): [description]
-        validator_url (Optional[str], optional): The url of the validator, defaults to None
-        supported_submit_methods (Optional[List[str]], optional): The supported submit methods, defaults to None
-        display_operation_id (bool, optional): Whether operation ids should be displayed, defaults to False
-        display_request_duration (bool, optional): Whether the duration of the request should be displayed, defaults to False
-        doc_expansion (str, optional): How the methods should be displayed, defaults to "list"
-        oauth2 (Optional[SwaggerOauth2Config], optional): Optional oauth2 config, defaults to None
+        title (str, optional): The page title, defaults to "The REST API"
+        validator_url (Optional[str], optional): The url of the validator,
+            defaults to None
+        supported_submit_methods (Optional[List[str]], optional): The supported
+            submit methods, defaults to None
+        display_operation_id (bool, optional): Whether operation ids should be
+            displayed, defaults to False
+        display_request_duration (bool, optional): Whether the duration of the
+            request should be displayed, defaults to False
+        doc_expansion (str, optional): How the methods should be displayed,
+            defaults to "list"
+        oauth2 (Optional[SwaggerOauth2Config], optional): Optional oauth2
+            config, defaults to None
 
     """
+    title: str = "The REST API"
     validator_url: Optional[str] = None
     supported_submit_methods: Optional[List[str]] = None
     display_operation_id: bool = False

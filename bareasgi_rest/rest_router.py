@@ -1,4 +1,11 @@
-"""A router for REST"""
+"""A router for REST APIs
+
+Attributes:
+    DEFAULT_SWAGGER_BASE_URL (str): The default swagger CDN url. The currently
+        supported version is 3.4.0
+    DEFAULT_TYPEFACE_URL (str): The typeface url to use.
+    DEFAULT_CONSUMES
+"""
 
 from cgi import parse_multipart
 import io
@@ -119,10 +126,33 @@ class RestHttpRouter(BasicHttpRouter):
             consumes: DictConsumes = DEFAULT_CONSUMES,
             produces: DictProduces = DEFAULT_PRODUCES,
             tags: Optional[List[Mapping[str, Any]]] = None,
-            swagger_base_url: Optional[str] = None,
-            typeface_url: Optional[str] = None,
+            swagger_base_url: str = DEFAULT_SWAGGER_BASE_URL,
+            typeface_url: str = DEFAULT_TYPEFACE_URL,
             config: Optional[SwaggerConfig] = None
     ) -> None:
+        """Initialise the REST router
+
+        Args:
+            not_found_response (HttpResponse): The response sent when a route is
+                not found
+            title (str): The title of the swagger documentation
+            version (str): The version of the exposed API
+            description (Optional[str], optional): The API description. Defaults
+                to None.
+            base_path (str, optional): The base path of the API. Defaults to ''.
+            consumes (DictConsumes, optional): A map of media types and
+                deserializers. Defaults to DEFAULT_CONSUMES.
+            produces (DictProduces, optional): A map of media types and
+                serializers. Defaults to DEFAULT_PRODUCES.
+            tags (Optional[List[Mapping[str, Any]]], optional): The available
+                tags. Defaults to None.
+            swagger_base_url (Optional[str], optional): The base url for the
+                swagger CDN. Defaults to DEFAULT_SWAGGER_BASE_URL.
+            typeface_url (Optional[str], optional): The base url for the
+                typeface. Defaults to DEFAULT_TYPEFACE_URL.
+            config (Optional[SwaggerConfig], optional): The swagger
+                configuration. Defaults to None.
+        """
         super().__init__(not_found_response or DEFAULT_NOT_FOUND_RESPONSE)
         self.title = title
         self.version = version
@@ -130,8 +160,8 @@ class RestHttpRouter(BasicHttpRouter):
         self.consumes = consumes
         self.produces = produces
         self.base_path = base_path
-        self.swagger_base_url = swagger_base_url or DEFAULT_SWAGGER_BASE_URL
-        self.typeface_url = typeface_url or DEFAULT_TYPEFACE_URL
+        self.swagger_base_url = swagger_base_url
+        self.typeface_url = typeface_url
         self.config = config or SwaggerConfig()
 
         self.accepts: Dict[str, Dict[PathDefinition, bytes]] = {}
@@ -161,14 +191,31 @@ class RestHttpRouter(BasicHttpRouter):
             path: str,
             callback: RestCallback,
             *,
-            accept=APPLICATION_JSON,
-            content_type=APPLICATION_JSON,
-            collection_format=DEFAULT_COLLECTION_FORMAT,
+            accept: bytes = APPLICATION_JSON,
+            content_type: bytes = APPLICATION_JSON,
+            collection_format: str = DEFAULT_COLLECTION_FORMAT,
             tags: Optional[List[str]] = None,
             status_code: int = 200,
             status_description: str = 'OK'
     ) -> None:
-        """Add a rest callback"""
+        """Register a callback to a method and path
+
+        Args:
+            methods (AbstractSet[str]): The set of methods
+            path (str): The path
+            callback (RestCallback): The callback
+            accept (bytes, optional): The accept media type. Defaults to
+                APPLICATION_JSON.
+            content_type (bytes, optional): The content media type. Defaults
+                to APPLICATION_JSON.
+            collection_format (str, optional): The format of repeated values.
+                Defaults to DEFAULT_COLLECTION_FORMAT.
+            tags (Optional[List[str]], optional): A list of tags. Defaults to
+                None.
+            status_code (int, optional): The ok status code. Defaults to 200.
+            status_description (str, optional): The ok status message. Defaults
+                to 'OK'.
+        """
         LOGGER.debug('Adding route for %s on "%s"', methods, path)
 
         for method in methods:
@@ -261,11 +308,6 @@ class RestHttpRouter(BasicHttpRouter):
 
         response_schema = make_swagger_response_schema(sig)
         if response_schema is not None:
-            # response['content'] = {
-            #     'application/json': {
-            #         'schema': response_schema
-            #     }
-            # }
             response['schema'] = response_schema
 
         entry = {
@@ -339,7 +381,7 @@ class RestHttpRouter(BasicHttpRouter):
             _matches: RouteMatches,
             _content: Content
     ) -> HttpResponse:
-        """Return the json required for the swagger ui"""
+        """The swagger JSON request handler"""
         spec = json.dumps(self.swagger_dict)
         return 200, [(b'content-type', b'application/json')], text_writer(spec)
 
@@ -351,7 +393,7 @@ class RestHttpRouter(BasicHttpRouter):
             _matches: RouteMatches,
             _content: Content
     ) -> Dict[str, Any]:
-        """The swagger view"""
+        """The swagger view request handler"""
         return {
             "title": self.title,
             "specs_url": "/api/1/swagger.json",
