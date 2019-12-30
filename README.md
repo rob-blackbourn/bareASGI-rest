@@ -204,7 +204,7 @@ router.add_rest({'POST'}, '/books', create_book, tags=tags, status_code=201)
 router.add_rest({'PUT'}, '/books/{bookId:int}', update_book, tags=tags, status_code=204)
 ```
 
-First we should note that the paths with be prefix with the
+First we should note that the paths will be prefixed with the
 `base_url_path` provided to the router.
 
 Referring back to the implementation of `get_book` we can
