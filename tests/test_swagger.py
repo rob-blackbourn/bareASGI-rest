@@ -6,8 +6,8 @@ import inspect
 from typing import Any, Dict, List, Optional
 
 from bareasgi.basic_router.path_definition import PathDefinition
-
 from docstring_parser import parse, Style
+from inflection import camelize
 
 from bareasgi_rest.swagger import (
     make_swagger_path,
@@ -151,7 +151,7 @@ def test_make_swagger_schema():
     sig = inspect.signature(mock_func)
     docstring = parse(inspect.getdoc(mock_func), Style.auto)
     params = [
-        (param, _find_docstring_param(param.name, docstring))
+        (camelize(param.name, False), param, _find_docstring_param(param.name, docstring))
         for param in sig.parameters.values()
     ]
     schema = _make_swagger_schema(params, 'multi')

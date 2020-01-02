@@ -21,6 +21,7 @@ from docstring_parser import Docstring, DocstringParam
 from inflection import underscore, camelize
 import typing_inspect
 
+from .utils import camelize_object
 
 def make_swagger_path(path_definition: PathDefinition) -> str:
     """Make a path compatible with swagger"""
@@ -176,24 +177,24 @@ def _make_swagger_parameter(
 
 
 def _make_swagger_schema(
-        params: List[Tuple[Parameter, DocstringParam]],
+        params: List[Tuple[str, Parameter, DocstringParam]],
         collection_format: str
 ) -> Dict[str, Any]:
     return {
         'type': 'object',
         'required': [
-            param.name
-            for param, docstring_param in params
+            name
+            for name, param, docstring_param in params
             if _check_is_required(param, docstring_param)
         ],
         'properties': {
-            param.name: _make_swagger_parameter(
+            name: _make_swagger_parameter(
                 'body',
                 param,
                 collection_format,
                 docstring_param
             )
-            for param, docstring_param in params
+            for name, param, docstring_param in params
         }
     }
 
@@ -235,7 +236,7 @@ def make_swagger_parameters(
         method: str,
         accept: bytes,
         path_definition: PathDefinition,
-        sig: Signature,
+        signature: Signature,
         docstring: Docstring,
         collection_format: str
 ) -> List[Dict[str, Any]]:
@@ -246,7 +247,7 @@ def make_swagger_parameters(
         if segment.is_variable:
             path_variable = underscore(segment.name)
             path_variables.add(path_variable)
-            param = sig.parameters[path_variable]
+            param = signature.parameters[path_variable]
             docstring_param = _find_docstring_param(param.name, docstring)
             parameter = _make_swagger_parameter(
                 'path',
@@ -260,7 +261,7 @@ def make_swagger_parameters(
         parameters.extend(
             _make_swagger_parameters_inline(
                 'query',
-                sig,
+                signature,
                 path_variables,
                 docstring,
                 collection_format
@@ -270,7 +271,7 @@ def make_swagger_parameters(
         parameters.extend(
             _make_swagger_parameters_inline(
                 'formData',
-                sig,
+                signature,
                 path_variables,
                 docstring,
                 collection_format
@@ -278,12 +279,19 @@ def make_swagger_parameters(
         )
     else:
         params = [
-            (param, _find_docstring_param(param.name, docstring))
-            for param in sig.parameters.values()
-            if param.name not in path_variables
+            (
+                camelize(param.name, False),
+                param,
+                _find_docstring_param(param.name, docstring)
+            )
+            for param in signature.parameters.values()
         ]
         schema = _make_swagger_schema(
-            params,
+            [
+                (name, param, docstring_param)
+                for name, param, docstring_param in params
+                if name not in path_variables
+            ],
             collection_format
         )
         parameters.append({

@@ -19,25 +19,25 @@ from bareasgi_rest import RestHttpRouter, add_swagger_ui
 logging.basicConfig(level=logging.DEBUG)
 
 
-class BookType(TypedDict):
+class Book(TypedDict):
     """A Book
 
     Args:
         book_id (int): The book id
         title (str): The title
         author (str): The author
-        published (datetime): The publication date
+        publication_date (datetime): The publication date
     """
     book_id: int
     title: str
     author: str
-    published: datetime
+    publication_date: datetime
 
 
 class BookController:
 
     def __init__(self):
-        self.books: Dict[int, BookType] = {}
+        self.books: Dict[int, Book] = {}
         self.next_id = 0
 
     def add_routes(self, router: RestHttpRouter):
@@ -71,7 +71,7 @@ class BookController:
             status_code=204
         )
 
-    async def get_books(self) -> List[BookType]:
+    async def get_books(self) -> List[Book]:
         """Get all the books.
 
         This method gets all the books in the shop.
@@ -84,7 +84,7 @@ class BookController:
     async def get_book(
             self,
             book_id: int
-    ) -> BookType:
+    ) -> Book:
         """Get a book for a given id
 
         Args:
@@ -106,26 +106,27 @@ class BookController:
             self,
             author: str,
             title: str,
-            published: datetime
+            publication_date: datetime
     ) -> int:
         """Add a book
 
         Args:
             author (str): The author
             title (str): The title
-            published (datetime): The publication date
+            publication_date (datetime): The publication date
 
         Returns:
             Tuple[int, int]: The id of the new book
         """
         self.next_id += 1
-        book: BookType = BookType(
+
+        self.books[self.next_id] = Book(
             book_id=self.next_id,
             title=title,
             author=author,
-            published=published
+            publication_date=publication_date
         )
-        self.books[self.next_id] = book
+
         return self.next_id
 
     async def update_book(
@@ -133,7 +134,7 @@ class BookController:
             book_id: int,
             author: str,
             title: str,
-            published: datetime
+            publication_date: datetime
     ) -> None:
         """Update a book
 
@@ -141,7 +142,7 @@ class BookController:
             book_id (int): The id of the book to update
             author (str): The new author
             title (str): The title
-            published (datetime): The publication date
+            publication_date (datetime): The publication date
 
         Raises:
             HTTPError: 404, when a book is not found
@@ -153,7 +154,7 @@ class BookController:
             raise HTTPError(None, 404, None, None, None)
         self.books[book_id]['title'] = title
         self.books[book_id]['author'] = author
-        self.books[book_id]['published'] = published
+        self.books[book_id]['publication_date'] = publication_date
 
 
 if __name__ == "__main__":

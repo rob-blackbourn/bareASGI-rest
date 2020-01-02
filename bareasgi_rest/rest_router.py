@@ -332,19 +332,19 @@ class RestHttpRouter(BasicHttpRouter):
             accept: Optional[Mapping[bytes, float]]
     ) -> Optional[AsyncIterator[bytes]]:
         if data is None:
+            # No need to a writer if there is no data.
             return None
-        # TODO: This is rubbish
+
         if not accept:
-            serializer = self.produces[b'application/json']
+            accept = {b'application/json': 1.0}
+
+        for media_type in accept.keys():
+            if media_type in self.produces:
+                serializer = self.produces[media_type]
+                break
         else:
-            for media_type in accept.keys():
-                if media_type in self.produces:
-                    serializer = self.produces[media_type]
-                    break
-            else:
-                serializer = self.produces[b'application/json']
-        if not serializer:
-            raise RuntimeError
+            serializer = self.produces[b'application/json']
+
         text = serializer(camelize_object(data))
         return text_writer(text)
 
