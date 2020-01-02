@@ -74,7 +74,7 @@ from typing import Dict, List
 from urllib.error import HTTPError
 
 
-BOOKS: Dict[int, Book]
+BOOKS: Dict[int, Book] = {}
 NEXT_ID: int = 0
 
 async def get_books() -> List[Book]:
