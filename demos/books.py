@@ -35,6 +35,7 @@ class Book(TypedDict):
 
 
 class BookController:
+    """The book controller"""
 
     def __init__(self):
         self.books: Dict[int, Book] = {}
