@@ -32,8 +32,7 @@ from baretypes import (
     Scope,
     Info,
     Content,
-    HttpResponse,
-    Headers
+    HttpResponse
 )
 import bareutils.header as header
 import bareasgi_jinja2
@@ -41,7 +40,9 @@ import docstring_parser
 
 from .utils import (
     make_args,
-    camelize_object,
+    camelize_object
+)
+from .serialization import (
     to_json,
     from_json,
     from_form_data,
