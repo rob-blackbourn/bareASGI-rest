@@ -285,15 +285,9 @@ def make_swagger_parameters(
                 _find_docstring_param(param.name, docstring)
             )
             for param in signature.parameters.values()
+            if param.name not in path_variables
         ]
-        schema = _make_swagger_schema(
-            [
-                (name, param, docstring_param)
-                for name, param, docstring_param in params
-                if name not in path_variables
-            ],
-            collection_format
-        )
+        schema = _make_swagger_schema(params, collection_format)
         parameters.append({
             'in': 'body',
             'name': 'schema',

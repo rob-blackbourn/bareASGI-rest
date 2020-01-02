@@ -19,23 +19,23 @@ from bareasgi_rest.swagger import (
 
 
 async def mock_func(
-        arg1: str,
+        arg_num1: str,
         *,
-        arg2: List[int],
-        arg3: datetime,
-        arg4: Optional[Decimal] = Decimal('1'),
-        arg5: Optional[float] = None
+        arg_num2: List[int],
+        arg_num3: datetime,
+        arg_num4: Optional[Decimal] = Decimal('1'),
+        arg_num5: Optional[float] = None
 ) -> Dict[str, Any]:
     """A mock function
 
     A function to use in tests
 
     Args:
-        arg1 (str): The first arg
-        arg2 (List[int]): The second arg
-        arg3 (datetime): The third arg
-        arg4 (Optional[Decimal], optional): The fourth arg. Defaults to Decimal('1').
-        arg5 (Optional[float], optional): The fifth arg. Defaults to None.
+        arg_num1 (str): The first arg
+        arg_num2 (List[int]): The second arg
+        arg_num3 (datetime): The third arg
+        arg_num4 (Optional[Decimal], optional): The fourth arg. Defaults to Decimal('1').
+        arg_num5 (Optional[float], optional): The fifth arg. Defaults to None.
 
     Raises:
         ValueError: It doesn't actually raise this error
@@ -44,11 +44,11 @@ async def mock_func(
         Dict[str, Any]: The args as a dictionary
     """
     return {
-        'arg1': arg1,
-        'arg2': arg2,
-        'arg3': arg3,
-        'arg4': arg4,
-        'arg5': arg5
+        'arg_num1': arg_num1,
+        'arg_num2': arg_num2,
+        'arg_num3': arg_num3,
+        'arg_num4': arg_num4,
+        'arg_num5': arg_num5
     }
 
 
@@ -62,9 +62,9 @@ def test_make_swagger_path():
 def test_find_docstring_param():
     """Test _find_docstring_param"""
     docstring = parse(inspect.getdoc(mock_func), Style.auto)
-    arg1_param = _find_docstring_param('arg1', docstring)
+    arg1_param = _find_docstring_param('arg_num1', docstring)
     assert arg1_param is not None
-    assert arg1_param.arg_name == 'arg1'
+    assert arg1_param.arg_name == 'arg_num1'
     assert _find_docstring_param('badarg', docstring) is None
 
 
@@ -74,26 +74,26 @@ def test_make_swagger_parameter():
     docstring = parse(inspect.getdoc(mock_func), Style.auto)
     param = _make_swagger_parameter(
         'path',
-        sig.parameters['arg1'],
+        sig.parameters['arg_num1'],
         'multi',
         docstring.params[0]
     )
     assert param == {
         'in': 'path',
-        'name': 'arg1',
+        'name': 'argNum1',
         'description': 'The first arg',
         'required': True,
         'type': 'string'
     }
     param = _make_swagger_parameter(
         'query',
-        sig.parameters['arg2'],
+        sig.parameters['arg_num2'],
         'multi',
         docstring.params[1]
     )
     assert param == {
         'in': 'query',
-        'name': 'arg2',
+        'name': 'argNum2',
         'description': 'The second arg',
         'required': True,
         'type': 'array',
@@ -104,13 +104,13 @@ def test_make_swagger_parameter():
     }
     param = _make_swagger_parameter(
         'query',
-        sig.parameters['arg3'],
+        sig.parameters['arg_num3'],
         'multi',
         docstring.params[2]
     )
     assert param == {
         'in': 'query',
-        'name': 'arg3',
+        'name': 'argNum3',
         'description': 'The third arg',
         'required': True,
         'type': 'string',
@@ -118,13 +118,13 @@ def test_make_swagger_parameter():
     }
     param = _make_swagger_parameter(
         'query',
-        sig.parameters['arg4'],
+        sig.parameters['arg_num4'],
         'multi',
         docstring.params[3]
     )
     assert param == {
         'in': 'query',
-        'name': 'arg4',
+        'name': 'argNum4',
         'description': "The fourth arg. Defaults to Decimal('1').",
         'required': False,
         'type': 'number',
@@ -132,13 +132,13 @@ def test_make_swagger_parameter():
     }
     param = _make_swagger_parameter(
         'query',
-        sig.parameters['arg5'],
+        sig.parameters['arg_num5'],
         'multi',
         docstring.params[4]
     )
     assert param == {
         'in': 'query',
-        'name': 'arg5',
+        'name': 'argNum5',
         'description': 'The fifth arg. Defaults to None.',
         'required': False,
         'type': 'number',
@@ -158,18 +158,18 @@ def test_make_swagger_schema():
     assert schema == {
         'type': 'object',
         'required': [
-            'arg1',
-            'arg2',
-            'arg3'
+            'argNum1',
+            'argNum2',
+            'argNum3'
         ],
         'properties': {
-            'arg1': {
-                'name': 'arg1',
+            'argNum1': {
+                'name': 'argNum1',
                 'description': 'The first arg',
                 'type': 'string'
             },
-            'arg2': {
-                'name': 'arg2',
+            'argNum2': {
+                'name': 'argNum2',
                 'description': 'The second arg',
                 'type': 'array',
                 'collectionFormat': 'multi',
@@ -177,20 +177,20 @@ def test_make_swagger_schema():
                     'type': 'integer'
                 }
             },
-            'arg3': {
-                'name': 'arg3',
+            'argNum3': {
+                'name': 'argNum3',
                 'description': 'The third arg',
                 'type': 'string',
                 'format': 'date'
             },
-            'arg4': {
-                'name': 'arg4',
+            'argNum4': {
+                'name': 'argNum4',
                 'description': "The fourth arg. Defaults to Decimal('1').",
                 'type': 'number',
                 'default': Decimal('1')
             },
-            'arg5': {
-                'name': 'arg5',
+            'argNum5': {
+                'name': 'argNum5',
                 'description': 'The fifth arg. Defaults to None.',
                 'type': 'number',
                 'default': None
@@ -204,7 +204,7 @@ def test_swagger_params_get():
     sig = inspect.signature(mock_func)
     docstring = parse(inspect.getdoc(mock_func), Style.auto)
     accept = b'application/json'
-    path_definition = PathDefinition('/foo/bar/{arg1:str}')
+    path_definition = PathDefinition('/foo/bar/{argNum1:str}')
     collection_format = 'multi'
     get_params = make_swagger_parameters(
         'GET',
@@ -216,14 +216,14 @@ def test_swagger_params_get():
     )
     assert get_params == [
         {
-            'name': 'arg1',
+            'name': 'argNum1',
             'type': 'string',
             'in': 'path',
             'required': True,
             'description': 'The first arg'
         },
         {
-            'name': 'arg2',
+            'name': 'argNum2',
             'type': 'array',
             'collectionFormat': 'multi',
             'items': {
@@ -234,7 +234,7 @@ def test_swagger_params_get():
             'description': 'The second arg'
         },
         {
-            'name': 'arg3',
+            'name': 'argNum3',
             'type': 'string',
             'format': 'date',
             'in': 'query',
@@ -242,7 +242,7 @@ def test_swagger_params_get():
             'description': 'The third arg'
         },
         {
-            'name': 'arg4',
+            'name': 'argNum4',
             'type': 'number',
             'in': 'query',
             'required': False,
@@ -250,7 +250,7 @@ def test_swagger_params_get():
             'description': "The fourth arg. Defaults to Decimal('1')."
         },
         {
-            'name': 'arg5',
+            'name': 'argNum5',
             'type': 'number',
             'in': 'query',
             'required': False,
@@ -265,7 +265,7 @@ def test_swagger_params_form():
     sig = inspect.signature(mock_func)
     docstring = parse(inspect.getdoc(mock_func), Style.auto)
     accept = b'application/x-www-form-urlencoded'
-    path_definition = PathDefinition('/foo/bar/{arg1:str}')
+    path_definition = PathDefinition('/foo/bar/{argNum1:str}')
     collection_format = 'multi'
     get_params = make_swagger_parameters(
         'POST',
@@ -277,14 +277,14 @@ def test_swagger_params_form():
     )
     assert get_params == [
         {
-            'name': 'arg1',
+            'name': 'argNum1',
             'type': 'string',
             'in': 'path',
             'required': True,
             'description': 'The first arg'
         },
         {
-            'name': 'arg2',
+            'name': 'argNum2',
             'type': 'array',
             'collectionFormat': 'multi',
             'items': {
@@ -295,7 +295,7 @@ def test_swagger_params_form():
             'description': 'The second arg'
         },
         {
-            'name': 'arg3',
+            'name': 'argNum3',
             'type': 'string',
             'format': 'date',
             'in': 'formData',
@@ -303,7 +303,7 @@ def test_swagger_params_form():
             'description': 'The third arg'
         },
         {
-            'name': 'arg4',
+            'name': 'argNum4',
             'type': 'number',
             'in': 'formData',
             'required': False,
@@ -311,7 +311,7 @@ def test_swagger_params_form():
             'description': "The fourth arg. Defaults to Decimal('1')."
         },
         {
-            'name': 'arg5',
+            'name': 'argNum5',
             'type': 'number',
             'in': 'formData',
             'required': False,
@@ -326,7 +326,7 @@ def test_swagger_params_body():
     sig = inspect.signature(mock_func)
     docstring = parse(inspect.getdoc(mock_func), Style.auto)
     accept = b'application/json'
-    path_definition = PathDefinition('/foo/bar/{arg1:str}')
+    path_definition = PathDefinition('/foo/bar/{argNum1:str}')
     collection_format = 'multi'
     get_params = make_swagger_parameters(
         'POST',
@@ -338,7 +338,7 @@ def test_swagger_params_body():
     )
     assert get_params == [
         {
-            'name': 'arg1',
+            'name': 'argNum1',
             'type': 'string',
             'in': 'path',
             'required': True,
@@ -351,12 +351,12 @@ def test_swagger_params_body():
             'schema': {
                 'type': 'object',
                 'required': [
-                    'arg2',
-                    'arg3'
+                    'argNum2',
+                    'argNum3'
                 ],
                 'properties': {
-                    'arg2': {
-                        'name': 'arg2',
+                    'argNum2': {
+                        'name': 'argNum2',
                         'type': 'array',
                         'collectionFormat': 'multi',
                         'items': {
@@ -364,20 +364,20 @@ def test_swagger_params_body():
                         },
                         'description': 'The second arg'
                     },
-                    'arg3': {
-                        'name': 'arg3',
+                    'argNum3': {
+                        'name': 'argNum3',
                         'type': 'string',
                         'format': 'date',
                         'description': 'The third arg'
                     },
-                    'arg4': {
-                        'name': 'arg4',
+                    'argNum4': {
+                        'name': 'argNum4',
                         'type': 'number',
                         'default': Decimal('1'),
                         'description': "The fourth arg. Defaults to Decimal('1')."
                     },
-                    'arg5': {
-                        'name': 'arg5',
+                    'argNum5': {
+                        'name': 'argNum5',
                         'type': 'number',
                         'default': None,
                         'description': 'The fifth arg. Defaults to None.'
