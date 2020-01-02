@@ -114,7 +114,7 @@ def test_make_swagger_parameter():
         'description': 'The third arg',
         'required': True,
         'type': 'string',
-        'format': 'date'
+        'format': 'date-time'
     }
     param = _make_swagger_parameter(
         'query',
@@ -181,7 +181,7 @@ def test_make_swagger_schema():
                 'name': 'argNum3',
                 'description': 'The third arg',
                 'type': 'string',
-                'format': 'date'
+                'format': 'date-time'
             },
             'argNum4': {
                 'name': 'argNum4',
@@ -236,7 +236,7 @@ def test_swagger_params_get():
         {
             'name': 'argNum3',
             'type': 'string',
-            'format': 'date',
+            'format': 'date-time',
             'in': 'query',
             'required': True,
             'description': 'The third arg'
@@ -297,7 +297,7 @@ def test_swagger_params_form():
         {
             'name': 'argNum3',
             'type': 'string',
-            'format': 'date',
+            'format': 'date-time',
             'in': 'formData',
             'required': True,
             'description': 'The third arg'
@@ -367,7 +367,7 @@ def test_swagger_params_body():
                     'argNum3': {
                         'name': 'argNum3',
                         'type': 'string',
-                        'format': 'date',
+                        'format': 'date-time',
                         'description': 'The third arg'
                     },
                     'argNum4': {

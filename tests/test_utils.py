@@ -2,14 +2,11 @@
 
 from datetime import datetime
 from decimal import Decimal
-import json
 import inspect
 from typing import Any, Dict, List, Optional
 
 from bareasgi_rest.utils import (
     make_args,
-    JSONEncoderEx,
-    as_datetime,
     camelize_object,
     underscore_object
 )
@@ -54,20 +51,6 @@ def test_make_args():
         'arg4': Decimal('3.142'),
         'arg5': None
     }
-
-
-def test_as_datetime():
-    """Test for as_datetime"""
-    orig = {
-        'one': 1,
-        'timestamp': datetime(1967, 8, 12, 15, 42, 12),
-        'nested': {
-            'timestamp': datetime(1967, 8, 12, 15, 42, 12)
-        }
-    }
-    text = json.dumps(orig, cls=JSONEncoderEx)
-    roundtrip = json.loads(text, object_hook=as_datetime)
-    assert orig == roundtrip
 
 
 def test_casing():
