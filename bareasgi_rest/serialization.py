@@ -61,14 +61,15 @@ def as_datetime(dct):
     return dct
 
 def datetime_to_json(timestamp: datetime) -> str:
-    if timestamp.tzinfo is None:
+    utcoffset = timestamp.utcoffset()
+    if utcoffset is None:
         return "{year:04d}-{month:02d}-{day:02d}T{hour:02d}:{minute:02d}:{second:02d}.{millis:02d}Z".format(
             year=timestamp.year, month=timestamp.month, day=timestamp.day,
             hour=timestamp.hour, minute=timestamp.minute, second=timestamp.second,
             millis=timestamp.microsecond // 1000
         )
     else:
-        tz_seconds = timestamp.utcoffset().total_seconds()
+        tz_seconds = utcoffset.total_seconds()
         tz_sign = '-' if tz_seconds < 0 else '+'
         tz_minutes = int(abs(tz_seconds)) // 60
         tz_hours = tz_minutes // 60
