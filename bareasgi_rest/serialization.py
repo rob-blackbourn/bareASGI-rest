@@ -44,11 +44,19 @@ DATETIME_FORMATS: Tuple[DateTimeFormat, ...] = (
 
 
 def json_to_datetime(value: str) -> Optional[datetime]:
+    """Parse a JSON date
+
+    Args:
+        value (str): The JSON date string
+
+    Returns:
+        Optional[datetime]: A timestamp
+    """
     if isinstance(value, str):
         for fmt, pattern, transform in DATETIME_FORMATS:
             if pattern.match(value):
-                s = transform(value) if transform else value
-                return datetime.strptime(s, fmt)
+                text = transform(value) if transform else value
+                return datetime.strptime(text, fmt)
     return None
 
 def as_datetime(dct):
@@ -61,25 +69,32 @@ def as_datetime(dct):
     return dct
 
 def datetime_to_json(timestamp: datetime) -> str:
+    """Convert datetime to JSON
+
+    Args:
+        timestamp (datetime): The timestamp
+
+    Returns:
+        str: The stringified JSON version of the timestamp
+    """
+    date_part = "{year:04d}-{month:02d}-{day:02d}".format(
+        year=timestamp.year, month=timestamp.month, day=timestamp.day,
+    )
+    time_part = "{hour:02d}:{minute:02d}:{second:02d}.{millis:02d}".format(
+        hour=timestamp.hour, minute=timestamp.minute, second=timestamp.second,
+        millis=timestamp.microsecond // 1000
+    )
+
     utcoffset = timestamp.utcoffset()
     if utcoffset is None:
-        return "{year:04d}-{month:02d}-{day:02d}T{hour:02d}:{minute:02d}:{second:02d}.{millis:02d}Z".format(
-            year=timestamp.year, month=timestamp.month, day=timestamp.day,
-            hour=timestamp.hour, minute=timestamp.minute, second=timestamp.second,
-            millis=timestamp.microsecond // 1000
-        )
+        return f"{date_part}T{time_part}Z"
     else:
         tz_seconds = utcoffset.total_seconds()
         tz_sign = '-' if tz_seconds < 0 else '+'
         tz_minutes = int(abs(tz_seconds)) // 60
         tz_hours = tz_minutes // 60
         tz_minutes %= 60
-        return "{year:04d}-{month:02d}-{day:02d}T{hour:02d}:{minute:02d}:{second:02d}.{millis:02d}{tz_sign}{tz_hours:02d}:{tz_minutes:02d}".format(
-            year=timestamp.year, month=timestamp.month, day=timestamp.day,
-            hour=timestamp.hour, minute=timestamp.minute, second=timestamp.second,
-            millis=timestamp.microsecond // 1000,
-            tz_sign=tz_sign, tz_hours=tz_hours, tz_minutes=tz_minutes
-        )
+        return f"{date_part}T{time_part}{tz_sign}{tz_hours:02d}:{tz_minutes:02d}"
 
 class JSONEncoderEx(json.JSONEncoder):
     """Encode json"""
