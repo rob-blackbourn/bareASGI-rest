@@ -24,6 +24,7 @@ from typing import (
     Optional,
     cast
 )
+from urllib.error import HTTPError
 from urllib.parse import parse_qs
 
 from bareasgi import text_reader, text_writer
@@ -246,7 +247,7 @@ class RestHttpRouter(BasicHttpRouter):
             content_type: bytes,
             status_code: int
     ) -> None:
-        sig = inspect.signature(callback)
+        signature = inspect.signature(callback)
         path_definition = PathDefinition(self.base_path + path)
 
         async def rest_callback(
@@ -260,13 +261,22 @@ class RestHttpRouter(BasicHttpRouter):
             body_args = await self._get_body_args(method, scope['headers'], content)
 
             args, kwargs = make_args(
-                sig,
+                signature,
                 matches,
                 query_args,
                 body_args
             )
 
-            body = await callback(*args, **kwargs)
+            try:
+                body = await callback(*args, **kwargs)
+            except HTTPError as error:
+                raise HTTPError(
+                    scope['path'],
+                    error.code if error.code is not None else 500,
+                    error.reason,
+                    scope['headers'],
+                    None
+                )
 
             accept = header.accept(scope['headers'])
             writer = self._make_writer(body, accept)

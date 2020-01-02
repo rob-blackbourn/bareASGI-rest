@@ -98,7 +98,7 @@ class BookController:
         """
 
         if book_id not in self.books:
-            raise HTTPError(None, 404, None, None, None)
+            raise HTTPError(None, 404, 'Book not found', None, None)
 
         return self.books[book_id]
 
