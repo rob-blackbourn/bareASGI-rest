@@ -21,8 +21,6 @@ from docstring_parser import Docstring, DocstringParam
 from inflection import underscore, camelize
 import typing_inspect
 
-from .utils import camelize_object
-
 def make_swagger_path(path_definition: PathDefinition) -> str:
     """Make a path compatible with swagger"""
     swagger_path = '/' + '/'.join(
@@ -62,7 +60,7 @@ TYPE_DEFINITIONS = {
         'is_required': True,
         'is_list': False,
         'type': 'string',
-        'format': 'date',
+        'format': 'date-time',
     },
     Optional[str]: {
         'is_required': False,
@@ -92,7 +90,7 @@ TYPE_DEFINITIONS = {
         'is_required': False,
         'is_list': False,
         'type': 'string',
-        'format': 'date',
+        'format': 'date-time',
     },
     List[str]: {
         'is_required': False,
@@ -122,7 +120,7 @@ TYPE_DEFINITIONS = {
         'is_required': False,
         'is_list': True,
         'type': 'string',
-        'format': 'date',
+        'format': 'date-time',
     }
 }
 
