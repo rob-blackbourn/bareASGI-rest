@@ -7,8 +7,6 @@ Attributes:
     DEFAULT_CONSUMES
 """
 
-from cgi import parse_multipart
-import io
 import inspect
 import logging
 import json
@@ -41,7 +39,14 @@ import bareutils.header as header
 import bareasgi_jinja2
 import docstring_parser
 
-from .utils import make_args, JSONEncoderEx, as_datetime, camelize_object
+from .utils import (
+    make_args,
+    camelize_object,
+    to_json,
+    from_json,
+    from_form_data,
+    from_query_string
+)
 from .swagger import (
     make_swagger_path,
     make_swagger_parameters,
@@ -49,51 +54,27 @@ from .swagger import (
     make_swagger_response_schema
 )
 from .config import SwaggerConfig
+from .constants import (
+    DEFAULT_SWAGGER_BASE_URL,
+    DEFAULT_TYPEFACE_URL
+)
 
 LOGGER = logging.getLogger(__name__)
-
-DEFAULT_SWAGGER_BASE_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/3.4.0"
-DEFAULT_TYPEFACE_URL = "https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
-
-APPLICATION_JSON = b'application/json'
-
-
-def _to_json(obj: Any) -> str:
-    return json.dumps(obj, cls=JSONEncoderEx)
-
-
-def _from_json(text: str, _media_type: bytes, _params: Dict[bytes, bytes]) -> Any:
-    return json.loads(text, object_hook=as_datetime)
-
-
-def _from_query_string(text: str, _media_type: bytes, _params: Dict[bytes, bytes]) -> Any:
-    return parse_qs(text)
-
-
-def _from_form_data(text: str, _media_type: bytes, params: Dict[bytes, bytes]) -> Any:
-    if b'boundary' not in params:
-        raise RuntimeError('Required "boundary" parameter missing')
-    pdict = {
-        name.decode(): value
-        for name, value in params.items()
-    }
-    return parse_multipart(io.StringIO(text), pdict)
-
 
 Deserializer = Callable[[str, bytes, Dict[bytes, bytes]], Any]
 DictConsumes = Dict[bytes, Deserializer]
 DEFAULT_CONSUMES: DictConsumes = {
-    b'application/json': _from_json,
-    b'*/*': _from_json,
-    b'application/x-www-form-urlencoded': _from_query_string,
-    b'multipart/form-data': _from_form_data
+    b'application/json': from_json,
+    b'*/*': from_json,
+    b'application/x-www-form-urlencoded': from_query_string,
+    b'multipart/form-data': from_form_data
 }
 
 Serializer = Callable[[Any], str]
 DictProduces = Dict[bytes, Serializer]
 DEFAULT_PRODUCES: DictProduces = {
-    b'application/json': _to_json,
-    b'*/*': _to_json
+    b'application/json': to_json,
+    b'*/*': to_json
 }
 
 RestCallback = Callable[..., Awaitable[Any]]
@@ -192,8 +173,8 @@ class RestHttpRouter(BasicHttpRouter):
             path: str,
             callback: RestCallback,
             *,
-            accept: bytes = APPLICATION_JSON,
-            content_type: bytes = APPLICATION_JSON,
+            accept: bytes = b'application/json',
+            content_type: bytes = b'application/json',
             collection_format: str = DEFAULT_COLLECTION_FORMAT,
             tags: Optional[List[str]] = None,
             status_code: int = 200,
@@ -206,9 +187,9 @@ class RestHttpRouter(BasicHttpRouter):
             path (str): The path
             callback (RestCallback): The callback
             accept (bytes, optional): The accept media type. Defaults to
-                APPLICATION_JSON.
+                b'application/json'.
             content_type (bytes, optional): The content media type. Defaults
-                to APPLICATION_JSON.
+                to b'application/json'.
             collection_format (str, optional): The format of repeated values.
                 Defaults to DEFAULT_COLLECTION_FORMAT.
             tags (Optional[List[str]], optional): A list of tags. Defaults to
@@ -258,7 +239,7 @@ class RestHttpRouter(BasicHttpRouter):
         ) -> HttpResponse:
 
             query_args = parse_qs(scope['query_string'].decode())
-            body_args = await self._get_body_args(method, scope['headers'], content)
+            body_args = await self._get_body_args(scope, content)
 
             args, kwargs = make_args(
                 signature,
@@ -301,13 +282,13 @@ class RestHttpRouter(BasicHttpRouter):
     ):
         path_definition = PathDefinition(path)
         swagger_path = make_swagger_path(path_definition)
-        sig = inspect.signature(callback)
+        signature = inspect.signature(callback)
         docstring = docstring_parser.parse(inspect.getdoc(callback))
         params = make_swagger_parameters(
             method,
             accept,
             path_definition,
-            sig,
+            signature,
             docstring,
             collection_format
         )
@@ -316,7 +297,7 @@ class RestHttpRouter(BasicHttpRouter):
             'description': status_description
         }
 
-        response_schema = make_swagger_response_schema(sig)
+        response_schema = make_swagger_response_schema(signature)
         if response_schema is not None:
             response['schema'] = response_schema
 
@@ -354,14 +335,14 @@ class RestHttpRouter(BasicHttpRouter):
             return None
         # TODO: This is rubbish
         if not accept:
-            serializer = self.produces[APPLICATION_JSON]
+            serializer = self.produces[b'application/json']
         else:
             for media_type in accept.keys():
                 if media_type in self.produces:
                     serializer = self.produces[media_type]
                     break
             else:
-                serializer = self.produces[APPLICATION_JSON]
+                serializer = self.produces[b'application/json']
         if not serializer:
             raise RuntimeError
         text = serializer(camelize_object(data))
@@ -369,15 +350,15 @@ class RestHttpRouter(BasicHttpRouter):
 
     async def _get_body_args(
             self,
-            method: str,
-            headers: Headers,
+            scope: Scope,
             content: Content
     ) -> Any:
-        if method in {'GET'}:
+        if scope['method'] in {'GET'}:
             return True, {}
 
         media_type, params = header.content_type(
-            headers) or (b'', cast(Dict[bytes, Any], {}))
+            scope['headers']
+        ) or (b'', cast(Dict[bytes, Any], {}))
         deserializer = self.consumes.get(media_type)
         if deserializer is None:
             raise RuntimeError('No deserializer')
