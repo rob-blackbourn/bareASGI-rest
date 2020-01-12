@@ -319,7 +319,8 @@ def gather_error_responses(docstring: Docstring) -> Dict[int, Any]:
 def _typeddict_schema(
         schema_type: str,
         annotations: Dict[str, Any],
-        docstring: Optional[Docstring]
+        docstring: Optional[Docstring],
+        collection_format: str
 ) -> Dict[str, Any]:
     properties: Dict[str, Any] = {}
     for name, value in annotations.items():
@@ -329,9 +330,20 @@ def _typeddict_schema(
             prop['description'] = docstring_param.description
         type_def = TYPE_DEFINITIONS.get(value)
         if type_def is not None:
-            prop['type'] = type_def['type']
-            if type_def['format'] is not None:
-                prop['format'] = type_def['format']
+            if type_def['is_list']:
+                prop['type'] = 'array'
+                prop['collectionFormat'] = collection_format
+                items = {
+                    'type': type_def['type']
+                }
+                if type_def['format'] is not None:
+                    items['format'] = type_def['format']
+                prop['items'] = items
+            else:
+                prop['type'] = type_def['type']
+                if type_def['format'] is not None:
+                    prop['format'] = type_def['format']
+
         camelcase_name = camelize(name, False)
         prop['name'] = camelcase_name
         properties[camelcase_name] = prop
@@ -367,7 +379,12 @@ def make_swagger_response_schema(
             docstring = docstring_parser.parse(
                 inspect.getdoc(sig.return_annotation)
             )
-            return _typeddict_schema('object', annotations, docstring)
+            return _typeddict_schema(
+                'object',
+                annotations,
+                docstring,
+                collection_format
+            )
         else:
             return None
     elif origin and origin is list:
@@ -386,7 +403,12 @@ def make_swagger_response_schema(
             if isinstance(annotations, dict):
                 # List[TypedDict]
                 docstring = docstring_parser.parse(inspect.getdoc(nested_type))
-                return _typeddict_schema('array', annotations, docstring)
+                return _typeddict_schema(
+                    'array',
+                    annotations,
+                    docstring,
+                    collection_format
+                )
             else:
                 # List[Dict]
                 return None
@@ -404,9 +426,6 @@ def make_swagger_response_schema(
             'type': 'array' if type_def['is_list'] else type_def['type']
         }
 
-        if type_def['format'] is not None:
-            return_type['format'] = type_def['format']
-
         if type_def['is_list']:
             return_type['collectionFormat'] = collection_format
             items = {
@@ -415,6 +434,9 @@ def make_swagger_response_schema(
             if type_def['format'] is not None:
                 items['format'] = type_def['format']
             return_type['items'] = items
+        else:
+            if type_def['format'] is not None:
+                return_type['format'] = type_def['format']
 
         return return_type
 

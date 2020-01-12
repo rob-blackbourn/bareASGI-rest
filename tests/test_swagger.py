@@ -4,6 +4,10 @@ from datetime import datetime
 from decimal import Decimal
 import inspect
 from typing import Any, Dict, List, Optional
+try:
+    from typing import TypedDict  # type:ignore
+except:  # pylint: disable=bare-except
+    from typing_extensions import TypedDict
 
 from bareasgi.basic_router.path_definition import PathDefinition
 from docstring_parser import parse, Style
@@ -17,6 +21,23 @@ from bareasgi_rest.swagger import (
     make_swagger_parameters,
     make_swagger_response_schema
 )
+
+
+class MockDict(TypedDict):
+    """A mock typed dict
+
+    Args:
+        arg_num1 (str): The first arg
+        arg_num2 (List[int]): The second arg
+        arg_num3 (datetime): The third arg
+        arg_num4 (Optional[Decimal], optional): The fourth arg. Defaults to Decimal('1').
+        arg_num5 (Optional[float], optional): The fifth arg. Defaults to None.
+    """
+    arg_num1: str
+    arg_num2: List[int]
+    arg_num3: datetime
+    arg_num4: Optional[Decimal] = Decimal('1')
+    arg_num5: Optional[float] = None
 
 
 async def mock_func(
@@ -400,4 +421,45 @@ def test_make_swagger_response_schema():
     response = make_swagger_response_schema(sig, 'multi')
     assert response == {
         'type': 'string'
+    }
+
+    async def func2() -> MockDict:
+        pass
+
+    sig = inspect.signature(func2)
+    response = make_swagger_response_schema(sig, 'multi')
+    assert response == {
+        'type': 'object',
+        'properties': {
+            'argNum1': {
+                'name': 'argNum1',
+                'description': 'The first arg',
+                'type': 'string'
+            },
+            'argNum2': {
+                'name': 'argNum2',
+                'description': 'The second arg',
+                'type': 'array',
+                'collectionFormat': 'multi',
+                'items': {
+                    'type': 'integer'
+                }
+            },
+            'argNum3': {
+                'name': 'argNum3',
+                'description': 'The third arg',
+                'type': 'string',
+                'format': 'date-time'
+            },
+            'argNum4': {
+                'name': 'argNum4',
+                'description': "The fourth arg. Defaults to Decimal('1').",
+                'type': 'number'
+            },
+            'argNum5': {
+                'name': 'argNum5',
+                'description': 'The fifth arg. Defaults to None.',
+                'type': 'number'
+            }
+        }
     }
