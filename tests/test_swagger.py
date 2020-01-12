@@ -415,13 +415,18 @@ def test_make_swagger_response_schema():
     """Test make_swagger_response_schema"""
 
     async def func1() -> str:
-        pass
+        """Func1
+        
+        Returns:
+            str: A string
+        """
 
     sig = inspect.signature(func1)
     docstring = parse(inspect.getdoc(func1))
     response = make_swagger_response_schema(sig, docstring, 'multi')
     assert response == {
-        'type': 'string'
+        'type': 'string',
+        'description': 'A string'
     }
 
     async def func2() -> MockDict:
