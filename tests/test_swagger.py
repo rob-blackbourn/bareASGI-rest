@@ -418,7 +418,8 @@ def test_make_swagger_response_schema():
         pass
 
     sig = inspect.signature(func1)
-    response = make_swagger_response_schema(sig, 'multi')
+    docstring = parse(inspect.getdoc(func1))
+    response = make_swagger_response_schema(sig, docstring, 'multi')
     assert response == {
         'type': 'string'
     }
@@ -427,7 +428,8 @@ def test_make_swagger_response_schema():
         pass
 
     sig = inspect.signature(func2)
-    response = make_swagger_response_schema(sig, 'multi')
+    docstring = parse(inspect.getdoc(func2))
+    response = make_swagger_response_schema(sig, docstring, 'multi')
     assert response == {
         'type': 'object',
         'properties': {

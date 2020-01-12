@@ -17,7 +17,7 @@ from typing import (
 
 from bareasgi.basic_router.path_definition import PathDefinition
 import docstring_parser
-from docstring_parser import Docstring, DocstringParam
+from docstring_parser import Docstring, DocstringParam, DocstringMeta
 from inflection import underscore, camelize
 import typing_inspect
 
@@ -137,31 +137,50 @@ def _check_is_required(
     return is_required
 
 
+def _add_type_info(
+        prop: Dict[str, Any],
+        annotation: Any,
+        collection_format: str,
+        docstring_meta: Optional[DocstringMeta]
+) -> Dict[str, Any]:
+    type_def = TYPE_DEFINITIONS[annotation]
+    if type_def['is_list']:
+        prop['type'] = 'array'
+        prop['collectionFormat'] = collection_format
+        items = {
+            'type': type_def['type']
+        }
+        if type_def['format'] is not None:
+            items['format'] = type_def['format']
+        prop['items'] = items
+    else:
+        prop['type'] = type_def['type']
+        if type_def['format'] is not None:
+            prop['format'] = type_def['format']
+            
+    if docstring_meta is not None and docstring_meta.description:
+        prop['description'] = docstring_meta.description
+
+    return prop
+
 def _make_swagger_parameter(
         source: str,
         param: Parameter,
         collection_format: str,
         docstring_param: Optional[DocstringParam]
 ) -> Dict[str, Any]:
-    type_def = TYPE_DEFINITIONS[param.annotation]
     is_required = _check_is_required(param, docstring_param)
 
     parameter = {
-        'name': camelize(param.name, False),
-        'type': 'array' if type_def['is_list'] else type_def['type']
+        'name': camelize(param.name, False)
     }
 
-    if type_def['format'] is not None:
-        parameter['format'] = type_def['format']
-
-    if type_def['is_list']:
-        parameter['collectionFormat'] = collection_format
-        items = {
-            'type': type_def['type']
-        }
-        if type_def['format'] is not None:
-            items['format'] = type_def['format']
-        parameter['items'] = items
+    _add_type_info(
+        parameter,
+        param.annotation,
+        collection_format,
+        docstring_param
+    )
 
     if source != 'body':
         parameter['in'] = source
@@ -170,10 +189,7 @@ def _make_swagger_parameter(
     if param.default != Parameter.empty:
         parameter['default'] = param.default
 
-    if docstring_param is not None and docstring_param.description:
-        parameter['description'] = docstring_param.description
     return parameter
-
 
 def _make_swagger_schema(
         params: List[Tuple[str, Parameter, DocstringParam]],
@@ -323,26 +339,13 @@ def _typeddict_schema(
         collection_format: str
 ) -> Dict[str, Any]:
     properties: Dict[str, Any] = {}
-    for name, value in annotations.items():
-        prop: Dict[str, Any] = {}
-        docstring_param = _find_docstring_param(name, docstring)
-        if docstring_param is not None:
-            prop['description'] = docstring_param.description
-        type_def = TYPE_DEFINITIONS.get(value)
-        if type_def is not None:
-            if type_def['is_list']:
-                prop['type'] = 'array'
-                prop['collectionFormat'] = collection_format
-                items = {
-                    'type': type_def['type']
-                }
-                if type_def['format'] is not None:
-                    items['format'] = type_def['format']
-                prop['items'] = items
-            else:
-                prop['type'] = type_def['type']
-                if type_def['format'] is not None:
-                    prop['format'] = type_def['format']
+    for name, annotation in annotations.items():
+        prop = _add_type_info(
+            {},
+            annotation,
+            collection_format,
+            _find_docstring_param(name, docstring)
+        )
 
         camelcase_name = camelize(name, False)
         prop['name'] = camelcase_name
@@ -365,6 +368,7 @@ def _typeddict_schema(
 
 def make_swagger_response_schema(
         sig: Signature,
+        docstring: Optional[Docstring],
         collection_format: str
 ) -> Optional[Dict[str, Any]]:
     """Make the swagger response schama"""
@@ -376,13 +380,13 @@ def make_swagger_response_schema(
         # could be a typed dict
         annotations = getattr(sig.return_annotation, '__annotations__', None)
         if isinstance(annotations, dict):
-            docstring = docstring_parser.parse(
+            dict_docstring = docstring_parser.parse(
                 inspect.getdoc(sig.return_annotation)
             )
             return _typeddict_schema(
                 'object',
                 annotations,
-                docstring,
+                dict_docstring,
                 collection_format
             )
         else:
@@ -402,11 +406,11 @@ def make_swagger_response_schema(
             annotations = getattr(nested_type, '__annotations__', None)
             if isinstance(annotations, dict):
                 # List[TypedDict]
-                docstring = docstring_parser.parse(inspect.getdoc(nested_type))
+                typeddict_docstring = docstring_parser.parse(inspect.getdoc(nested_type))
                 return _typeddict_schema(
                     'array',
                     annotations,
-                    docstring,
+                    typeddict_docstring,
                     collection_format
                 )
             else:
@@ -418,26 +422,17 @@ def make_swagger_response_schema(
     elif origin and origin is dict:
         # A Dict
         return None
+    else:
+        # Something else
+        type_def = TYPE_DEFINITIONS.get(sig.return_annotation)
+        if type_def:
+            return_type = _add_type_info(
+                {},
+                sig.return_annotation,
+                collection_format,
+                docstring.returns if docstring else None
+            )
 
-    # Something else
-    type_def = TYPE_DEFINITIONS.get(sig.return_annotation)
-    if type_def:
-        return_type = {
-            'type': 'array' if type_def['is_list'] else type_def['type']
-        }
+            return return_type
 
-        if type_def['is_list']:
-            return_type['collectionFormat'] = collection_format
-            items = {
-                'type': type_def['type']
-            }
-            if type_def['format'] is not None:
-                items['format'] = type_def['format']
-            return_type['items'] = items
-        else:
-            if type_def['format'] is not None:
-                return_type['format'] = type_def['format']
-
-        return return_type
-
-    return None
+        return None
