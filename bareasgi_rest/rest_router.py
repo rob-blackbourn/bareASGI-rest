@@ -300,6 +300,7 @@ class RestHttpRouter(BasicHttpRouter):
 
         response_schema = make_swagger_response_schema(
             signature,
+            docstring,
             collection_format
         )
         if response_schema is not None:
