@@ -470,3 +470,12 @@ def test_make_swagger_response_schema():
             }
         }
     }
+
+
+    async def func3() -> List[MockDict]:
+        pass
+
+    sig = inspect.signature(func3)
+    docstring = parse(inspect.getdoc(func3))
+    response = make_swagger_response_schema(sig, docstring, 'multi')
+    assert response['type'] == 'array'

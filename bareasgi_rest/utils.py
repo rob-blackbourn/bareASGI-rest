@@ -18,6 +18,8 @@ from typing import (
 
 from inflection import camelize, underscore
 
+import bareasgi_rest.typing_inspect_ext as typing_inspect
+
 T = TypeVar('T')  # pylint: disable=invalid-name
 
 
@@ -136,51 +138,83 @@ def _coerce(value: Any, annotation: Any) -> Any:
         raise TypeError
     return [_coerce(item, contained_type) for item in value]
 
+def _is_typed_dict_callable(signature: Signature) -> bool:
+    if len(signature.parameters) != 1:
+        return False
+    parameter = next(iter(signature.parameters.values()))
+    return typing_inspect.is_typed_dict(parameter.annotation)
+
+def _update_defaults(values: Optional[Dict[str, Any]], annotation: Any) -> None:
+    if values is None:
+        return
+
+    member_annotations = typing_inspect.typed_dict_annotation(annotation)
+    for name, member in member_annotations.items():
+        if name in values:
+            if typing_inspect.is_typed_dict(member.annotation):
+                _update_defaults(values[name], member.annotation)
+            else:
+                values[name] = _coerce(values[name], member.annotation)
+        elif member.default is typing_inspect.TypedDictMember.empty:
+            raise KeyError(f'Required argument "{name}" is missing')
+        else:
+            values[name] = _coerce(member.default, member.annotation)
 
 def make_args(
-        sig: Signature,
+        signature: Signature,
         matches: Dict[str, str],
         query: Dict[str, Any],
         body: Dict[str, Any]
 ) -> Tuple[Tuple[Any, ...], Dict[str, Any]]:
     """Make args and kwargs for the given signature from the route matches,
     query args and body.
-
-    :param sig: The function signature
-    :type sig: Signature
-    :param matches: The route matches
-    :type matches: Dict[str, str]
-    :param query: A dictionary built from the query string
-    :type query: Dict[str, Any]
-    :param body: A dictionary build from the body
-    :type body: Dict[str, Any]
-    :raises KeyError: If a parameter was not found
-    :return: A tuple for *args and **kwargs
-    :rtype: Tuple[Tuple[Any, ...], Dict[str, Any]]
+    
+    Args:
+        signature (Signature): The function signature
+        matches (Dict[str, str]): The route matches
+        query (Dict[str, Any]): A dictionary built from the query string
+        body (Dict[str, Any]): A dictionary built from the body
+    
+    Raises:
+        KeyError: If a parameter was not found
+    
+    Returns:
+        Tuple[Tuple[Any, ...], Dict[str, Any]]: A tuple for *args and **kwargs
     """
+
     kwargs: Dict[str, Any] = {}
     args: List[Any] = []
 
-    for param in sig.parameters.values():
-        name = camelize(param.name, uppercase_first_letter=False)
-        if name in matches:
-            value = _coerce(matches[name], param.annotation)
-        elif name in query:
-            value = _coerce(query[name], param.annotation)
-        elif name in body:
-            value = _coerce(body[name], param.annotation)
-        elif _is_supported_optional(param.annotation):
-            continue
-        else:
-            raise KeyError
+    if _is_typed_dict_callable(signature):
+        # A single positional arg of TypedDict
+        param = next(iter(signature.parameters.values()))
+        values = matches.copy()
+        values.update(query)
+        values.update(body)
+        values = underscore_object(values)
+        _update_defaults(values, param.annotation)
+        args.append(values)
+    else:
+        for param in signature.parameters.values():
+            name = camelize(param.name, uppercase_first_letter=False)
+            if name in matches:
+                value = _coerce(matches[name], param.annotation)
+            elif name in query:
+                value = _coerce(query[name], param.annotation)
+            elif name in body:
+                value = _coerce(body[name], param.annotation)
+            elif _is_supported_optional(param.annotation):
+                continue
+            else:
+                raise KeyError
 
-        if param.kind == Parameter.POSITIONAL_ONLY or param.kind == Parameter.POSITIONAL_OR_KEYWORD:
-            args.append(value)
-        else:
-            # Use the non-camelcased name
-            kwargs[param.name] = value
+            if param.kind == Parameter.POSITIONAL_ONLY or param.kind == Parameter.POSITIONAL_OR_KEYWORD:
+                args.append(value)
+            else:
+                # Use the non-camelcased name
+                kwargs[param.name] = value
 
-    bound_args = sig.bind(*args, **kwargs)
+    bound_args = signature.bind(*args, **kwargs)
     bound_args.apply_defaults()
 
     return bound_args.args, bound_args.kwargs
