@@ -14,7 +14,8 @@ from bareasgi_rest.swagger import (
     _make_swagger_parameter,
     _find_docstring_param,
     _make_swagger_schema,
-    make_swagger_parameters
+    make_swagger_parameters,
+    make_swagger_response_schema
 )
 
 
@@ -151,7 +152,8 @@ def test_make_swagger_schema():
     sig = inspect.signature(mock_func)
     docstring = parse(inspect.getdoc(mock_func), Style.auto)
     params = [
-        (camelize(param.name, False), param, _find_docstring_param(param.name, docstring))
+        (camelize(param.name, False), param,
+         _find_docstring_param(param.name, docstring))
         for param in sig.parameters.values()
     ]
     schema = _make_swagger_schema(params, 'multi')
@@ -386,3 +388,16 @@ def test_swagger_params_body():
             }
         }
     ]
+
+
+def test_make_swagger_response_schema():
+    """Test make_swagger_response_schema"""
+
+    async def func1() -> str:
+        pass
+
+    sig = inspect.signature(func1)
+    response = make_swagger_response_schema(sig, 'multi')
+    assert response == {
+        'type': 'string'
+    }

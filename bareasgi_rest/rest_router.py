@@ -298,7 +298,10 @@ class RestHttpRouter(BasicHttpRouter):
             'description': status_description
         }
 
-        response_schema = make_swagger_response_schema(signature)
+        response_schema = make_swagger_response_schema(
+            signature,
+            collection_format
+        )
         if response_schema is not None:
             response['schema'] = response_schema
 

@@ -21,6 +21,7 @@ from docstring_parser import Docstring, DocstringParam
 from inflection import underscore, camelize
 import typing_inspect
 
+
 def make_swagger_path(path_definition: PathDefinition) -> str:
     """Make a path compatible with swagger"""
     swagger_path = '/' + '/'.join(
@@ -351,7 +352,8 @@ def _typeddict_schema(
 
 
 def make_swagger_response_schema(
-        sig: Signature
+        sig: Signature,
+        collection_format: str
 ) -> Optional[Dict[str, Any]]:
     """Make the swagger response schama"""
     if sig.return_annotation is None:
@@ -396,4 +398,24 @@ def make_swagger_response_schema(
         return None
 
     # Something else
+    type_def = TYPE_DEFINITIONS.get(sig.return_annotation)
+    if type_def:
+        return_type = {
+            'type': 'array' if type_def['is_list'] else type_def['type']
+        }
+
+        if type_def['format'] is not None:
+            return_type['format'] = type_def['format']
+
+        if type_def['is_list']:
+            return_type['collectionFormat'] = collection_format
+            items = {
+                'type': type_def['type']
+            }
+            if type_def['format'] is not None:
+                items['format'] = type_def['format']
+            return_type['items'] = items
+
+        return return_type
+
     return None
