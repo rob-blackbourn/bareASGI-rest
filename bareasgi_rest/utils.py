@@ -138,15 +138,20 @@ def _coerce(value: Any, annotation: Any) -> Any:
         raise TypeError
     return [_coerce(item, contained_type) for item in value]
 
+
 def _is_typed_dict_callable(signature: Signature) -> bool:
     if len(signature.parameters) != 1:
         return False
     parameter = next(iter(signature.parameters.values()))
     return typing_inspect.is_typed_dict(parameter.annotation)
 
-def _update_defaults(values: Optional[Dict[str, Any]], annotation: Any) -> None:
-    if values is None:
-        return
+
+def _update_defaults(
+        values: Optional[Dict[str, Any]],
+        annotation: Any
+) -> Optional[Dict[str, Any]]:
+    if values is None or not typing_inspect.is_typed_dict(annotation):
+        return values
 
     member_annotations = typing_inspect.typed_dict_annotation(annotation)
     for name, member in member_annotations.items():
@@ -159,6 +164,27 @@ def _update_defaults(values: Optional[Dict[str, Any]], annotation: Any) -> None:
             raise KeyError(f'Required argument "{name}" is missing')
         else:
             values[name] = _coerce(member.default, member.annotation)
+
+    return values
+
+def _find_optional_body_parameter(signature: Signature) -> Optional[Parameter]:
+    body_parameters: List[Parameter] = []
+    for parameter in signature.parameters.values():
+        if (
+                isinstance(parameter.annotation, dict)
+                or typing_inspect.is_typed_dict(parameter.annotation)
+        ):
+            body_parameters.append(parameter)
+    if not body_parameters:
+        return None
+    if len(body_parameters) == 1:
+        return body_parameters[0]
+    raise RuntimeError(
+        "Duplicate body parameters: " + ", ".join(
+            f'"{parameter.name}"'
+            for parameter in body_parameters
+        )
+    )
 
 def make_args(
         signature: Signature,
@@ -185,34 +211,33 @@ def make_args(
     kwargs: Dict[str, Any] = {}
     args: List[Any] = []
 
-    if _is_typed_dict_callable(signature):
-        # A single positional arg of TypedDict
-        param = next(iter(signature.parameters.values()))
-        values = matches.copy()
-        values.update(query)
-        values.update(body)
-        values = underscore_object(values)
-        _update_defaults(values, param.annotation)
-        args.append(values)
-    else:
-        for param in signature.parameters.values():
-            name = camelize(param.name, uppercase_first_letter=False)
-            if name in matches:
-                value = _coerce(matches[name], param.annotation)
-            elif name in query:
-                value = _coerce(query[name], param.annotation)
-            elif name in body:
-                value = _coerce(body[name], param.annotation)
-            elif _is_supported_optional(param.annotation):
+    # Find the single optional body parameter
+    body_parameter = _find_optional_body_parameter(signature)
+
+    for parameter in signature.parameters.values():
+        if parameter is body_parameter:
+            value = _update_defaults(body.copy(), parameter.annotation)
+        else:
+            camcelcase_name = camelize(parameter.name, uppercase_first_letter=False)
+            if camcelcase_name in matches:
+                value = _coerce(matches[camcelcase_name], parameter.annotation)
+            elif camcelcase_name in query:
+                value = _coerce(query[camcelcase_name], parameter.annotation)
+            elif body_parameter is None and camcelcase_name in body:
+                value = _coerce(body[camcelcase_name], parameter.annotation)
+            elif _is_supported_optional(parameter.annotation):
                 continue
             else:
                 raise KeyError
 
-            if param.kind == Parameter.POSITIONAL_ONLY or param.kind == Parameter.POSITIONAL_OR_KEYWORD:
-                args.append(value)
-            else:
-                # Use the non-camelcased name
-                kwargs[param.name] = value
+        if (
+                parameter.kind == Parameter.POSITIONAL_ONLY
+                or parameter.kind == Parameter.POSITIONAL_OR_KEYWORD
+        ):
+            args.append(value)
+        else:
+            # Use the non-camelcased name
+            kwargs[parameter.name] = value
 
     bound_args = signature.bind(*args, **kwargs)
     bound_args.apply_defaults()
