@@ -161,7 +161,7 @@ def is_typevar(annotation):
         is_typevar(Union[T, int]) == False
     """
 
-    return type(annotation) is TypeVar
+    return isinstance(annotation, TypeVar)
 
 
 def is_classvar(annotation):
