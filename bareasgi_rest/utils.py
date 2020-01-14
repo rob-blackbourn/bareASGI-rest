@@ -18,7 +18,7 @@ from typing import (
 
 from inflection import camelize, underscore
 
-import bareasgi_rest.typing_inspect_ext as typing_inspect
+import bareasgi_rest.typing_inspect as typing_inspect
 
 T = TypeVar('T')  # pylint: disable=invalid-name
 

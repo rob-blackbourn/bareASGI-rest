@@ -133,17 +133,13 @@ class BookController:
     async def update_book(
             self,
             book_id: int,
-            author: str,
-            title: str,
-            publication_date: datetime
+            book: Book
     ) -> None:
         """Update a book
 
         Args:
             book_id (int): The id of the book to update
-            author (str): The new author
-            title (str): The title
-            publication_date (datetime): The publication date
+            book (Book): The book as the body
 
         Raises:
             HTTPError: 404, when a book is not found
@@ -153,9 +149,7 @@ class BookController:
         """
         if book_id not in self.books:
             raise HTTPError(None, 404, None, None, None)
-        self.books[book_id]['title'] = title
-        self.books[book_id]['author'] = author
-        self.books[book_id]['publication_date'] = publication_date
+        self.books[book_id] = book
 
 
 if __name__ == "__main__":

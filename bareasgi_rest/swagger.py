@@ -20,7 +20,7 @@ import docstring_parser
 from docstring_parser import Docstring, DocstringParam, DocstringMeta
 from inflection import underscore, camelize
 
-import bareasgi_rest.typing_inspect_ext as typing_inspect
+import bareasgi_rest.typing_inspect as typing_inspect
 
 
 def make_swagger_path(path_definition: PathDefinition) -> str:
@@ -131,11 +131,7 @@ def _check_is_required(
         param: Parameter,
         docstring_param: DocstringParam
 ) -> bool:
-    type_def = TYPE_DEFINITIONS[param.annotation]
-    is_required: bool = cast(bool, type_def['is_required']) or (
-        docstring_param is not None and not docstring_param.is_optional
-    )
-    return is_required
+    return param.default is Parameter.empty
 
 
 def _add_type_info(
@@ -144,6 +140,16 @@ def _add_type_info(
         collection_format: str,
         docstring_meta: Optional[DocstringMeta]
 ) -> Dict[str, Any]:
+    if typing_inspect.is_typed_dict(annotation):
+        dict_props = _typeddict_schema(
+            'object',
+            typing_inspect.typed_dict_annotation(annotation),
+            None,
+            'multi'
+        )
+        prop.update(dict_props)
+        return prop
+
     type_def = TYPE_DEFINITIONS[annotation]
     if type_def['is_list']:
         prop['type'] = 'array'
@@ -303,7 +309,17 @@ def make_swagger_parameters(
             for param in signature.parameters.values()
             if param.name not in path_variables
         ]
-        schema = _make_swagger_schema(params, collection_format)
+        if len(params) == 1 and typing_inspect.is_typed_dict(params[0][1].annotation):
+            _name, param, _docstring = params[0]
+            param_docstring = inspect.getdoc(param.annotation)
+            schema = _typeddict_schema(
+                'object',
+                typing_inspect.typed_dict_annotation(param.annotation),
+                docstring_parser.parse(param_docstring),
+                collection_format
+            )
+        else:
+            schema = _make_swagger_schema(params, collection_format)
         parameters.append({
             'in': 'body',
             'name': 'schema',
@@ -345,7 +361,7 @@ def _typeddict_schema(
             {},
             annotation.annotation,
             collection_format,
-            _find_docstring_param(name, docstring)
+            _find_docstring_param(name, docstring) if docstring else None
         )
 
         camelcase_name = camelize(name, False)
