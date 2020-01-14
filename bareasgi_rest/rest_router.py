@@ -52,7 +52,9 @@ from .swagger import (
     make_swagger_path,
     make_swagger_parameters,
     gather_error_responses,
-    make_swagger_response_schema
+    make_swagger_response_schema,
+    make_swagger_responses,
+    make_swagger_entry
 )
 from .config import SwaggerConfig
 from .constants import (
@@ -282,50 +284,20 @@ class RestHttpRouter(BasicHttpRouter):
             status_description: str
     ):
         path_definition = PathDefinition(path)
-        swagger_path = make_swagger_path(path_definition)
-        signature = inspect.signature(callback)
-        docstring = docstring_parser.parse(inspect.getdoc(callback))
-        params = make_swagger_parameters(
+
+        entry = make_swagger_entry(
             method,
-            accept,
             path_definition,
-            signature,
-            docstring,
-            collection_format
+            callback,
+            accept,
+            content_type,
+            collection_format,
+            tags,
+            status_code,
+            status_description
         )
 
-        response: Dict[str, Any] = {
-            'description': status_description
-        }
-
-        response_schema = make_swagger_response_schema(
-            signature,
-            docstring,
-            collection_format
-        )
-        if response_schema is not None:
-            response['schema'] = response_schema
-
-        entry = {
-            'parameters': params,
-            'produces': [content_type.decode()],
-            'consumes': [accept.decode()],
-            'responses': {
-                status_code: response
-            }
-        }
-
-        if docstring:
-            if docstring.short_description:
-                entry['summary'] = docstring.short_description
-            if docstring.long_description:
-                entry['description'] = docstring.long_description
-            error_responses = gather_error_responses(docstring)
-            responses = cast(Dict[int, Dict[str, Any]], entry['responses'])
-            responses.update(error_responses)
-
-        if tags:
-            entry['tags'] = tags
+        swagger_path = make_swagger_path(path_definition)
 
         paths: Dict[str, Any] = self.swagger_dict['paths']
         current_path: Dict[str, Any] = paths.setdefault(swagger_path, {})

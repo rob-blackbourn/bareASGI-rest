@@ -7,6 +7,8 @@ from inspect import Parameter, Signature
 from typing import (
     AbstractSet,
     Any,
+    Awaitable,
+    Callable,
     Dict,
     List,
     Optional,
@@ -21,17 +23,6 @@ from docstring_parser import Docstring, DocstringParam, DocstringMeta
 from inflection import underscore, camelize
 
 import bareasgi_rest.typing_inspect as typing_inspect
-
-
-def make_swagger_path(path_definition: PathDefinition) -> str:
-    """Make a path compatible with swagger"""
-    swagger_path = '/' + '/'.join(
-        '{' + segment.name + '}' if segment.is_variable else segment.name
-        for segment in path_definition.segments
-    )
-    if path_definition.ends_with_slash:
-        swagger_path += '/'
-    return swagger_path
 
 
 TYPE_DEFINITIONS = {
@@ -127,12 +118,8 @@ TYPE_DEFINITIONS = {
 }
 
 
-def _check_is_required(
-        param: Parameter,
-        docstring_param: DocstringParam
-) -> bool:
+def _check_is_required(param: Parameter) -> bool:
     return param.default is Parameter.empty
-
 
 def _add_type_info(
         prop: Dict[str, Any],
@@ -176,7 +163,7 @@ def _make_swagger_parameter(
         collection_format: str,
         docstring_param: Optional[DocstringParam]
 ) -> Dict[str, Any]:
-    is_required = _check_is_required(param, docstring_param)
+    is_required = _check_is_required(param)
 
     parameter = {
         'name': camelize(param.name, False)
@@ -207,7 +194,7 @@ def _make_swagger_schema(
         'required': [
             name
             for name, param, docstring_param in params
-            if _check_is_required(param, docstring_param)
+            if _check_is_required(param)
         ],
         'properties': {
             name: _make_swagger_parameter(
@@ -254,101 +241,6 @@ def _make_swagger_parameters_inline(
     return parameters
 
 
-def make_swagger_parameters(
-        method: str,
-        accept: bytes,
-        path_definition: PathDefinition,
-        signature: Signature,
-        docstring: Docstring,
-        collection_format: str
-) -> List[Dict[str, Any]]:
-    """Make the swagger parameters"""
-    parameters: List[Dict[str, Any]] = []
-    path_variables: Set[str] = set()
-    for segment in path_definition.segments:
-        if segment.is_variable:
-            path_variable = underscore(segment.name)
-            path_variables.add(path_variable)
-            param = signature.parameters[path_variable]
-            docstring_param = _find_docstring_param(param.name, docstring)
-            parameter = _make_swagger_parameter(
-                'path',
-                param,
-                collection_format,
-                docstring_param
-            )
-            parameters.append(parameter)
-
-    if method == 'GET':
-        parameters.extend(
-            _make_swagger_parameters_inline(
-                'query',
-                signature,
-                path_variables,
-                docstring,
-                collection_format
-            )
-        )
-    elif accept in (b'application/x-www-form-urlencoded', b'multipart/form-data'):
-        parameters.extend(
-            _make_swagger_parameters_inline(
-                'formData',
-                signature,
-                path_variables,
-                docstring,
-                collection_format
-            )
-        )
-    else:
-        params = [
-            (
-                camelize(param.name, False),
-                param,
-                _find_docstring_param(param.name, docstring)
-            )
-            for param in signature.parameters.values()
-            if param.name not in path_variables
-        ]
-        if len(params) == 1 and typing_inspect.is_typed_dict(params[0][1].annotation):
-            _name, param, _docstring = params[0]
-            param_docstring = inspect.getdoc(param.annotation)
-            schema = _typeddict_schema(
-                'object',
-                typing_inspect.typed_dict_annotation(param.annotation),
-                docstring_parser.parse(param_docstring),
-                collection_format
-            )
-        else:
-            schema = _make_swagger_schema(params, collection_format)
-        parameters.append({
-            'in': 'body',
-            'name': 'schema',
-            'description': 'The body schema',
-            'schema': schema
-        })
-
-    return parameters
-
-
-def gather_error_responses(docstring: Docstring) -> Dict[int, Any]:
-    """Gather error responses"""
-    responses: Dict[int, Any] = {}
-    for raises in docstring.raises:
-        if raises.type_name != 'HTTPError':
-            continue
-        first, sep, rest = raises.description.partition(',')
-        if not sep:
-            continue
-        try:
-            error_code = int(first.strip())
-            responses[error_code] = {
-                'description': rest.strip()
-            }
-        except:  # pylint: disable=bare-except
-            continue
-    return responses
-
-
 def _typeddict_schema(
         schema_type: str,
         annotations: Dict[str, typing_inspect.TypedDictMember],
@@ -383,55 +275,140 @@ def _typeddict_schema(
         }
 
 
+def make_swagger_path(path_definition: PathDefinition) -> str:
+    """Make a path compatible with swagger"""
+    swagger_path = '/' + '/'.join(
+        '{' + segment.name + '}' if segment.is_variable else segment.name
+        for segment in path_definition.segments
+    )
+    if path_definition.ends_with_slash:
+        swagger_path += '/'
+    return swagger_path
+
+
+def make_swagger_parameters(
+        method: str,
+        accept: bytes,
+        path_definition: PathDefinition,
+        signature: Signature,
+        docstring: Docstring,
+        collection_format: str
+) -> List[Dict[str, Any]]:
+    """Make the swagger parameters"""
+
+    # Path parameters
+    parameters: List[Dict[str, Any]] = []
+    path_variables: Set[str] = set()
+    for segment in path_definition.segments:
+        if segment.is_variable:
+            path_variable = underscore(segment.name)
+            path_variables.add(path_variable)
+            param = signature.parameters[path_variable]
+            docstring_param = _find_docstring_param(param.name, docstring)
+            parameter = _make_swagger_parameter(
+                'path',
+                param,
+                collection_format,
+                docstring_param
+            )
+            parameters.append(parameter)
+
+    if method == 'GET':
+        # Query parameters
+        parameters.extend(
+            _make_swagger_parameters_inline(
+                'query',
+                signature,
+                path_variables,
+                docstring,
+                collection_format
+            )
+        )
+    elif accept in (b'application/x-www-form-urlencoded', b'multipart/form-data'):
+        # Form body parameters
+        parameters.extend(
+            _make_swagger_parameters_inline(
+                'formData',
+                signature,
+                path_variables,
+                docstring,
+                collection_format
+            )
+        )
+    else:
+        # Fall back to b'application/json'.
+        params = [
+            (
+                camelize(param.name, False),
+                param,
+                _find_docstring_param(param.name, docstring)
+            )
+            for param in signature.parameters.values()
+            if param.name not in path_variables
+        ]
+        if len(params) == 1 and typing_inspect.is_typed_dict(params[0][1].annotation):
+            _name, param, _docstring = params[0]
+            param_docstring = inspect.getdoc(param.annotation)
+            schema = _typeddict_schema(
+                'object',
+                typing_inspect.typed_dict_annotation(param.annotation),
+                docstring_parser.parse(param_docstring),
+                collection_format
+            )
+        else:
+            schema = _make_swagger_schema(params, collection_format)
+        parameters.append({
+            'in': 'body',
+            'name': 'schema',
+            'description': 'The body schema',
+            'schema': schema
+        })
+
+    return parameters
+
+
 def make_swagger_response_schema(
-        sig: Signature,
+        signature: Signature,
         docstring: Optional[Docstring],
         collection_format: str
 ) -> Optional[Dict[str, Any]]:
     """Make the swagger response schama"""
-    if sig.return_annotation is None:
+    if signature.return_annotation is None:
         return None
 
-    origin = typing_inspect.get_origin(sig.return_annotation)
-    if typing_inspect.is_typed_dict(sig.return_annotation):
+    if typing_inspect.is_typed_dict(signature.return_annotation):
         dict_docstring = docstring_parser.parse(
-            inspect.getdoc(sig.return_annotation)
+            inspect.getdoc(signature.return_annotation)
         )
         return _typeddict_schema(
             'object',
-            typing_inspect.typed_dict_annotation(sig.return_annotation),
+            typing_inspect.typed_dict_annotation(signature.return_annotation),
             dict_docstring,
             collection_format
         )
-    elif origin and origin is list:
-        # could be a list of typed dicts
-        args = typing_inspect.get_args(sig.return_annotation)
+    elif typing_inspect.is_list(signature.return_annotation):
+        args = typing_inspect.get_args(signature.return_annotation)
         if len(args) != 1:
             return None
         nested_type = args[0]
-        if typing_inspect.is_typed_dict(nested_type):
-            # A TypedDict
-            # List[TypedDict]
-            typeddict_docstring = docstring_parser.parse(inspect.getdoc(nested_type))
-            return _typeddict_schema(
-                'array',
-                typing_inspect.typed_dict_annotation(nested_type),
-                typeddict_docstring,
-                collection_format
-            )
-        else:
-            # List
+        if not typing_inspect.is_typed_dict(nested_type):
             return None
-    elif origin and origin is dict:
+        return _typeddict_schema(
+            'array',
+            typing_inspect.typed_dict_annotation(nested_type),
+            docstring_parser.parse(inspect.getdoc(nested_type)),
+            collection_format
+        )
+    elif typing_inspect.is_dict(signature.return_annotation):
         # A Dict
         return None
     else:
         # Something else
-        type_def = TYPE_DEFINITIONS.get(sig.return_annotation)
+        type_def = TYPE_DEFINITIONS.get(signature.return_annotation)
         if type_def:
             return_type = _add_type_info(
                 {},
-                sig.return_annotation,
+                signature.return_annotation,
                 collection_format,
                 docstring.returns if docstring else None
             )
@@ -439,3 +416,98 @@ def make_swagger_response_schema(
             return return_type
 
         return None
+
+
+def gather_error_responses(docstring: Docstring) -> Dict[int, Any]:
+    """Gather error responses"""
+    responses: Dict[int, Any] = {}
+    for raises in docstring.raises:
+        if raises.type_name != 'HTTPError':
+            continue
+        first, sep, rest = raises.description.partition(',')
+        if not sep:
+            continue
+        try:
+            error_code = int(first.strip())
+            responses[error_code] = {
+                'description': rest.strip()
+            }
+        except:  # pylint: disable=bare-except
+            continue
+    return responses
+
+def make_swagger_responses(
+        signature: Signature,
+        docstring: Optional[Docstring],
+        ok_status_code: int,
+        ok_status_description: str,
+        collection_format: str
+) -> Dict[int, Dict[str, Any]]:
+    ok_response: Dict[str, Any] = {
+        'description': ok_status_description
+    }
+
+    ok_response_schema = make_swagger_response_schema(
+        signature,
+        docstring,
+        collection_format
+    )
+    if ok_response_schema is not None:
+        ok_response['schema'] = ok_response_schema
+
+    responses: Dict[int, Dict[str, Any]] = {
+        ok_status_code: ok_response
+    }
+    if docstring:
+        error_responses = gather_error_responses(docstring)
+        responses.update(error_responses)
+
+    return responses
+
+def make_swagger_entry(
+        method: str,
+        path_definition: PathDefinition,
+        callback: Callable[..., Awaitable[Any]],
+        accept: bytes,
+        content_type: bytes,
+        collection_format: str,
+        tags: Optional[List[str]],
+        status_code: int,
+        status_description: str
+) -> Dict[str, Any]:
+    signature = inspect.signature(callback)
+    docstring = docstring_parser.parse(inspect.getdoc(callback))
+    params = make_swagger_parameters(
+        method,
+        accept,
+        path_definition,
+        signature,
+        docstring,
+        collection_format
+    )
+
+    responses = make_swagger_responses(
+        signature,
+        docstring,
+        status_code,
+        status_description,
+        collection_format
+    )
+
+    entry = {
+        'parameters': params,
+        'produces': [content_type.decode()],
+        'consumes': [accept.decode()],
+        'responses': responses
+    }
+
+    if docstring:
+        if docstring.short_description:
+            entry['summary'] = docstring.short_description
+        if docstring.long_description:
+            entry['description'] = docstring.long_description
+
+    if tags:
+        entry['tags'] = tags
+
+    return entry
