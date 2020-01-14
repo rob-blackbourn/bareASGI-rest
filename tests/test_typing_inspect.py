@@ -100,11 +100,10 @@ def test_typed_dict_keys():
     }
 
 def run_sample(fun, samples, nonsamples):
-    msg = "Error asserting that %s(%s) is %s"
     for s in samples:
-        assert fun(s), msg % (fun.__name__, str(s))
+        assert fun(s)
     for s in nonsamples:
-        assert not fun(s), msg % (fun.__name__, str(s))
+        assert not fun(s)
 
 def test_generic():
     T = TypeVar('T')
