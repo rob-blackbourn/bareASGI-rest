@@ -9,7 +9,6 @@ Attributes:
 
 import inspect
 import logging
-import json
 from typing import (
     AbstractSet,
     Any,
@@ -35,7 +34,6 @@ from baretypes import (
     HttpResponse
 )
 import bareutils.header as header
-import bareasgi_jinja2
 
 from .utils import (
     make_args,
@@ -47,11 +45,7 @@ from .serialization import (
     from_form_data,
     from_query_string
 )
-from .swagger import (
-    make_swagger_path,
-    make_swagger_entry
-)
-from .config import SwaggerConfig
+from .swagger import SwaggerRepository, SwaggerConfig, SwaggerController
 from .constants import (
     DEFAULT_SWAGGER_BASE_URL,
     DEFAULT_TYPEFACE_URL
@@ -134,36 +128,31 @@ class RestHttpRouter(BasicHttpRouter):
                 configuration. Defaults to None.
         """
         super().__init__(not_found_response or DEFAULT_NOT_FOUND_RESPONSE)
-        self.title = title
-        self.version = version
-        self.description = description
         self.consumes = consumes
         self.produces = produces
         self.base_path = base_path
-        self.swagger_base_url = swagger_base_url
-        self.typeface_url = typeface_url
-        self.config = config or SwaggerConfig()
 
         self.accepts: Dict[str, Dict[PathDefinition, bytes]] = {}
         self.collection_formats: Dict[str, Dict[PathDefinition, str]] = {}
 
-        self.add({'GET'}, base_path + '/swagger.json', self.swagger_json)
-        self.add({'GET'}, base_path + '/swagger', self.swagger_ui)
-
-        self.swagger_dict: Dict[str, Any] = {
-            'swagger': '2.0',
-            'basePath': self.base_path,
-            'info': {
-                'title': self.title,
-                'version': self.version,
-                'description': self.description
-            },
-            'produces': [name.decode() for name in self.produces.keys()],
-            'consumes': [name.decode() for name in self.consumes.keys()],
-            "paths": {},
-        }
-        if tags:
-            self.swagger_dict['tags'] = tags
+        self.swagger_repo = SwaggerRepository(
+            title,
+            version,
+            description,
+            base_path,
+            [name.decode() for name in self.consumes.keys()],
+            [name.decode() for name in self.produces.keys()],
+            tags
+        )
+        self.swagger_controller = SwaggerController(
+            title,
+            base_path,
+            swagger_base_url,
+            typeface_url,
+            config,
+            self.swagger_repo
+        )
+        self.swagger_controller.add_routes(self)
 
     def add_rest(
             self,
@@ -206,7 +195,7 @@ class RestHttpRouter(BasicHttpRouter):
                 content_type,
                 status_code
             )
-            self._add_swagger_path(
+            self.swagger_repo.add(
                 method,
                 path,
                 callback,
@@ -266,38 +255,6 @@ class RestHttpRouter(BasicHttpRouter):
 
         self.add_route(method, path_definition, rest_callback)
 
-    def _add_swagger_path(
-            self,
-            method: str,
-            path: str,
-            callback: RestCallback,
-            accept: bytes,
-            content_type: bytes,
-            collection_format: str,
-            tags: Optional[List[str]],
-            status_code: int,
-            status_description: str
-    ):
-        path_definition = PathDefinition(path)
-
-        entry = make_swagger_entry(
-            method,
-            path_definition,
-            callback,
-            accept,
-            content_type,
-            collection_format,
-            tags,
-            status_code,
-            status_description
-        )
-
-        swagger_path = make_swagger_path(path_definition)
-
-        paths: Dict[str, Any] = self.swagger_dict['paths']
-        current_path: Dict[str, Any] = paths.setdefault(swagger_path, {})
-        current_path[method.lower()] = entry
-
     def _make_writer(
             self,
             data: Optional[Any],
@@ -336,31 +293,3 @@ class RestHttpRouter(BasicHttpRouter):
             raise RuntimeError('No deserializer')
         body = await text_reader(content)
         return deserializer(body, media_type, params)
-
-    async def swagger_json(
-            self,
-            _scope: Scope,
-            _info: Info,
-            _matches: RouteMatches,
-            _content: Content
-    ) -> HttpResponse:
-        """The swagger JSON request handler"""
-        spec = json.dumps(self.swagger_dict)
-        return 200, [(b'content-type', b'application/json')], text_writer(spec)
-
-    @bareasgi_jinja2.template('swagger.html')
-    async def swagger_ui(
-            self,
-            _scope: Scope,
-            _info: Info,
-            _matches: RouteMatches,
-            _content: Content
-    ) -> Dict[str, Any]:
-        """The swagger view request handler"""
-        return {
-            "title": self.title,
-            "specs_url": "/api/1/swagger.json",
-            'swagger_base_url': self.swagger_base_url,
-            'typeface_url': self.typeface_url,
-            "config": self.config
-        }
