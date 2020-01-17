@@ -3,8 +3,6 @@
 
 from typing import (
     Any,
-    Awaitable,
-    Callable,
     Dict,
     List,
     Mapping,
@@ -13,6 +11,7 @@ from typing import (
 
 from bareasgi.basic_router.http_router import PathDefinition
 
+from ..types import RestCallback
 from .entry import make_swagger_entry
 from .paths import make_swagger_path
 
@@ -50,7 +49,7 @@ class SwaggerRepository:
             self,
             method: str,
             path: str,
-            callback: Callable[..., Awaitable[Any]],
+            callback: RestCallback,
             accept: bytes,
             content_type: bytes,
             collection_format: str,

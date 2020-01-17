@@ -3,8 +3,6 @@
 import inspect
 from typing import (
     Any,
-    Awaitable,
-    Callable,
     Dict,
     List,
     Optional,
@@ -13,6 +11,7 @@ from typing import (
 from bareasgi.basic_router.path_definition import PathDefinition
 import docstring_parser
 
+from ..types import RestCallback
 from .parameters import make_swagger_parameters
 from .responses import make_swagger_responses
 
@@ -20,7 +19,7 @@ from .responses import make_swagger_responses
 def make_swagger_entry(
         method: str,
         path_definition: PathDefinition,
-        callback: Callable[..., Awaitable[Any]],
+        callback: RestCallback,
         accept: bytes,
         content_type: bytes,
         collection_format: str,
