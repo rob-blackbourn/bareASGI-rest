@@ -1,19 +1,11 @@
 """Tests for swagger.py"""
 
-from datetime import datetime
 from decimal import Decimal
 import inspect
-from typing import Any, Dict, List, Optional
-try:
-    from typing import TypedDict  # type:ignore
-except:  # pylint: disable=bare-except
-    from typing_extensions import TypedDict
 
 from bareasgi.basic_router.path_definition import PathDefinition
 from docstring_parser import parse, Style
 from inflection import camelize
-
-from bareasgi_rest.swagger.paths import make_swagger_path
 
 from bareasgi_rest.swagger.parameters import (
     _make_swagger_parameter,
@@ -21,80 +13,11 @@ from bareasgi_rest.swagger.parameters import (
     _make_swagger_schema,
 )
 
-from bareasgi_rest.swagger.responses import (
-    make_swagger_response_schema
-)
-
 from bareasgi_rest.swagger.utils import (
     _find_docstring_param,
 )
 
-
-class MockDict(TypedDict):
-    """A mock typed dict
-
-    Args:
-        arg_num1 (str): The first arg
-        arg_num2 (List[int]): The second arg
-        arg_num3 (datetime): The third arg
-        arg_num4 (Optional[Decimal], optional): The fourth arg. Defaults to Decimal('1').
-        arg_num5 (Optional[float], optional): The fifth arg. Defaults to None.
-    """
-    arg_num1: str
-    arg_num2: List[int]
-    arg_num3: datetime
-    arg_num4: Optional[Decimal] = Decimal('1')
-    arg_num5: Optional[float] = None
-
-
-async def mock_func(
-        arg_num1: str,
-        *,
-        arg_num2: List[int],
-        arg_num3: datetime,
-        arg_num4: Optional[Decimal] = Decimal('1'),
-        arg_num5: Optional[float] = None
-) -> Dict[str, Any]:
-    """A mock function
-
-    A function to use in tests
-
-    Args:
-        arg_num1 (str): The first arg
-        arg_num2 (List[int]): The second arg
-        arg_num3 (datetime): The third arg
-        arg_num4 (Optional[Decimal], optional): The fourth arg. Defaults to Decimal('1').
-        arg_num5 (Optional[float], optional): The fifth arg. Defaults to None.
-
-    Raises:
-        ValueError: It doesn't actually raise this error
-
-    Returns:
-        Dict[str, Any]: The args as a dictionary
-    """
-    return {
-        'arg_num1': arg_num1,
-        'arg_num2': arg_num2,
-        'arg_num3': arg_num3,
-        'arg_num4': arg_num4,
-        'arg_num5': arg_num5
-    }
-
-
-def test_make_swagger_path():
-    """Test make_swagger_path"""
-    path = '/api/1/books/{bookId:int}'
-    swagger_path = make_swagger_path(PathDefinition(path))
-    assert swagger_path == '/api/1/books/{bookId}'
-
-
-def test_find_docstring_param():
-    """Test _find_docstring_param"""
-    docstring = parse(inspect.getdoc(mock_func), Style.auto)
-    arg1_param = _find_docstring_param('arg_num1', docstring)
-    assert arg1_param is not None
-    assert arg1_param.arg_name == 'arg_num1'
-    assert _find_docstring_param('badarg', docstring) is None
+from .mocks import mock_func
 
 
 def test_make_swagger_parameter():
@@ -416,72 +339,3 @@ def test_swagger_params_body():
             }
         }
     ]
-
-
-def test_make_swagger_response_schema():
-    """Test make_swagger_response_schema"""
-
-    async def func1() -> str:
-        """Func1
-
-        Returns:
-            str: A string
-        """
-
-    sig = inspect.signature(func1)
-    docstring = parse(inspect.getdoc(func1))
-    response = make_swagger_response_schema(sig, docstring, 'multi')
-    assert response == {
-        'type': 'string',
-        'description': 'A string'
-    }
-
-    async def func2() -> MockDict:
-        pass
-
-    sig = inspect.signature(func2)
-    docstring = parse(inspect.getdoc(func2))
-    response = make_swagger_response_schema(sig, docstring, 'multi')
-    assert response == {
-        'type': 'object',
-        'properties': {
-            'argNum1': {
-                'name': 'argNum1',
-                'description': 'The first arg',
-                'type': 'string'
-            },
-            'argNum2': {
-                'name': 'argNum2',
-                'description': 'The second arg',
-                'type': 'array',
-                'collectionFormat': 'multi',
-                'items': {
-                    'type': 'integer'
-                }
-            },
-            'argNum3': {
-                'name': 'argNum3',
-                'description': 'The third arg',
-                'type': 'string',
-                'format': 'date-time'
-            },
-            'argNum4': {
-                'name': 'argNum4',
-                'description': "The fourth arg. Defaults to Decimal('1').",
-                'type': 'number'
-            },
-            'argNum5': {
-                'name': 'argNum5',
-                'description': 'The fifth arg. Defaults to None.',
-                'type': 'number'
-            }
-        }
-    }
-
-    async def func3() -> List[MockDict]:
-        pass
-
-    sig = inspect.signature(func3)
-    docstring = parse(inspect.getdoc(func3))
-    response = make_swagger_response_schema(sig, docstring, 'multi')
-    assert response['type'] == 'array'
