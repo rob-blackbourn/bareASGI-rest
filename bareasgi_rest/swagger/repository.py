@@ -62,7 +62,7 @@ class SwaggerRepository:
         Args:
             method (str): The HTTP method
             path (str): The router path
-            callback (Callable[..., Awaitable[Any]]): The callback
+            callback (RestCallback): The callback
             accept (bytes): The accept header
             content_type (bytes): The content type
             collection_format (str): The collection format
