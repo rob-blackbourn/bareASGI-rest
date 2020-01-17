@@ -20,6 +20,7 @@ TYPE_DEFINITIONS = {
     },
     float: {
         'is_required': True,
+        'is_list': False,
         'type': 'number',
         'format': None,
     },
@@ -80,7 +81,7 @@ TYPE_DEFINITIONS = {
     List[float]: {
         'is_required': False,
         'is_list': True,
-        'type': 'string',
+        'type': 'number',
         'format': None,
     },
     List[Decimal]: {
