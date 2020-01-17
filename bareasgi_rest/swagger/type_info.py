@@ -1,5 +1,7 @@
 """Type Info"""
 
+from datetime import datetime
+from decimal import Decimal
 from typing import (
     Any,
     Dict,
@@ -12,7 +14,7 @@ from inflection import camelize
 import bareasgi_rest.typing_inspect as typing_inspect
 
 from .type_definitions import TYPE_DEFINITIONS
-from .utils import _find_docstring_param
+from .utils import _find_docstring_param, is_json_literal, is_json_container
 
 def _add_type_info(
         prop: Dict[str, Any],
@@ -83,3 +85,63 @@ def _typeddict_schema(
                 'properties': properties
             }
         }
+
+def get_json_literal_type(annotation: Any) -> Dict[str, Any]:
+    if annotation is str:
+        return {'type': 'string'}
+    elif annotation is int:
+        return {'type': 'int'}
+    elif annotation is float:
+        return {'type': 'number'}
+    elif annotation is Decimal:
+        return {'type': 'number'}
+    elif annotation is datetime:
+        return {'type': 'string', 'format': 'date-time'}
+    else:
+        raise RuntimeError('Invalid JSON literal')
+
+def get_json_properties(
+        annotations: Dict[str, typing_inspect.TypedDictMember]
+) -> Dict[str, Any]:
+    properties: Dict[str, Any] = {}
+    for name, annotation in annotations.items():
+        prop = get_json_literal_type(annotation)
+
+        camelcase_name = camelize(name, False)
+        prop['name'] = camelcase_name
+        properties[camelcase_name] = prop
+    return properties
+
+def get_json_container_type(
+        annotation: Any,
+        collection_format: str
+) -> Dict[str, Any]:
+    if typing_inspect.is_list(annotation):
+        contained_type, *_rest = typing_inspect.get_args(annotation)
+        return {
+            'type': 'array',
+            'collectionFormat': collection_format,
+            'items': get_swagger_type(contained_type, collection_format)
+        }
+    elif typing_inspect.is_dict(annotation):
+        return {'type': 'object'}
+    elif typing_inspect.is_typed_dict(annotation):
+        return {
+            'type': 'object',
+            'properties': get_json_properties(
+                typing_inspect.typed_dict_annotation(annotation)
+            )
+        }
+    else:
+        raise RuntimeError('Unhandled JSON container')
+
+def get_swagger_type(
+        annotation: Any,
+        collection_format: str
+) -> Dict[str, Any]:
+    if is_json_literal(annotation):
+        return get_json_literal_type(annotation)
+    elif is_json_container(annotation):
+        return get_json_container_type(annotation, collection_format)
+    else:
+        raise RuntimeError("Only JSON literals and containers are supported")
