@@ -13,8 +13,6 @@ from typing import (
     AbstractSet,
     Any,
     AsyncIterator,
-    Awaitable,
-    Callable,
     Dict,
     List,
     Mapping,
@@ -39,51 +37,22 @@ from .utils import (
     make_args,
     camelize_object
 )
-from .serialization import (
-    to_json,
-    from_json,
-    from_form_data,
-    from_query_string
-)
 from .swagger import SwaggerRepository, SwaggerConfig, SwaggerController
 from .constants import (
     DEFAULT_SWAGGER_BASE_URL,
-    DEFAULT_TYPEFACE_URL
+    DEFAULT_TYPEFACE_URL,
+    DEFAULT_CONSUMES,
+    DEFAULT_PRODUCES,
+    DEFAULT_COLLECTION_FORMAT,
+    DEFAULT_NOT_FOUND_RESPONSE
+)
+from .types import (
+    DictConsumes,
+    DictProduces,
+    RestCallback
 )
 
 LOGGER = logging.getLogger(__name__)
-
-Deserializer = Callable[[str, bytes, Dict[bytes, bytes]], Any]
-DictConsumes = Dict[bytes, Deserializer]
-DEFAULT_CONSUMES: DictConsumes = {
-    b'application/json': from_json,
-    b'*/*': from_json,
-    b'application/x-www-form-urlencoded': from_query_string,
-    b'multipart/form-data': from_form_data
-}
-
-Serializer = Callable[[Any], str]
-DictProduces = Dict[bytes, Serializer]
-DEFAULT_PRODUCES: DictProduces = {
-    b'application/json': to_json,
-    b'*/*': to_json
-}
-
-RestCallback = Callable[..., Awaitable[Any]]
-
-DEFAULT_COLLECTION_FORMAT = 'multi'
-DEFAULT_RESPONSES = {
-    200: {
-        'description': 'OK'
-    }
-}
-
-DEFAULT_NOT_FOUND_RESPONSE: HttpResponse = (
-    404,
-    [(b'content-type', b'text/plain')],
-    text_writer('Not Found'),
-    None
-)
 
 
 class RestHttpRouter(BasicHttpRouter):
@@ -261,7 +230,7 @@ class RestHttpRouter(BasicHttpRouter):
             accept: Optional[Mapping[bytes, float]]
     ) -> Optional[AsyncIterator[bytes]]:
         if data is None:
-            # No need to a writer if there is no data.
+            # No need for a writer if there is no data.
             return None
 
         if not accept:

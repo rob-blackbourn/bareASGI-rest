@@ -11,10 +11,11 @@ from typing import (
     Optional
 )
 
-from bareasgi.basic_router.http_router import BasicHttpRouter, PathDefinition
+from bareasgi.basic_router.http_router import PathDefinition
 
 from .entry import make_swagger_entry
 from .paths import make_swagger_path
+
 
 class SwaggerRepository:
     """A swagger repository"""
@@ -45,7 +46,6 @@ class SwaggerRepository:
         if tags:
             self.definition['tags'] = tags
 
-
     def add(
             self,
             method: str,
@@ -58,6 +58,19 @@ class SwaggerRepository:
             status_code: int,
             status_description: str
     ):
+        """Add a swagger entry
+
+        Args:
+            method (str): The HTTP method
+            path (str): The router path
+            callback (Callable[..., Awaitable[Any]]): The callback
+            accept (bytes): The accept header
+            content_type (bytes): The content type
+            collection_format (str): The collection format
+            tags (Optional[List[str]]): Optional tags
+            status_code (int): The ok status code
+            status_description (str): The ok status description
+        """
         path_definition = PathDefinition(path)
 
         entry = make_swagger_entry(
