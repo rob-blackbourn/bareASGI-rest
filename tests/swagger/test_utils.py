@@ -1,5 +1,7 @@
 """Tests for swagger.py"""
 
+from datetime import datetime
+from decimal import Decimal
 import inspect
 from typing import Any, Dict, List
 
@@ -7,10 +9,11 @@ from docstring_parser import parse, Style
 
 from bareasgi_rest.swagger.utils import (
     _find_docstring_param,
-    is_json_container
+    is_json_container,
+    is_json_literal
 )
 
-from .mocks import mock_func
+from .mocks import mock_func, MockDict
 
 
 def test_find_docstring_param():
@@ -44,4 +47,15 @@ def test_is_json_container():
         pass
     typed_dict_sig = inspect.signature(typed_dict_func)
     assert is_json_container(typed_dict_sig.return_annotation)
-    
+
+
+def test_is_json_literal():
+    """Test is_json_literal"""
+    assert is_json_literal(str)
+    assert is_json_literal(int)
+    assert is_json_literal(float)
+    assert is_json_literal(Decimal)
+    assert is_json_literal(datetime)
+    assert not is_json_literal(List[str])
+    assert not is_json_literal(Dict[str, Any])
+    assert not is_json_literal(MockDict)
