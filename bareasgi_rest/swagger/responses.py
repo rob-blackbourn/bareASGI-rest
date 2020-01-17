@@ -15,7 +15,44 @@ import bareasgi_rest.typing_inspect as typing_inspect
 
 from .type_definitions import TYPE_DEFINITIONS
 from .type_info import _add_type_info, _typeddict_schema
+from .utils import is_json_container
 
+def _make_json_container_schema(
+        annotation: Any,
+        collection_format: str
+) -> Optional[Dict[str, Any]]:
+    if typing_inspect.is_typed_dict(annotation):
+        dict_docstring = docstring_parser.parse(
+            inspect.getdoc(annotation)
+        )
+        return _typeddict_schema(
+            'object',
+            typing_inspect.typed_dict_annotation(annotation),
+            dict_docstring,
+            collection_format
+        )
+    
+    if typing_inspect.is_list(annotation):
+        nested_type, *_rest = typing_inspect.get_args(annotation)
+        if typing_inspect.is_typed_dict(nested_type):
+            return _typeddict_schema(
+                'array',
+                typing_inspect.typed_dict_annotation(nested_type),
+                docstring_parser.parse(inspect.getdoc(nested_type)),
+                collection_format
+            )
+        elif typing_inspect.is_dict(nested_type):
+            # TODO: What to do for a Dict?
+            return None
+        else:
+            # TODO: What to do for a JSON literal?
+            return None
+    
+    if typing_inspect.is_dict(annotation):
+        # A Dict
+        return None
+
+    raise RuntimeError("Not a JSON container")
 
 def make_swagger_response_schema(
         signature: Signature,
@@ -26,32 +63,11 @@ def make_swagger_response_schema(
     if signature.return_annotation is None:
         return None
 
-    if typing_inspect.is_typed_dict(signature.return_annotation):
-        dict_docstring = docstring_parser.parse(
-            inspect.getdoc(signature.return_annotation)
-        )
-        return _typeddict_schema(
-            'object',
-            typing_inspect.typed_dict_annotation(signature.return_annotation),
-            dict_docstring,
+    if is_json_container(signature.return_annotation):
+        return _make_json_container_schema(
+            signature.return_annotation,
             collection_format
         )
-    elif typing_inspect.is_list(signature.return_annotation):
-        args = typing_inspect.get_args(signature.return_annotation)
-        if len(args) != 1:
-            return None
-        nested_type = args[0]
-        if not typing_inspect.is_typed_dict(nested_type):
-            return None
-        return _typeddict_schema(
-            'array',
-            typing_inspect.typed_dict_annotation(nested_type),
-            docstring_parser.parse(inspect.getdoc(nested_type)),
-            collection_format
-        )
-    elif typing_inspect.is_dict(signature.return_annotation):
-        # A Dict
-        return None
     else:
         # Something else
         type_def = TYPE_DEFINITIONS.get(signature.return_annotation)
