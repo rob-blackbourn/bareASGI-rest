@@ -13,13 +13,20 @@ from bareasgi.basic_router.path_definition import PathDefinition
 from docstring_parser import parse, Style
 from inflection import camelize
 
-from bareasgi_rest.swagger import (
-    make_swagger_path,
+from bareasgi_rest.swagger.paths import make_swagger_path
+
+from bareasgi_rest.swagger.parameters import (
     _make_swagger_parameter,
-    _find_docstring_param,
-    _make_swagger_schema,
     make_swagger_parameters,
+    _make_swagger_schema,
+)
+
+from bareasgi_rest.swagger.responses import (
     make_swagger_response_schema
+)
+
+from bareasgi_rest.swagger.utils import (
+    _find_docstring_param,
 )
 
 
@@ -416,7 +423,7 @@ def test_make_swagger_response_schema():
 
     async def func1() -> str:
         """Func1
-        
+
         Returns:
             str: A string
         """
@@ -470,7 +477,6 @@ def test_make_swagger_response_schema():
             }
         }
     }
-
 
     async def func3() -> List[MockDict]:
         pass

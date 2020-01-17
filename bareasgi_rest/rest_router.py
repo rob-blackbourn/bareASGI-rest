@@ -36,7 +36,6 @@ from baretypes import (
 )
 import bareutils.header as header
 import bareasgi_jinja2
-import docstring_parser
 
 from .utils import (
     make_args,
@@ -50,10 +49,6 @@ from .serialization import (
 )
 from .swagger import (
     make_swagger_path,
-    make_swagger_parameters,
-    gather_error_responses,
-    make_swagger_response_schema,
-    make_swagger_responses,
     make_swagger_entry
 )
 from .config import SwaggerConfig

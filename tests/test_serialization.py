@@ -10,12 +10,13 @@ from bareasgi_rest.serialization import (
     as_datetime
 )
 
+
 def test_json():
     """Test for as_datetime"""
     for text in [
-        '2014-01-01T23:28:56.782Z',
-        '2014-02-01T09:28:56.321-10:00',
-        '2014-02-01T09:28:56.321+00:00'
+            '2014-01-01T23:28:56.782Z',
+            '2014-02-01T09:28:56.321-10:00',
+            '2014-02-01T09:28:56.321+00:00'
     ]:
         timestamp = json_to_datetime(text)
         roundtrip = datetime_to_json(timestamp)
