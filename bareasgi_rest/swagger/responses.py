@@ -10,10 +10,11 @@ from typing import (
 )
 
 import docstring_parser
-from docstring_parser import Docstring, DocstringReturns, DocstringRaises
+from docstring_parser import DocstringReturns, DocstringRaises
 
 import bareasgi_rest.typing_inspect as typing_inspect
 
+from .errors import gather_error_responses
 from .type_definitions import TYPE_DEFINITIONS
 from .type_info import _add_type_info, _typeddict_schema
 from .utils import is_json_container
@@ -85,25 +86,6 @@ def make_swagger_response_schema(
             return return_type
 
         return None
-
-
-def gather_error_responses(docstring_raises: List[DocstringRaises]) -> Dict[int, Any]:
-    """Gather error responses"""
-    responses: Dict[int, Any] = {}
-    for raises in docstring_raises:
-        if raises.type_name != 'HTTPError':
-            continue
-        first, sep, rest = raises.description.partition(',')
-        if not sep:
-            continue
-        try:
-            error_code = int(first.strip())
-            responses[error_code] = {
-                'description': rest.strip()
-            }
-        except:  # pylint: disable=bare-except
-            continue
-    return responses
 
 
 def make_swagger_responses(
