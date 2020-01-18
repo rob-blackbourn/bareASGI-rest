@@ -3,7 +3,7 @@
 from datetime import datetime
 import json
 
-from bareasgi_rest.json_serialization import (
+from bareasgi_rest.protocol.json import (
     json_to_datetime,
     datetime_to_json,
     JSONEncoderEx,

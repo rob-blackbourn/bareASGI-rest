@@ -10,7 +10,7 @@ except:  # pylint: disable=bare-except
     from typing_extensions import TypedDict
 
 from bareasgi_rest.types import Body
-from bareasgi_rest.json_serialization import (
+from bareasgi_rest.protocol.json import (
     is_json_container,
     is_json_literal
 )

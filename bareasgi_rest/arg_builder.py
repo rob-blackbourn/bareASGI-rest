@@ -8,7 +8,7 @@ from inflection import camelize
 import bareasgi_rest.typing_inspect as typing_inspect
 from .types import Body
 from .utils import is_body_type, get_body_type
-from .json_serialization import from_json_value
+from .protocol.json import from_json_value
 
 
 def make_args(
