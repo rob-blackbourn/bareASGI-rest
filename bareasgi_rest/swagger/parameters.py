@@ -1,7 +1,6 @@
 """Parameters"""
 
-import inspect
-from inspect import Parameter, Signature
+from inspect import Parameter
 from typing import (
     AbstractSet,
     Any,
@@ -14,13 +13,12 @@ from typing import (
 )
 
 from bareasgi.basic_router.path_definition import PathDefinition
-import docstring_parser
 from docstring_parser import Docstring, DocstringParam
 from inflection import camelize, underscore
 
 import bareasgi_rest.typing_inspect as typing_inspect
 
-from .type_info import _add_type_info, _typeddict_schema
+from .type_info import get_property
 from .utils import _check_is_required, _find_docstring_param
 
 
@@ -32,25 +30,19 @@ def _make_swagger_parameter(
 ) -> Dict[str, Any]:
     is_required = _check_is_required(param)
 
-    parameter = {
-        'name': camelize(param.name, False)
-    }
-
-    _add_type_info(
-        parameter,
+    prop = get_property(
         param.annotation,
-        collection_format,
-        docstring_param
+        camelize(param.name, False),
+        docstring_param.description if docstring_param else None,
+        param.default,
+        collection_format
     )
 
     if source != 'body':
-        parameter['in'] = source
-        parameter['required'] = is_required
+        prop['in'] = source
+        prop['required'] = is_required
 
-    if param.default != Parameter.empty:
-        parameter['default'] = param.default
-
-    return parameter
+    return prop
 
 
 def _make_swagger_parameters_inline(
@@ -85,7 +77,7 @@ def _make_swagger_schema(
         'required': [
             name
             for name, param, docstring_param in params
-            if _check_is_required(param)
+            if param.default is Parameter.empty
         ],
         'properties': {
             name: _make_swagger_parameter(
@@ -161,11 +153,11 @@ def make_swagger_parameters(
         ]
         if len(params) == 1 and typing_inspect.is_typed_dict(params[0][1].annotation):
             _name, param, _docstring = params[0]
-            param_docstring = inspect.getdoc(param.annotation)
-            schema = _typeddict_schema(
-                'object',
-                typing_inspect.typed_dict_annotation(param.annotation),
-                docstring_parser.parse(param_docstring),
+            schema = get_property(
+                param.annotation,
+                camelize(param.name, False),
+                None,
+                Parameter.empty,
                 collection_format
             )
         else:
