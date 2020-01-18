@@ -3,13 +3,11 @@
 from datetime import datetime
 import json
 
-from bareasgi_rest.protocol.json import (
+from bareasgi_rest.protocol.json.serialization import (
     json_to_datetime,
     datetime_to_json,
     JSONEncoderEx,
-    as_datetime,
-    camelize_object,
-    underscore_object,
+    as_datetime
 )
 
 
@@ -34,32 +32,3 @@ def test_json():
     text = json.dumps(orig, cls=JSONEncoderEx)
     roundtrip = json.loads(text, object_hook=as_datetime)
     assert orig == roundtrip
-
-
-def test_casing():
-    """Tests for camelize and underscore"""
-    orig_dct = {
-        'first_name': 'rob',
-        'addresses': [
-            {
-                'street_name': 'my street'
-            },
-            {
-                'street_name': 'my other street'
-            }
-        ]
-    }
-    camel_dct = camelize_object(orig_dct)
-    assert camel_dct == {
-        'firstName': 'rob',
-        'addresses': [
-            {
-                'streetName': 'my street'
-            },
-            {
-                'streetName': 'my other street'
-            }
-        ]
-    }
-    underscore_dct = underscore_object(camel_dct)
-    assert underscore_dct == orig_dct
