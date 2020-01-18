@@ -62,17 +62,18 @@ def _make_swagger_parameters_inline(
 ) -> List[Dict[str, Any]]:
     """Make inline paramters for query or form"""
     props: List[Dict[str, Any]] = []
-    for param in parameters.values():
-        if param.name in path_variables:
+    for parameter in parameters.values():
+        if parameter.name in path_variables:
             continue
-        docstring_param = _find_docstring_param(param.name, docstring)
-        prop = _make_swagger_parameter(
-            source,
-            param,
-            collection_format,
-            docstring_param
+        docstring_param = _find_docstring_param(parameter.name, docstring)
+        props.append(
+            _make_swagger_parameter(
+                source,
+                parameter,
+                collection_format,
+                docstring_param
+            )
         )
-        props.append(prop)
     return props
 
 
@@ -86,6 +87,11 @@ def make_swagger_parameters(
 ) -> List[Dict[str, Any]]:
     """Make the swagger parameters"""
 
+    available_parameters = {
+        name: parameter
+        for name, parameter in parameters.items()
+    }
+
     # Path parameters
     props: List[Dict[str, Any]] = []
     path_variables: Set[str] = set()
@@ -93,7 +99,7 @@ def make_swagger_parameters(
         if segment.is_variable:
             path_variable = underscore(segment.name)
             path_variables.add(path_variable)
-            parameter = parameters[path_variable]
+            parameter = available_parameters.pop(path_variable)
             docstring_param = _find_docstring_param(parameter.name, docstring)
             prop = _make_swagger_parameter(
                 'path',
@@ -108,7 +114,7 @@ def make_swagger_parameters(
         props.extend(
             _make_swagger_parameters_inline(
                 'query',
-                parameters,
+                available_parameters,
                 path_variables,
                 docstring,
                 collection_format
@@ -119,7 +125,7 @@ def make_swagger_parameters(
         props.extend(
             _make_swagger_parameters_inline(
                 'formData',
-                parameters,
+                available_parameters,
                 path_variables,
                 docstring,
                 collection_format
@@ -127,9 +133,7 @@ def make_swagger_parameters(
         )
     else:
         # Fall back to b'application/json'.
-        for parameter in parameters.values():
-            if parameter.name in path_variables:
-                continue
+        for parameter in available_parameters.values():
             docstring_param = _find_docstring_param(parameter.name, docstring)
             if is_body_type(parameter.annotation):
                 body_type = get_body_type(parameter.annotation)
