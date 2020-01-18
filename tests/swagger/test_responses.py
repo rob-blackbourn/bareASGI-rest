@@ -24,7 +24,11 @@ def test_make_swagger_response_schema():
 
     sig = inspect.signature(func1)
     docstring = parse(inspect.getdoc(func1))
-    response = make_swagger_response_schema(sig, docstring, 'multi')
+    response = make_swagger_response_schema(
+        sig.return_annotation,
+        docstring.returns if docstring else None,
+        'multi'
+    )
     assert response == {
         'type': 'string',
         'description': 'A string'
@@ -35,7 +39,11 @@ def test_make_swagger_response_schema():
 
     sig = inspect.signature(func2)
     docstring = parse(inspect.getdoc(func2))
-    response = make_swagger_response_schema(sig, docstring, 'multi')
+    response = make_swagger_response_schema(
+        sig.return_annotation,
+        docstring.returns if docstring else None,
+        'multi'
+    )
     assert response == {
         'type': 'object',
         'properties': {
@@ -77,5 +85,9 @@ def test_make_swagger_response_schema():
 
     sig = inspect.signature(func3)
     docstring = parse(inspect.getdoc(func3))
-    response = make_swagger_response_schema(sig, docstring, 'multi')
+    response = make_swagger_response_schema(
+        sig.return_annotation,
+        docstring.returns if docstring else None,
+        'multi'
+    )
     assert response['type'] == 'array'

@@ -163,7 +163,7 @@ def test_swagger_params_get():
         'GET',
         accept,
         path_definition,
-        sig,
+        sig.parameters,
         docstring,
         collection_format
     )
@@ -224,7 +224,7 @@ def test_swagger_params_form():
         'POST',
         accept,
         path_definition,
-        sig,
+        sig.parameters,
         docstring,
         collection_format
     )
@@ -285,7 +285,7 @@ def test_swagger_params_body():
         'POST',
         accept,
         path_definition,
-        sig,
+        sig.parameters,
         docstring,
         collection_format
     )

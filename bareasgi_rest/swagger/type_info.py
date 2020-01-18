@@ -16,6 +16,7 @@ import bareasgi_rest.typing_inspect as typing_inspect
 from .type_definitions import TYPE_DEFINITIONS
 from .utils import _find_docstring_param, is_json_literal, is_json_container
 
+
 def _add_type_info(
         prop: Dict[str, Any],
         annotation: Any,
@@ -86,6 +87,7 @@ def _typeddict_schema(
             }
         }
 
+
 def get_json_literal_type(annotation: Any) -> Dict[str, Any]:
     if annotation is str:
         return {'type': 'string'}
@@ -100,6 +102,7 @@ def get_json_literal_type(annotation: Any) -> Dict[str, Any]:
     else:
         raise RuntimeError('Invalid JSON literal')
 
+
 def get_json_properties(
         annotations: Dict[str, typing_inspect.TypedDictMember]
 ) -> Dict[str, Any]:
@@ -111,6 +114,7 @@ def get_json_properties(
         prop['name'] = camelcase_name
         properties[camelcase_name] = prop
     return properties
+
 
 def get_json_container_type(
         annotation: Any,
@@ -134,6 +138,7 @@ def get_json_container_type(
         }
     else:
         raise RuntimeError('Unhandled JSON container')
+
 
 def get_swagger_type(
         annotation: Any,

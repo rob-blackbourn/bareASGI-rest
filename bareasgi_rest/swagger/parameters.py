@@ -7,6 +7,7 @@ from typing import (
     Any,
     Dict,
     List,
+    Mapping,
     Optional,
     Set,
     Tuple
@@ -54,25 +55,25 @@ def _make_swagger_parameter(
 
 def _make_swagger_parameters_inline(
         source: str,
-        sig: Signature,
+        parameters: Mapping[str, Parameter],
         path_variables: AbstractSet[str],
         docstring: Docstring,
         collection_format: str
 ) -> List[Dict[str, Any]]:
     """Make inline paramters for query or form"""
-    parameters: List[Dict[str, Any]] = []
-    for param in sig.parameters.values():
+    props: List[Dict[str, Any]] = []
+    for param in parameters.values():
         if param.name in path_variables:
             continue
         docstring_param = _find_docstring_param(param.name, docstring)
-        parameter = _make_swagger_parameter(
+        prop = _make_swagger_parameter(
             source,
             param,
             collection_format,
             docstring_param
         )
-        parameters.append(parameter)
-    return parameters
+        props.append(prop)
+    return props
 
 
 def _make_swagger_schema(
@@ -102,35 +103,35 @@ def make_swagger_parameters(
         method: str,
         accept: bytes,
         path_definition: PathDefinition,
-        signature: Signature,
+        parameters: Mapping[str, Parameter],
         docstring: Docstring,
         collection_format: str
 ) -> List[Dict[str, Any]]:
     """Make the swagger parameters"""
 
     # Path parameters
-    parameters: List[Dict[str, Any]] = []
+    props: List[Dict[str, Any]] = []
     path_variables: Set[str] = set()
     for segment in path_definition.segments:
         if segment.is_variable:
             path_variable = underscore(segment.name)
             path_variables.add(path_variable)
-            param = signature.parameters[path_variable]
+            param = parameters[path_variable]
             docstring_param = _find_docstring_param(param.name, docstring)
-            parameter = _make_swagger_parameter(
+            prop = _make_swagger_parameter(
                 'path',
                 param,
                 collection_format,
                 docstring_param
             )
-            parameters.append(parameter)
+            props.append(prop)
 
     if method == 'GET':
         # Query parameters
-        parameters.extend(
+        props.extend(
             _make_swagger_parameters_inline(
                 'query',
-                signature,
+                parameters,
                 path_variables,
                 docstring,
                 collection_format
@@ -138,10 +139,10 @@ def make_swagger_parameters(
         )
     elif accept in (b'application/x-www-form-urlencoded', b'multipart/form-data'):
         # Form body parameters
-        parameters.extend(
+        props.extend(
             _make_swagger_parameters_inline(
                 'formData',
-                signature,
+                parameters,
                 path_variables,
                 docstring,
                 collection_format
@@ -155,7 +156,7 @@ def make_swagger_parameters(
                 param,
                 _find_docstring_param(param.name, docstring)
             )
-            for param in signature.parameters.values()
+            for param in parameters.values()
             if param.name not in path_variables
         ]
         if len(params) == 1 and typing_inspect.is_typed_dict(params[0][1].annotation):
@@ -169,11 +170,11 @@ def make_swagger_parameters(
             )
         else:
             schema = _make_swagger_schema(params, collection_format)
-        parameters.append({
+        props.append({
             'in': 'body',
             'name': 'schema',
             'description': 'The body schema',
             'schema': schema
         })
 
-    return parameters
+    return props

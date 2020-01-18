@@ -33,14 +33,15 @@ def make_swagger_entry(
         method,
         accept,
         path_definition,
-        signature,
+        signature.parameters,
         docstring,
         collection_format
     )
 
     responses = make_swagger_responses(
-        signature,
-        docstring,
+        signature.return_annotation,
+        docstring.returns if docstring else None,
+        docstring.raises if docstring else None,
         status_code,
         status_description,
         collection_format

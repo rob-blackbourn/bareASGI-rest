@@ -5,17 +5,19 @@ from inspect import Signature
 from typing import (
     Any,
     Dict,
+    List,
     Optional
 )
 
 import docstring_parser
-from docstring_parser import Docstring
+from docstring_parser import Docstring, DocstringReturns, DocstringRaises
 
 import bareasgi_rest.typing_inspect as typing_inspect
 
 from .type_definitions import TYPE_DEFINITIONS
 from .type_info import _add_type_info, _typeddict_schema
 from .utils import is_json_container
+
 
 def _make_json_container_schema(
         annotation: Any,
@@ -31,7 +33,7 @@ def _make_json_container_schema(
             dict_docstring,
             collection_format
         )
-    
+
     if typing_inspect.is_list(annotation):
         nested_type, *_rest = typing_inspect.get_args(annotation)
         if typing_inspect.is_typed_dict(nested_type):
@@ -47,36 +49,37 @@ def _make_json_container_schema(
         else:
             # TODO: What to do for a JSON literal?
             return None
-    
+
     if typing_inspect.is_dict(annotation):
         # A Dict
         return None
 
     raise RuntimeError("Not a JSON container")
 
+
 def make_swagger_response_schema(
-        signature: Signature,
-        docstring: Optional[Docstring],
+        annotation: Any,
+        docstring_returns: Optional[DocstringReturns],
         collection_format: str
 ) -> Optional[Dict[str, Any]]:
     """Make the swagger response schama"""
-    if signature.return_annotation is None:
+    if annotation is None:
         return None
 
-    if is_json_container(signature.return_annotation):
+    if is_json_container(annotation):
         return _make_json_container_schema(
-            signature.return_annotation,
+            annotation,
             collection_format
         )
     else:
         # Something else
-        type_def = TYPE_DEFINITIONS.get(signature.return_annotation)
+        type_def = TYPE_DEFINITIONS.get(annotation)
         if type_def:
             return_type = _add_type_info(
                 {},
-                signature.return_annotation,
+                annotation,
                 collection_format,
-                docstring.returns if docstring else None
+                docstring_returns
             )
 
             return return_type
@@ -84,10 +87,10 @@ def make_swagger_response_schema(
         return None
 
 
-def gather_error_responses(docstring: Docstring) -> Dict[int, Any]:
+def gather_error_responses(docstring_raises: List[DocstringRaises]) -> Dict[int, Any]:
     """Gather error responses"""
     responses: Dict[int, Any] = {}
-    for raises in docstring.raises:
+    for raises in docstring_raises:
         if raises.type_name != 'HTTPError':
             continue
         first, sep, rest = raises.description.partition(',')
@@ -104,8 +107,9 @@ def gather_error_responses(docstring: Docstring) -> Dict[int, Any]:
 
 
 def make_swagger_responses(
-        signature: Signature,
-        docstring: Optional[Docstring],
+        return_annotation: Any,
+        docstring_returns: Optional[DocstringReturns],
+        docstring_raises: Optional[List[DocstringRaises]],
         ok_status_code: int,
         ok_status_description: str,
         collection_format: str
@@ -115,8 +119,8 @@ def make_swagger_responses(
     }
 
     ok_response_schema = make_swagger_response_schema(
-        signature,
-        docstring,
+        return_annotation,
+        docstring_returns,
         collection_format
     )
     if ok_response_schema is not None:
@@ -125,8 +129,8 @@ def make_swagger_responses(
     responses: Dict[int, Dict[str, Any]] = {
         ok_status_code: ok_response
     }
-    if docstring:
-        error_responses = gather_error_responses(docstring)
+    if docstring_raises:
+        error_responses = gather_error_responses(docstring_raises)
         responses.update(error_responses)
 
     return responses
