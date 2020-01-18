@@ -19,6 +19,7 @@ from typing import (
 from inflection import camelize, underscore
 
 import bareasgi_rest.typing_inspect as typing_inspect
+from .types import Body
 
 T = TypeVar('T')  # pylint: disable=invalid-name
 
@@ -82,6 +83,7 @@ class NullIter(Generic[T]):
 def _is_supported_optional(annotation) -> bool:
     return (
         annotation is Optional[str] or
+        annotation is Optional[bool] or
         annotation is Optional[int] or
         annotation is Optional[float] or
         annotation is Optional[Decimal] or
@@ -97,6 +99,8 @@ def _coerce_builtin(value: Any, builtin_type: Type) -> Any:
             return value
         elif builtin_type is int:
             return int(value)
+        elif builtin_type is bool:
+            return value.lower() == 'true'
         elif builtin_type is float:
             return float(value)
         elif builtin_type is Decimal:
@@ -116,6 +120,8 @@ def _coerce(value: Any, annotation: Any) -> Any:
 
     if annotation is Optional[str]:
         return None if not value else _coerce(value, str)
+    elif annotation is Optional[bool]:
+        return None if not value else _coerce(value, bool)
     elif annotation is Optional[int]:
         return None if not value else _coerce(value, int)
     elif annotation is Optional[float]:
@@ -126,6 +132,8 @@ def _coerce(value: Any, annotation: Any) -> Any:
         return None if not value else _coerce(value, datetime)
     elif annotation is List[str]:
         contained_type: Any = str
+    elif annotation is List[bool]:
+        contained_type = bool
     elif annotation is List[int]:
         contained_type = int
     elif annotation is List[float]:
@@ -167,6 +175,7 @@ def _update_defaults(
 
     return values
 
+
 def _find_optional_body_parameter(signature: Signature) -> Optional[Parameter]:
     body_parameters: List[Parameter] = []
     for parameter in signature.parameters.values():
@@ -186,6 +195,7 @@ def _find_optional_body_parameter(signature: Signature) -> Optional[Parameter]:
         )
     )
 
+
 def make_args(
         signature: Signature,
         matches: Dict[str, str],
@@ -194,16 +204,16 @@ def make_args(
 ) -> Tuple[Tuple[Any, ...], Dict[str, Any]]:
     """Make args and kwargs for the given signature from the route matches,
     query args and body.
-    
+
     Args:
         signature (Signature): The function signature
         matches (Dict[str, str]): The route matches
         query (Dict[str, Any]): A dictionary built from the query string
         body (Dict[str, Any]): A dictionary built from the body
-    
+
     Raises:
         KeyError: If a parameter was not found
-    
+
     Returns:
         Tuple[Tuple[Any, ...], Dict[str, Any]]: A tuple for *args and **kwargs
     """
@@ -218,7 +228,8 @@ def make_args(
         if parameter is body_parameter:
             value = _update_defaults(body.copy(), parameter.annotation)
         else:
-            camcelcase_name = camelize(parameter.name, uppercase_first_letter=False)
+            camcelcase_name = camelize(
+                parameter.name, uppercase_first_letter=False)
             if camcelcase_name in matches:
                 value = _coerce(matches[camcelcase_name], parameter.annotation)
             elif camcelcase_name in query:
@@ -243,3 +254,12 @@ def make_args(
     bound_args.apply_defaults()
 
     return bound_args.args, bound_args.kwargs
+
+
+def is_body_type(annotation: Any) -> bool:
+    return typing_inspect.get_origin(annotation) is Body
+
+
+def get_body_type(annotation: Any) -> Any:
+    body_type, *_rest = typing_inspect.get_args(annotation)
+    return body_type

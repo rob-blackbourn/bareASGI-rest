@@ -298,44 +298,38 @@ def test_swagger_params_body():
             'description': 'The first arg'
         },
         {
-            'in': 'body',
-            'name': 'schema',
-            'description': 'The body schema',
-            'schema': {
-                'type': 'object',
-                'required': [
-                    'argNum2',
-                    'argNum3'
-                ],
-                'properties': {
-                    'argNum2': {
-                        'name': 'argNum2',
-                        'type': 'array',
-                        'collectionFormat': 'multi',
-                        'items': {
-                            'type': 'integer'
-                        },
-                        'description': 'The second arg'
-                    },
-                    'argNum3': {
-                        'name': 'argNum3',
-                        'type': 'string',
-                        'format': 'date-time',
-                        'description': 'The third arg'
-                    },
-                    'argNum4': {
-                        'name': 'argNum4',
-                        'type': 'number',
-                        'default': Decimal('1'),
-                        'description': "The fourth arg. Defaults to Decimal('1')."
-                    },
-                    'argNum5': {
-                        'name': 'argNum5',
-                        'type': 'number',
-                        'default': None,
-                        'description': 'The fifth arg. Defaults to None.'
-                    }
-                }
-            }
+            'name': 'argNum2',
+            'type': 'array',
+            'collectionFormat': 'multi',
+            'items': {
+                'type': 'integer'
+            },
+            'in': 'query',
+            'required': True,
+            'description': 'The second arg'
+        },
+        {
+            'name': 'argNum3',
+            'type': 'string',
+            'format': 'date-time',
+            'in': 'query',
+            'required': True,
+            'description': 'The third arg'
+        },
+        {
+            'name': 'argNum4',
+            'type': 'number',
+            'in': 'query',
+            'required': False,
+            'default': Decimal('1'),
+            'description': "The fourth arg. Defaults to Decimal('1')."
+        },
+        {
+            'name': 'argNum5',
+            'type': 'number',
+            'in': 'query',
+            'required': False,
+            'default': None,
+            'description': 'The fifth arg. Defaults to None.'
         }
     ]

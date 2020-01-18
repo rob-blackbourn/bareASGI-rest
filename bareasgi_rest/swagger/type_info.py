@@ -48,6 +48,8 @@ def get_property(
 
     if annotation is str:
         prop['type'] = 'string'
+    elif annotation is bool:
+        prop['type'] = 'boolean'
     elif annotation is int:
         prop['type'] = 'integer'
     elif annotation is float:

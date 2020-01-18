@@ -47,15 +47,16 @@ def is_json_container(annotation: Any) -> bool:
 
 def is_json_literal(annoation: Any) -> bool:
     """Return True if the annotation is a JSON literal
-    
+
     Args:
         annoation (Any): The annotation
-    
+
     Returns:
         bool: True if the annotation is a JSON literal, otherwise False
     """
     return annoation in (
         str,
+        bool,
         int,
         float,
         Decimal,

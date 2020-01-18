@@ -1,45 +1,59 @@
-"""Ad-hoc experiments"""
-
 from datetime import datetime
-from decimal import Decimal
-import inspect
-from typing import Any, Dict, List, Optional
-from typing_extensions import TypedDict
+import logging
+from typing import Dict, List, Optional
+try:
+    from typing import TypedDict  # type:ignore
+except:  # pylint: disable=bare-except
+    from typing_extensions import TypedDict
+from urllib.error import HTTPError
 
-import bareasgi_rest.typing_inspect as typing_inspect
+from bareasgi.basic_router.path_definition import PathDefinition
 
-class MockDict(TypedDict):
-    """A mock typed dict
+from bareasgi_rest.types import Body
+from bareasgi_rest.swagger.entry import make_swagger_entry
+
+
+class Book(TypedDict):
+    """A Book
 
     Args:
-        arg_num1 (str): The first arg
-        arg_num2 (List[int]): The second arg
-        arg_num3 (datetime): The third arg
-        arg_num4 (Optional[Decimal], optional): The fourth arg. Defaults to Decimal('1').
-        arg_num5 (Optional[float], optional): The fifth arg. Defaults to None.
+        book_id (int): The book id
+        title (str): The title
+        author (str): The author
+        publication_date (datetime): The publication date
     """
-    arg_num1: str
-    arg_num2: List[int]
-    arg_num3: datetime
-    arg_num4: Optional[Decimal] = Decimal('1')
-    arg_num5: Optional[float] = None
+    book_id: int
+    title: str
+    author: str
+    publication_date: datetime
 
-def func(
-        arg1: MockDict,
-        arg2: Dict[str, Any],
-        arg3: Optional[MockDict],
-        arg4: Optional[Dict[str, Any]]
-) -> Optional[MockDict]:
-    return None
 
-def is_dict(annotation: Any) -> bool:
-    return typing_inspect.get_origin(annotation) is dict and getattr(annotation, '_name', None) == 'Dict'
+BOOKS: Dict[int, Book] = {}
 
-sig = inspect.signature(func)
-arg1_param = sig.parameters['arg1']
-arg2_param = sig.parameters['arg2']
-arg3_param = sig.parameters['arg3']
-arg4_param = sig.parameters['arg4']
 
-print(is_dict(arg4_param.annotation))
-print('here')
+async def update_if_withdrawn(
+        library: str,
+        is_withdrawn: bool,
+        book: Body[Book]
+) -> None:
+    """Update the book if not withdrawn
+
+    Args:
+        library (str): The library
+        is_withdrawn (bool): True if the book has been withdrawn
+        book (Body[Book]): The book details to update
+    """
+    return list(BOOKS.values())
+
+update_if_withdrawn_swagger_entry = make_swagger_entry(
+    'POST',
+    PathDefinition('/books/{library:str}'),
+    update_if_withdrawn,
+    b'application/json',
+    b'application/json',
+    'multi',
+    ['Books'],
+    200,
+    'OK'
+)
+print(update_if_withdrawn_swagger_entry)

@@ -18,8 +18,16 @@ from inflection import camelize, underscore
 
 import bareasgi_rest.typing_inspect as typing_inspect
 
+from ..utils import (
+    is_body_type,
+    get_body_type
+)
+
 from .type_info import get_property
-from .utils import _check_is_required, _find_docstring_param
+from .utils import (
+    _check_is_required,
+    _find_docstring_param
+)
 
 
 def _make_swagger_parameter(
@@ -108,11 +116,11 @@ def make_swagger_parameters(
         if segment.is_variable:
             path_variable = underscore(segment.name)
             path_variables.add(path_variable)
-            param = parameters[path_variable]
-            docstring_param = _find_docstring_param(param.name, docstring)
+            parameter = parameters[path_variable]
+            docstring_param = _find_docstring_param(parameter.name, docstring)
             prop = _make_swagger_parameter(
                 'path',
-                param,
+                parameter,
                 collection_format,
                 docstring_param
             )
@@ -142,31 +150,33 @@ def make_swagger_parameters(
         )
     else:
         # Fall back to b'application/json'.
-        params = [
-            (
-                camelize(param.name, False),
-                param,
-                _find_docstring_param(param.name, docstring)
-            )
-            for param in parameters.values()
-            if param.name not in path_variables
-        ]
-        if len(params) == 1 and typing_inspect.is_typed_dict(params[0][1].annotation):
-            _name, param, _docstring = params[0]
-            schema = get_property(
-                param.annotation,
-                camelize(param.name, False),
-                None,
-                Parameter.empty,
-                collection_format
-            )
-        else:
-            schema = _make_swagger_schema(params, collection_format)
-        props.append({
-            'in': 'body',
-            'name': 'schema',
-            'description': 'The body schema',
-            'schema': schema
-        })
+        for parameter in parameters.values():
+            if parameter.name in path_variables:
+                continue
+            docstring_param = _find_docstring_param(parameter.name, docstring)
+            if is_body_type(parameter.annotation):
+                body_type = get_body_type(parameter.annotation)
+                schema = get_property(
+                    body_type,
+                    camelize(parameter.name, False),
+                    None,
+                    Parameter.empty,
+                    collection_format
+                )
+                props.append({
+                    'in': 'body',
+                    'name': 'schema',
+                    'description': 'The body schema',
+                    'schema': schema
+                })
+            else:
+                props.append(
+                    _make_swagger_parameter(
+                        'query',
+                        parameter,
+                        collection_format,
+                        docstring_param
+                    )
+                )
 
     return props
