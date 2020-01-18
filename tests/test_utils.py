@@ -10,11 +10,11 @@ except:  # pylint: disable=bare-except
     from typing_extensions import TypedDict
 
 from bareasgi_rest.types import Body
-from bareasgi_rest.utils import (
-    make_args,
+from bareasgi_rest.json_serialization import (
     is_json_container,
     is_json_literal
 )
+from bareasgi_rest.arg_builder import make_args
 
 
 class MockDict(TypedDict):

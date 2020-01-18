@@ -34,7 +34,7 @@ from baretypes import (
 import bareutils.header as header
 
 from .json_serialization import camelize_object
-from .utils import make_args
+from .arg_builder import make_args
 from .swagger import SwaggerRepository, SwaggerConfig, SwaggerController
 from .constants import (
     DEFAULT_SWAGGER_BASE_URL,
