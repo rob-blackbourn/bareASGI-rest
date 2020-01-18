@@ -12,8 +12,6 @@ except:  # pylint: disable=bare-except
 from bareasgi_rest.types import Body
 from bareasgi_rest.utils import (
     make_args,
-    camelize_object,
-    underscore_object,
     is_json_container,
     is_json_literal
 )
@@ -109,35 +107,6 @@ def test_make_args():
         'arg_num4': Decimal('3.142'),
         'arg_num5': None
     })
-
-
-def test_casing():
-    """Tests for camelize and underscore"""
-    orig_dct = {
-        'first_name': 'rob',
-        'addresses': [
-            {
-                'street_name': 'my street'
-            },
-            {
-                'street_name': 'my other street'
-            }
-        ]
-    }
-    camel_dct = camelize_object(orig_dct)
-    assert camel_dct == {
-        'firstName': 'rob',
-        'addresses': [
-            {
-                'streetName': 'my street'
-            },
-            {
-                'streetName': 'my other street'
-            }
-        ]
-    }
-    underscore_dct = underscore_object(camel_dct)
-    assert underscore_dct == orig_dct
 
 
 def test_is_json_container():

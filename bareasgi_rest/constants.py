@@ -8,7 +8,7 @@ from .types import (
     DictProduces
 )
 
-from .serialization import (
+from .json_serialization import (
     to_json,
     from_json,
     from_form_data,
