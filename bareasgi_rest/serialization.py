@@ -11,13 +11,14 @@ from typing import (
     Callable,
     Dict,
     Optional,
+    Pattern,
     Tuple
 )
 from urllib.parse import parse_qs
 
 DATETIME_ZULU_REGEX = re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$')
 
-DateTimeFormat = Tuple[str, re.Pattern, Optional[Callable[[str], str]]]
+DateTimeFormat = Tuple[str, Pattern, Optional[Callable[[str], str]]]
 
 DATETIME_FORMATS: Tuple[DateTimeFormat, ...] = (
     (
@@ -37,7 +38,8 @@ DATETIME_FORMATS: Tuple[DateTimeFormat, ...] = (
     ),
     (
         "%Y-%m-%dT%H:%M:%S.%f%z",
-        re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+[+-]\d{2}:\d{2}$'),
+        re.compile(
+            r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+[+-]\d{2}:\d{2}$'),
         lambda s: s[0:-3] + s[-2:]
     )
 )
@@ -59,6 +61,7 @@ def json_to_datetime(value: str) -> Optional[datetime]:
                 return datetime.strptime(text, fmt)
     return None
 
+
 def as_datetime(dct):
     """Convert datetime like strings"""
     for key, value in dct.items():
@@ -67,6 +70,7 @@ def as_datetime(dct):
             if timestamp:
                 dct[key] = timestamp
     return dct
+
 
 def datetime_to_json(timestamp: datetime) -> str:
     """Convert datetime to JSON
@@ -96,6 +100,7 @@ def datetime_to_json(timestamp: datetime) -> str:
         tz_minutes %= 60
         return f"{date_part}T{time_part}{tz_sign}{tz_hours:02d}:{tz_minutes:02d}"
 
+
 class JSONEncoderEx(json.JSONEncoder):
     """Encode json"""
 
@@ -110,6 +115,7 @@ class JSONEncoderEx(json.JSONEncoder):
             )
         else:
             return super(JSONEncoderEx, self).default(obj)
+
 
 def to_json(obj: Any) -> str:
     """Convert the object to JSON

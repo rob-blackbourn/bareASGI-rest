@@ -80,6 +80,31 @@ class NullIter(Generic[T]):
         raise StopAsyncIteration
 
 
+def is_body_type(annotation: Any) -> bool:
+    """Determine if the annotation is of type Body[T]
+
+    Args:
+        annotation (Any): The annotation
+
+    Returns:
+        bool: True if the annotation is of type Body[T], otherwise False
+    """
+    return typing_inspect.get_origin(annotation) is Body
+
+
+def get_body_type(annotation: Any) -> Any:
+    """Gets the type T of Body[T]
+
+    Args:
+        annotation (Any): The annotation
+
+    Returns:
+        Any: The type of the body
+    """
+    body_type, *_rest = typing_inspect.get_args(annotation)
+    return body_type
+
+
 def is_json_container(annotation: Any) -> bool:
     """Return True if this is a JSON container.
 
@@ -120,18 +145,7 @@ def is_json_literal(annoation: Any) -> bool:
     )
 
 
-def _is_supported_optional(annotation) -> bool:
-    return (
-        annotation is Optional[str] or
-        annotation is Optional[bool] or
-        annotation is Optional[int] or
-        annotation is Optional[float] or
-        annotation is Optional[Decimal] or
-        annotation is Optional[datetime]
-    )
-
-
-def _coerce_builtin(value: Any, builtin_type: Type) -> Any:
+def _from_json_value_to_builtin(value: Any, builtin_type: Type) -> Any:
     if isinstance(value, builtin_type):
         return value
     elif isinstance(value, str):
@@ -153,50 +167,45 @@ def _coerce_builtin(value: Any, builtin_type: Type) -> Any:
         raise RuntimeError(f'Unable to coerce value {value}')
 
 
-def _coerce(value: Any, annotation: Any) -> Any:
+def _from_json_value(value: Any, annotation: Any) -> Any:
     if is_json_literal(annotation):
         single_value = value[0] if isinstance(value, list) else value
-        return _coerce_builtin(single_value, annotation)
+        return _from_json_value_to_builtin(single_value, annotation)
 
     if typing_inspect.is_optional_type(annotation):
         optional_type = typing_inspect.get_optional(annotation)
-        return None if not value else _coerce(value, optional_type)
+        return None if not value else _from_json_value(value, optional_type)
     elif typing_inspect.is_list(annotation):
         element_type, *_rest = typing_inspect.get_args(annotation)
-        return [_coerce(item, element_type) for item in value]
+        return [_from_json_value(item, element_type) for item in value]
     elif typing_inspect.is_dict(annotation):
-        return value
+        return underscore_object(value)
     elif typing_inspect.is_typed_dict(annotation):
-        return _update_defaults(value, annotation)
+        return _from_json_value_to_typed_dict(value, annotation)
     else:
         raise TypeError
 
 
-def _is_typed_dict_callable(signature: Signature) -> bool:
-    if len(signature.parameters) != 1:
-        return False
-    parameter = next(iter(signature.parameters.values()))
-    return typing_inspect.is_typed_dict(parameter.annotation)
-
-
-def _update_defaults(
+def _from_json_value_to_typed_dict(
         values: Optional[Dict[str, Any]],
         annotation: Any
 ) -> Optional[Dict[str, Any]]:
     if values is None or not typing_inspect.is_typed_dict(annotation):
         return values
 
+    coerced_values: Dict[str, Any] = {}
+
     member_annotations = typing_inspect.typed_dict_annotation(annotation)
     for name, member in member_annotations.items():
         camelcase_name = camelize(name, False)
         if camelcase_name in values:
             if typing_inspect.is_typed_dict(member.annotation):
-                _update_defaults(
+                coerced_values[name] = _from_json_value_to_typed_dict(
                     values[camelcase_name],
                     member.annotation
                 )
             else:
-                values[camelcase_name] = _coerce(
+                coerced_values[name] = _from_json_value(
                     values[camelcase_name],
                     member.annotation
                 )
@@ -205,9 +214,10 @@ def _update_defaults(
                 f'Required key "{camelcase_name}" is missing'
             )
         else:
-            values[camelcase_name] = _coerce(member.default, member.annotation)
+            coerced_values[name] = _from_json_value(
+                member.default, member.annotation)
 
-    return values
+    return coerced_values
 
 
 def make_args(
@@ -240,18 +250,21 @@ def make_args(
     for parameter in signature.parameters.values():
         if is_body_type(parameter.annotation):
             body_type = get_body_type(parameter.annotation)
-            value = Body(_coerce(body, body_type))
+            value: Any = Body(_from_json_value(body, body_type))
         else:
-            camcelcase_name = camelize(
+            camelcase_name = camelize(
                 parameter.name, uppercase_first_letter=False)
-            if camcelcase_name in matches:
-                value = _coerce(matches[camcelcase_name], parameter.annotation)
-            elif camcelcase_name in query:
-                value = _coerce(query[camcelcase_name], parameter.annotation)
-            elif body_parameter is None and camcelcase_name in body:
-                value = _coerce(body[camcelcase_name], parameter.annotation)
-            elif _is_supported_optional(parameter.annotation):
-                continue
+            if camelcase_name in matches:
+                value = _from_json_value(
+                    matches[camelcase_name], parameter.annotation)
+            elif camelcase_name in query:
+                value = _from_json_value(
+                    query[camelcase_name], parameter.annotation)
+            elif body_parameter is None and camelcase_name in body:
+                value = _from_json_value(
+                    body[camelcase_name], parameter.annotation)
+            elif typing_inspect.is_optional_type(parameter.annotation):
+                value = None
             else:
                 raise KeyError
 
@@ -268,12 +281,3 @@ def make_args(
     bound_args.apply_defaults()
 
     return bound_args.args, bound_args.kwargs
-
-
-def is_body_type(annotation: Any) -> bool:
-    return typing_inspect.get_origin(annotation) is Body
-
-
-def get_body_type(annotation: Any) -> Any:
-    body_type, *_rest = typing_inspect.get_args(annotation)
-    return body_type

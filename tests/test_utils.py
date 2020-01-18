@@ -89,11 +89,11 @@ def test_make_args():
         'argQuery': 'query'
     }
     bar_body = {
-        'arg_num1': 'hello',
-        'arg_num2': [1, 2],
-        'arg_num3': datetime.fromisoformat('1967-08-12T00:00:00'),
-        'arg_num4': Decimal('3.142'),
-        'arg_num5': None
+        'argNum1': 'hello',
+        'argNum2': [1, 2],
+        'argNum3': datetime.fromisoformat('1967-08-12T00:00:00'),
+        'argNum4': Decimal('3.142'),
+        'argNum5': None
     }
 
     bar_sig = inspect.signature(bar)
