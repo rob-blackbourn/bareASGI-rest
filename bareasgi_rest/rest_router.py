@@ -33,7 +33,7 @@ from baretypes import (
 )
 import bareutils.header as header
 
-from .protocol.json import camelize_object
+from .protocol.json import camelize_object, from_json_value
 from .arg_builder import make_args
 from .swagger import SwaggerRepository, SwaggerConfig, SwaggerController
 from .constants import (
@@ -199,7 +199,8 @@ class RestHttpRouter(BasicHttpRouter):
                 signature,
                 matches,
                 query_args,
-                body_args
+                body_args,
+                from_json_value
             )
 
             try:

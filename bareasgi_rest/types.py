@@ -6,8 +6,7 @@ from typing import (
     Callable,
     Dict,
     Generic,
-    TypeVar,
-    _SpecialForm
+    TypeVar
 )
 
 Deserializer = Callable[[str, bytes, Dict[bytes, bytes]], Any]

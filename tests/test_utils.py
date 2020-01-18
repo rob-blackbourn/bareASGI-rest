@@ -12,7 +12,8 @@ except:  # pylint: disable=bare-except
 from bareasgi_rest.types import Body
 from bareasgi_rest.protocol.json import (
     is_json_container,
-    is_json_literal
+    is_json_literal,
+    from_json_value
 )
 from bareasgi_rest.arg_builder import make_args
 
@@ -64,7 +65,12 @@ def test_make_args():
     foo_body = {
     }
 
-    foo_args, foo_kwargs = make_args(foo_sig, foo_matches, foo_query, foo_body)
+    foo_args, foo_kwargs = make_args(
+        foo_sig,
+        foo_matches,
+        foo_query,
+        foo_body,
+        from_json_value)
     assert foo_args == ('hello',)
     assert foo_kwargs == {
         'arg_num2': [1, 2],
@@ -95,7 +101,13 @@ def test_make_args():
     }
 
     bar_sig = inspect.signature(bar)
-    bar_args, bar_kwargs = make_args(bar_sig, bar_matches, bar_query, bar_body)
+    bar_args, bar_kwargs = make_args(
+        bar_sig,
+        bar_matches,
+        bar_query,
+        bar_body,
+        from_json_value
+    )
     assert len(bar_args) == 3
     assert len(bar_kwargs) == 0
     assert bar_args[0] == 42

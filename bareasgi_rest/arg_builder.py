@@ -1,7 +1,7 @@
 """Argument builder"""
 
 from inspect import Parameter, Signature
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from inflection import camelize
 
@@ -15,7 +15,8 @@ def make_args(
         signature: Signature,
         matches: Dict[str, str],
         query: Dict[str, Any],
-        body: Dict[str, Any]
+        body: Dict[str, Any],
+        body_coercer: Callable[[Any, Any], Any]
 ) -> Tuple[Tuple[Any, ...], Dict[str, Any]]:
     """Make args and kwargs for the given signature from the route matches,
     query args and body.
@@ -25,6 +26,7 @@ def make_args(
         matches (Dict[str, str]): The route matches
         query (Dict[str, Any]): A dictionary built from the query string
         body (Dict[str, Any]): A dictionary built from the body
+        body_coercer (Callable[[Any, Any], Any]): A coercer for the body
 
     Raises:
         KeyError: If a parameter was not found
@@ -41,7 +43,7 @@ def make_args(
     for parameter in signature.parameters.values():
         if is_body_type(parameter.annotation):
             body_type = get_body_type(parameter.annotation)
-            value: Any = Body(from_json_value(body, body_type))
+            value: Any = Body(body_coercer(body, body_type))
         else:
             camelcase_name = camelize(
                 parameter.name,
