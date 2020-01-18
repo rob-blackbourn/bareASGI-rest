@@ -14,7 +14,7 @@ from urllib.error import HTTPError
 from bareasgi import Application
 import uvicorn
 
-from bareasgi_rest import RestHttpRouter, add_swagger_ui
+from bareasgi_rest import RestHttpRouter, add_swagger_ui, Body
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -133,20 +133,20 @@ class BookController:
     async def update_book(
             self,
             book_id: int,
-            book: Book
+            book: Body[Book]
     ) -> None:
         """Update a book
 
         Args:
             book_id (int): The id of the book to update
-            book (Book): The book as the body
+            book (Body[Book]): The book as the body
 
         Raises:
             HTTPError: 404, when a book is not found
         """
         if book_id not in self.books:
             raise HTTPError(None, 404, None, None, None)
-        self.books[book_id] = book
+        self.books[book_id] = book.value
 
 
 if __name__ == "__main__":

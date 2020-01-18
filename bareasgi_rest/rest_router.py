@@ -256,9 +256,12 @@ class RestHttpRouter(BasicHttpRouter):
 
         media_type, params = header.content_type(
             scope['headers']
-        ) or (b'', cast(Dict[bytes, Any], {}))
+        ) or (b'application/json', cast(Dict[bytes, Any], {}))
         deserializer = self.consumes.get(media_type)
         if deserializer is None:
             raise RuntimeError('No deserializer')
         body = await text_reader(content)
+        if not body:
+            return None
+
         return deserializer(body, media_type, params)

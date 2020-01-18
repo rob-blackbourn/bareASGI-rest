@@ -188,15 +188,24 @@ def _update_defaults(
 
     member_annotations = typing_inspect.typed_dict_annotation(annotation)
     for name, member in member_annotations.items():
-        if name in values:
+        camelcase_name = camelize(name, False)
+        if camelcase_name in values:
             if typing_inspect.is_typed_dict(member.annotation):
-                _update_defaults(values[name], member.annotation)
+                _update_defaults(
+                    values[camelcase_name],
+                    member.annotation
+                )
             else:
-                values[name] = _coerce(values[name], member.annotation)
+                values[camelcase_name] = _coerce(
+                    values[camelcase_name],
+                    member.annotation
+                )
         elif member.default is typing_inspect.TypedDictMember.empty:
-            raise KeyError(f'Required argument "{name}" is missing')
+            raise KeyError(
+                f'Required key "{camelcase_name}" is missing'
+            )
         else:
-            values[name] = _coerce(member.default, member.annotation)
+            values[camelcase_name] = _coerce(member.default, member.annotation)
 
     return values
 
