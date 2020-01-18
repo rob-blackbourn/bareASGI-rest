@@ -1,19 +1,17 @@
 """Tests for swagger.py"""
 
+from decimal import Decimal
 import inspect
 from typing import List
 
 from docstring_parser import parse
-
-from bareasgi_rest.swagger.responses import (
-    make_swagger_response_schema
-)
+from bareasgi_rest.swagger.type_info import get_property
 
 from .mocks import MockDict
 
 
-def test_make_swagger_response_schema():
-    """Test make_swagger_response_schema"""
+def test_get_property():
+    """Test get_property"""
 
     async def func1() -> str:
         """Func1
@@ -24,9 +22,12 @@ def test_make_swagger_response_schema():
 
     sig = inspect.signature(func1)
     docstring = parse(inspect.getdoc(func1))
-    response = make_swagger_response_schema(
+    description = docstring.returns.description if docstring else None
+    response = get_property(
         sig.return_annotation,
-        docstring.returns if docstring else None,
+        None,
+        description,
+        inspect.Parameter.empty,
         'multi'
     )
     assert response == {
@@ -39,9 +40,12 @@ def test_make_swagger_response_schema():
 
     sig = inspect.signature(func2)
     docstring = parse(inspect.getdoc(func2))
-    response = make_swagger_response_schema(
+    description = docstring.returns.description if docstring and docstring.returns else None
+    response = get_property(
         sig.return_annotation,
-        docstring.returns if docstring else None,
+        None,
+        description,
+        inspect.Parameter.empty,
         'multi'
     )
     assert response == {
@@ -70,12 +74,14 @@ def test_make_swagger_response_schema():
             'argNum4': {
                 'name': 'argNum4',
                 'description': "The fourth arg. Defaults to Decimal('1').",
-                'type': 'number'
+                'type': 'number',
+                'default': Decimal('1')
             },
             'argNum5': {
                 'name': 'argNum5',
                 'description': 'The fifth arg. Defaults to None.',
-                'type': 'number'
+                'type': 'number',
+                'default': None
             }
         }
     }
@@ -85,9 +91,12 @@ def test_make_swagger_response_schema():
 
     sig = inspect.signature(func3)
     docstring = parse(inspect.getdoc(func3))
-    response = make_swagger_response_schema(
+    description = docstring.returns.description if docstring and docstring.returns else None
+    response = get_property(
         sig.return_annotation,
-        docstring.returns if docstring else None,
+        None,
+        description,
+        inspect.Parameter.empty,
         'multi'
     )
     assert response['type'] == 'array'

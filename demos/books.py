@@ -78,7 +78,7 @@ class BookController:
         This method gets all the books in the shop.
 
         Returns:
-            List[Any]: All the books
+            List[Book]: All the books
         """
         return list(self.books.values())
 
@@ -95,7 +95,7 @@ class BookController:
             HTTPError: 404, when a book is not found
 
         Returns:
-            Tuple[int, Optional[Dict[str, Any]]]: The book or nothing
+            Book: The book
         """
 
         if book_id not in self.books:
@@ -117,7 +117,7 @@ class BookController:
             publication_date (datetime): The publication date
 
         Returns:
-            Tuple[int, int]: The id of the new book
+            int: The id of the new book
         """
         self.next_id += 1
 
@@ -143,9 +143,6 @@ class BookController:
 
         Raises:
             HTTPError: 404, when a book is not found
-
-        Returns:
-            Tuple[int, Any]: Nothing
         """
         if book_id not in self.books:
             raise HTTPError(None, 404, None, None, None)
