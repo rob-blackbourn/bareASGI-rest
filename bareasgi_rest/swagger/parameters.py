@@ -76,29 +76,6 @@ def _make_swagger_parameters_inline(
     return props
 
 
-def _make_swagger_schema(
-        params: List[Tuple[str, Parameter, DocstringParam]],
-        collection_format: str
-) -> Dict[str, Any]:
-    return {
-        'type': 'object',
-        'required': [
-            name
-            for name, param, docstring_param in params
-            if param.default is Parameter.empty
-        ],
-        'properties': {
-            name: _make_swagger_parameter(
-                'body',
-                param,
-                collection_format,
-                docstring_param
-            )
-            for name, param, docstring_param in params
-        }
-    }
-
-
 def make_swagger_parameters(
         method: str,
         accept: bytes,

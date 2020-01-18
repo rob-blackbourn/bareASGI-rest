@@ -10,7 +10,6 @@ from inflection import camelize
 from bareasgi_rest.swagger.parameters import (
     _make_swagger_parameter,
     make_swagger_parameters,
-    _make_swagger_schema,
 )
 
 from bareasgi_rest.swagger.utils import (
@@ -95,60 +94,6 @@ def test_make_swagger_parameter():
         'required': False,
         'type': 'number',
         'default': None
-    }
-
-
-def test_make_swagger_schema():
-    """Test for _make_swagger_schema"""
-    sig = inspect.signature(mock_func)
-    docstring = parse(inspect.getdoc(mock_func), Style.auto)
-    params = [
-        (camelize(param.name, False), param,
-         _find_docstring_param(param.name, docstring))
-        for param in sig.parameters.values()
-    ]
-    schema = _make_swagger_schema(params, 'multi')
-    assert schema == {
-        'type': 'object',
-        'required': [
-            'argNum1',
-            'argNum2',
-            'argNum3'
-        ],
-        'properties': {
-            'argNum1': {
-                'name': 'argNum1',
-                'description': 'The first arg',
-                'type': 'string'
-            },
-            'argNum2': {
-                'name': 'argNum2',
-                'description': 'The second arg',
-                'type': 'array',
-                'collectionFormat': 'multi',
-                'items': {
-                    'type': 'integer'
-                }
-            },
-            'argNum3': {
-                'name': 'argNum3',
-                'description': 'The third arg',
-                'type': 'string',
-                'format': 'date-time'
-            },
-            'argNum4': {
-                'name': 'argNum4',
-                'description': "The fourth arg. Defaults to Decimal('1').",
-                'type': 'number',
-                'default': Decimal('1')
-            },
-            'argNum5': {
-                'name': 'argNum5',
-                'description': 'The fifth arg. Defaults to None.',
-                'type': 'number',
-                'default': None
-            }
-        },
     }
 
 
