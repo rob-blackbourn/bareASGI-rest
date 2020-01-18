@@ -31,3 +31,6 @@ class Body(Generic[T]):
             value (T): The body value
         """
         self.value = value
+
+    def __eq__(self, other: Any) -> bool:
+        return isinstance(other, type(self)) and self.value == other.value

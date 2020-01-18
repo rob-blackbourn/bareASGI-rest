@@ -80,6 +80,46 @@ class NullIter(Generic[T]):
         raise StopAsyncIteration
 
 
+def is_json_container(annotation: Any) -> bool:
+    """Return True if this is a JSON container.
+
+    A JSON container can be an object (Like a Dict[str, Any]), or a List.
+
+    Args:
+        annotation (Any): The type annotation.
+
+    Returns:
+        bool: True if the annotation is represented in JSON as a container.
+    """
+    if typing_inspect.is_optional_type(annotation):
+        return is_json_container(typing_inspect.get_optional(annotation))
+    else:
+        return (
+            typing_inspect.is_list(annotation) or
+            typing_inspect.is_dict(annotation) or
+            typing_inspect.is_typed_dict(annotation)
+        )
+
+
+def is_json_literal(annoation: Any) -> bool:
+    """Return True if the annotation is a JSON literal
+
+    Args:
+        annoation (Any): The annotation
+
+    Returns:
+        bool: True if the annotation is a JSON literal, otherwise False
+    """
+    return annoation in (
+        str,
+        bool,
+        int,
+        float,
+        Decimal,
+        datetime
+    )
+
+
 def _is_supported_optional(annotation) -> bool:
     return (
         annotation is Optional[str] or
@@ -114,37 +154,22 @@ def _coerce_builtin(value: Any, builtin_type: Type) -> Any:
 
 
 def _coerce(value: Any, annotation: Any) -> Any:
-    if type(annotation) is type:  # pylint: disable=unidiomatic-typecheck
+    if is_json_literal(annotation):
         single_value = value[0] if isinstance(value, list) else value
         return _coerce_builtin(single_value, annotation)
 
-    if annotation is Optional[str]:
-        return None if not value else _coerce(value, str)
-    elif annotation is Optional[bool]:
-        return None if not value else _coerce(value, bool)
-    elif annotation is Optional[int]:
-        return None if not value else _coerce(value, int)
-    elif annotation is Optional[float]:
-        return None if not value else _coerce(value, float)
-    elif annotation is Optional[Decimal]:
-        return None if not value else _coerce(value, Decimal)
-    elif annotation is Optional[datetime]:
-        return None if not value else _coerce(value, datetime)
-    elif annotation is List[str]:
-        contained_type: Any = str
-    elif annotation is List[bool]:
-        contained_type = bool
-    elif annotation is List[int]:
-        contained_type = int
-    elif annotation is List[float]:
-        contained_type = float
-    elif annotation is List[Decimal]:
-        contained_type = Decimal
-    elif annotation is List[datetime]:
-        contained_type = datetime
+    if typing_inspect.is_optional_type(annotation):
+        optional_type = typing_inspect.get_optional(annotation)
+        return None if not value else _coerce(value, optional_type)
+    elif typing_inspect.is_list(annotation):
+        element_type, *_rest = typing_inspect.get_args(annotation)
+        return [_coerce(item, element_type) for item in value]
+    elif typing_inspect.is_dict(annotation):
+        return value
+    elif typing_inspect.is_typed_dict(annotation):
+        return _update_defaults(value, annotation)
     else:
         raise TypeError
-    return [_coerce(item, contained_type) for item in value]
 
 
 def _is_typed_dict_callable(signature: Signature) -> bool:
@@ -176,26 +201,6 @@ def _update_defaults(
     return values
 
 
-def _find_optional_body_parameter(signature: Signature) -> Optional[Parameter]:
-    body_parameters: List[Parameter] = []
-    for parameter in signature.parameters.values():
-        if (
-                isinstance(parameter.annotation, dict)
-                or typing_inspect.is_typed_dict(parameter.annotation)
-        ):
-            body_parameters.append(parameter)
-    if not body_parameters:
-        return None
-    if len(body_parameters) == 1:
-        return body_parameters[0]
-    raise RuntimeError(
-        "Duplicate body parameters: " + ", ".join(
-            f'"{parameter.name}"'
-            for parameter in body_parameters
-        )
-    )
-
-
 def make_args(
         signature: Signature,
         matches: Dict[str, str],
@@ -221,12 +226,12 @@ def make_args(
     kwargs: Dict[str, Any] = {}
     args: List[Any] = []
 
-    # Find the single optional body parameter
-    body_parameter = _find_optional_body_parameter(signature)
+    body_parameter: Optional[Parameter] = None
 
     for parameter in signature.parameters.values():
-        if parameter is body_parameter:
-            value = _update_defaults(body.copy(), parameter.annotation)
+        if is_body_type(parameter.annotation):
+            body_type = get_body_type(parameter.annotation)
+            value = Body(_coerce(body, body_type))
         else:
             camcelcase_name = camelize(
                 parameter.name, uppercase_first_letter=False)
