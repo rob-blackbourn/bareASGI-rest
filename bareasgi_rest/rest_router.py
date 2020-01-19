@@ -13,6 +13,8 @@ from typing import (
     AbstractSet,
     Any,
     AsyncIterator,
+    Awaitable,
+    Callable,
     Dict,
     List,
     Mapping,
@@ -33,7 +35,7 @@ from baretypes import (
 )
 import bareutils.header as header
 
-from .protocol.json import camelize_object, from_json_value
+from .protocol.json import camelize_object
 from .arg_builder import make_args
 from .swagger import SwaggerRepository, SwaggerConfig, SwaggerController
 from .constants import (
@@ -45,6 +47,7 @@ from .constants import (
     DEFAULT_NOT_FOUND_RESPONSE
 )
 from .types import (
+    Deserializer,
     DictConsumes,
     DictProduces,
     RestCallback
@@ -193,14 +196,13 @@ class RestHttpRouter(BasicHttpRouter):
         ) -> HttpResponse:
 
             query_args = parse_qs(scope['query_string'].decode())
-            body_args = await self._get_body_args(scope, content)
+            body_reader = self._get_body_reader(scope, content)
 
-            args, kwargs = make_args(
+            args, kwargs = await make_args(
                 signature,
                 matches,
                 query_args,
-                body_args,
-                from_json_value
+                body_reader
             )
 
             try:
@@ -245,22 +247,23 @@ class RestHttpRouter(BasicHttpRouter):
         text = serializer(camelize_object(data))
         return text_writer(text)
 
-    async def _get_body_args(
+    def _get_body_reader(
             self,
             scope: Scope,
             content: Content
-    ) -> Any:
+    ) -> Callable[[Any], Awaitable[Any]]:
         if scope['method'] in {'GET'}:
-            return True, {}
+            deserializer: Optional[Deserializer] = None
+        else:
+            media_type, params = header.content_type(
+                scope['headers']
+            ) or (b'application/json', cast(Dict[bytes, Any], {}))
+            deserializer = self.consumes.get(media_type)
 
-        media_type, params = header.content_type(
-            scope['headers']
-        ) or (b'application/json', cast(Dict[bytes, Any], {}))
-        deserializer = self.consumes.get(media_type)
-        if deserializer is None:
-            raise RuntimeError('No deserializer')
-        body = await text_reader(content)
-        if not body:
-            return None
+        async def body_reader(annotation: Any) -> Any:
+            if deserializer is None:
+                raise RuntimeError('No deserializer')
+            text = await text_reader(content)
+            return deserializer(text, media_type, params, annotation)
 
-        return deserializer(body, media_type, params)
+        return body_reader

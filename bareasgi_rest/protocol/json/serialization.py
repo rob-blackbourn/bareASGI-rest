@@ -15,6 +15,7 @@ from ..iso_8601 import (
     iso_8601_to_timedelta,
     timedelta_to_iso_8601
 )
+from .coercion import from_json_value
 
 
 def json_to_python(dct):
@@ -71,24 +72,32 @@ def to_json(obj: Any) -> str:
     return json.dumps(obj, cls=JSONEncoderEx)
 
 
-def from_json(text: str, _media_type: bytes, _params: Dict[bytes, bytes]) -> Any:
+def from_json(
+        text: str,
+        _media_type: bytes,
+        _params: Dict[bytes, bytes],
+        annotation: Any
+) -> Any:
     """Convert JSON to an object
 
     Args:
         text (str): The JSON string
         _media_type (bytes): The media type
         _params (Dict[bytes, bytes]): The params from content-type header
+        annotation (str): The type annotation
 
     Returns:
         Any: The deserialized object.
     """
-    return json.loads(text, object_hook=json_to_python)
+    obj = json.loads(text)
+    return from_json_value(obj, annotation)
 
 
 def from_query_string(
         text: str,
         _media_type: bytes,
-        _params: Dict[bytes, bytes]
+        _params: Dict[bytes, bytes],
+        _annotation: Any
 ) -> Any:
     """Convert a query string to a dict
 
@@ -96,6 +105,7 @@ def from_query_string(
         text (str): The query string
         _media_type (bytes): The media type from the content-type header.
         _params (Dict[bytes, bytes]): The params from the content-type header
+        _annotation (str): The type annotation
 
     Returns:
         Any: The query string as a dict
@@ -106,7 +116,8 @@ def from_query_string(
 def from_form_data(
         text: str,
         _media_type: bytes,
-        params: Dict[bytes, bytes]
+        params: Dict[bytes, bytes],
+        _annotation: Any
 ) -> Any:
     """Convert form data to a dict
 
@@ -114,6 +125,7 @@ def from_form_data(
         text (str): The form data
         _media_type (bytes): The media type from the content-type header
         params (Dict[bytes, bytes]): The params from the content-type header.
+        _annotation(str): The type annotation
 
     Raises:
         RuntimeError: If 'boundary' was not in the params

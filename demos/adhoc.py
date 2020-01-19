@@ -1,8 +1,9 @@
+import asyncio
 from datetime import datetime, timedelta
 import inspect
 import json
 import logging
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 try:
     from typing import TypedDict  # type:ignore
 except:  # pylint: disable=bare-except
@@ -143,19 +144,22 @@ recipe_roundtrip_swagger_entry = make_swagger_entry(
 )
 print(recipe_roundtrip_swagger_entry)
 
-a = json.loads(recipe_json)
-b = from_json_value(a, Recipe)
-recipe_dict = from_json(recipe_json, b'application/json', {})
 
-args, kwargs = make_args(
-    inspect.signature(recipe_roundtrip),
-    {},
-    {},
-    recipe_dict,
-    from_json_value
-)
+async def main():
+    async def body_reader(annotation: Any) -> Any:
+        text = json.loads(recipe_json)
+        return from_json_value(text, annotation)
 
-response = recipe_roundtrip(*args, **kwargs)
-roundtrip = to_json(response)
+    args, kwargs = await make_args(
+        inspect.signature(recipe_roundtrip),
+        {},
+        {},
+        body_reader
+    )
 
-print("Done")
+    response = recipe_roundtrip(*args, **kwargs)
+    roundtrip = to_json(response)
+
+    print("Done")
+
+asyncio.run(main())

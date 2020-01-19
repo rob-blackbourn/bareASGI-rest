@@ -1,7 +1,7 @@
 """Argument builder"""
 
 from inspect import Parameter, Signature
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Awaitable, Callable, Dict, List, Tuple
 
 from inflection import camelize
 
@@ -11,12 +11,11 @@ from .utils import is_body_type, get_body_type
 from .protocol.json import from_json_value
 
 
-def make_args(
+async def make_args(
         signature: Signature,
         matches: Dict[str, str],
         query: Dict[str, Any],
-        body: Dict[str, Any],
-        body_coercer: Callable[[Any, Any], Any]
+        body: Callable[[Any], Awaitable[Any]]
 ) -> Tuple[Tuple[Any, ...], Dict[str, Any]]:
     """Make args and kwargs for the given signature from the route matches,
     query args and body.
@@ -25,8 +24,7 @@ def make_args(
         signature (Signature): The function signature
         matches (Dict[str, str]): The route matches
         query (Dict[str, Any]): A dictionary built from the query string
-        body (Dict[str, Any]): A dictionary built from the body
-        body_coercer (Callable[[Any, Any], Any]): A coercer for the body
+        body (Callable[[AsyncIterator[bytes], Any], Any]): Get the body
 
     Raises:
         KeyError: If a parameter was not found
@@ -38,12 +36,10 @@ def make_args(
     kwargs: Dict[str, Any] = {}
     args: List[Any] = []
 
-    body_parameter: Optional[Parameter] = None
-
     for parameter in signature.parameters.values():
         if is_body_type(parameter.annotation):
             body_type = get_body_type(parameter.annotation)
-            value: Any = Body(body_coercer(body, body_type))
+            value: Any = Body(await body(body_type))
         else:
             camelcase_name = camelize(
                 parameter.name,
@@ -57,11 +53,6 @@ def make_args(
             elif camelcase_name in query:
                 value = from_json_value(
                     query[camelcase_name],
-                    parameter.annotation
-                )
-            elif body_parameter is None and camelcase_name in body:
-                value = from_json_value(
-                    body[camelcase_name],
                     parameter.annotation
                 )
             elif typing_inspect.is_optional_type(parameter.annotation):

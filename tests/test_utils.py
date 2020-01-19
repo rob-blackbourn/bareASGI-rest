@@ -9,6 +9,8 @@ try:
 except:  # pylint: disable=bare-except
     from typing_extensions import TypedDict
 
+import pytest
+
 from bareasgi_rest.types import Body
 from bareasgi_rest.protocol.json import (
     is_json_container,
@@ -35,7 +37,8 @@ class MockDict(TypedDict):
     arg_num5: Optional[float] = None
 
 
-def test_make_args():
+@pytest.mark.asyncio
+async def test_make_args():
     """Test for make_args"""
     async def foo(
             arg_num1: str,
@@ -62,15 +65,16 @@ def test_make_args():
         'argNum3': '1967-08-12T00:00:00Z',
         'argNum4': '3.142'
     }
-    foo_body = {
-    }
 
-    foo_args, foo_kwargs = make_args(
+    async def foo_body_reader(annotation: Any) -> Any:
+        return {}
+
+    foo_args, foo_kwargs = await make_args(
         foo_sig,
         foo_matches,
         foo_query,
-        foo_body,
-        from_json_value)
+        foo_body_reader
+    )
     assert foo_args == ('hello',)
     assert foo_kwargs == {
         'arg_num2': [1, 2],
@@ -92,21 +96,22 @@ def test_make_args():
     bar_query = {
         'argQuery': 'query'
     }
-    bar_body = {
-        'argNum1': 'hello',
-        'argNum2': [1, 2],
-        'argNum3': datetime.fromisoformat('1967-08-12T00:00:00'),
-        'argNum4': Decimal('3.142'),
-        'argNum5': None
-    }
+
+    async def bar_body_reader(annotation: Any) -> Any:
+        return {
+            'arg_num1': 'hello',
+            'arg_num2': [1, 2],
+            'arg_num3': datetime.fromisoformat('1967-08-12T00:00:00'),
+            'arg_num4': Decimal('3.142'),
+            'arg_num5': None
+        }
 
     bar_sig = inspect.signature(bar)
-    bar_args, bar_kwargs = make_args(
+    bar_args, bar_kwargs = await make_args(
         bar_sig,
         bar_matches,
         bar_query,
-        bar_body,
-        from_json_value
+        bar_body_reader
     )
     assert len(bar_args) == 3
     assert len(bar_kwargs) == 0
