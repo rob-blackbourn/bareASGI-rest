@@ -1,104 +1,44 @@
 """Serialization"""
 
 from cgi import parse_multipart
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 import io
 import json
-import re
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Optional,
-    Pattern,
-    Tuple
-)
+from typing import Any, Dict
+
 from urllib.parse import parse_qs
 
-DATETIME_ZULU_REGEX = re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$')
-
-DateTimeFormat = Tuple[str, Pattern, Optional[Callable[[str], str]]]
-
-DATETIME_FORMATS: Tuple[DateTimeFormat, ...] = (
-    (
-        "%Y-%m-%dT%H:%M:%SZ",
-        re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$'),
-        None
-    ),
-    (
-        "%Y-%m-%dT%H:%M:%S.%fZ",
-        re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z$'),
-        None
-    ),
-    (
-        "%Y-%m-%dT%H:%M:%S%z",
-        re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$'),
-        lambda s: s[0:-3] + s[-2:]
-    ),
-    (
-        "%Y-%m-%dT%H:%M:%S.%f%z",
-        re.compile(
-            r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+[+-]\d{2}:\d{2}$'),
-        lambda s: s[0:-3] + s[-2:]
-    )
+from ..iso_8601 import (
+    iso_8601_to_datetime,
+    datetime_to_iso_8601,
+    iso_8601_to_timedelta,
+    timedelta_to_iso_8601
 )
 
 
-def json_to_datetime(value: str) -> Optional[datetime]:
-    """Parse a JSON date
+def json_to_python(dct):
+    """Convert JSON recognized objects to Python.
+
+    This includes durations and dates.
 
     Args:
-        value (str): The JSON date string
+        dct ([type]): The source dictionary
 
     Returns:
-        Optional[datetime]: A timestamp
+        [type]: The dictionary with conversions.
     """
-    if isinstance(value, str):
-        for fmt, pattern, transform in DATETIME_FORMATS:
-            if pattern.match(value):
-                text = transform(value) if transform else value
-                return datetime.strptime(text, fmt)
-    return None
-
-
-def as_datetime(dct):
-    """Convert datetime like strings"""
     for key, value in dct.items():
         if isinstance(value, str):
-            timestamp = json_to_datetime(value)
+            timestamp = iso_8601_to_datetime(value)
             if timestamp:
                 dct[key] = timestamp
+                continue
+            duration = iso_8601_to_timedelta(value)
+            if duration:
+                dct[key] = duration
+                continue
     return dct
-
-
-def datetime_to_json(timestamp: datetime) -> str:
-    """Convert datetime to JSON
-
-    Args:
-        timestamp (datetime): The timestamp
-
-    Returns:
-        str: The stringified JSON version of the timestamp
-    """
-    date_part = "{year:04d}-{month:02d}-{day:02d}".format(
-        year=timestamp.year, month=timestamp.month, day=timestamp.day,
-    )
-    time_part = "{hour:02d}:{minute:02d}:{second:02d}.{millis:02d}".format(
-        hour=timestamp.hour, minute=timestamp.minute, second=timestamp.second,
-        millis=timestamp.microsecond // 1000
-    )
-
-    utcoffset = timestamp.utcoffset()
-    if utcoffset is None:
-        return f"{date_part}T{time_part}Z"
-    else:
-        tz_seconds = utcoffset.total_seconds()
-        tz_sign = '-' if tz_seconds < 0 else '+'
-        tz_minutes = int(abs(tz_seconds)) // 60
-        tz_hours = tz_minutes // 60
-        tz_minutes %= 60
-        return f"{date_part}T{time_part}{tz_sign}{tz_hours:02d}:{tz_minutes:02d}"
 
 
 class JSONEncoderEx(json.JSONEncoder):
@@ -106,7 +46,9 @@ class JSONEncoderEx(json.JSONEncoder):
 
     def default(self, obj):  # pylint: disable=method-hidden,arguments-differ
         if isinstance(obj, datetime):
-            return datetime_to_json(obj)
+            return datetime_to_iso_8601(obj)
+        elif isinstance(obj, timedelta):
+            return timedelta_to_iso_8601(obj)
         elif isinstance(obj, Decimal):
             return float(
                 str(obj.quantize(Decimal(1))
@@ -140,7 +82,7 @@ def from_json(text: str, _media_type: bytes, _params: Dict[bytes, bytes]) -> Any
     Returns:
         Any: The deserialized object.
     """
-    return json.loads(text, object_hook=as_datetime)
+    return json.loads(text, object_hook=json_to_python)
 
 
 def from_query_string(

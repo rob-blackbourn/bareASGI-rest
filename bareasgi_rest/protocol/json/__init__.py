@@ -12,10 +12,8 @@ from .serialization import (
     from_json,
     from_form_data,
     from_query_string,
-    json_to_datetime,
-    datetime_to_json,
     JSONEncoderEx,
-    as_datetime
+    json_to_python
 )
 
 __all__ = [
@@ -29,9 +27,6 @@ __all__ = [
     'from_json',
     'from_form_data',
     'from_query_string',
-    'json_to_datetime',
-    'datetime_to_json',
     'JSONEncoderEx',
-    'as_datetime'
-
+    'json_to_python'
 ]

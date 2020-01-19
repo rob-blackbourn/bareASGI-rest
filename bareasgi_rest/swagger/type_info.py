@@ -1,6 +1,6 @@
 """Type Info"""
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 import inspect
 from typing import (
@@ -10,7 +10,7 @@ from typing import (
 )
 
 import docstring_parser
-from docstring_parser import Docstring, DocstringMeta
+from docstring_parser import Docstring
 from inflection import camelize
 
 import bareasgi_rest.typing_inspect as typing_inspect
@@ -59,6 +59,9 @@ def get_property(
     elif annotation is datetime:
         prop['type'] = 'string'
         prop['format'] = 'date-time'
+    elif annotation is timedelta:
+        prop['type'] = 'string'
+        prop['format'] = 'duration'
     elif typing_inspect.is_list(annotation):
         contained_type, *_rest = typing_inspect.get_args(annotation)
         prop['type'] = 'array'

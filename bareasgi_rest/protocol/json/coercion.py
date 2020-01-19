@@ -1,6 +1,6 @@
 """Serialization"""
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import (
     Any,
@@ -16,7 +16,10 @@ from typing import (
 from inflection import camelize, underscore
 
 import bareasgi_rest.typing_inspect as typing_inspect
-
+from ..iso_8601 import (
+    iso_8601_to_datetime,
+    iso_8601_to_timedelta
+)
 
 T = TypeVar('T')  # pylint: disable=invalid-name
 
@@ -103,7 +106,8 @@ def is_json_literal(annoation: Any) -> bool:
         int,
         float,
         Decimal,
-        datetime
+        datetime,
+        timedelta
     )
 
 
@@ -122,7 +126,9 @@ def _from_json_value_to_builtin(value: Any, builtin_type: Type) -> Any:
         elif builtin_type is Decimal:
             return Decimal(value)
         elif builtin_type is datetime:
-            return datetime.fromisoformat(value[:-1])
+            return iso_8601_to_datetime(value)
+        elif builtin_type is timedelta:
+            return iso_8601_to_timedelta(value)
         else:
             raise TypeError(f'Unhandled type {builtin_type}')
     else:

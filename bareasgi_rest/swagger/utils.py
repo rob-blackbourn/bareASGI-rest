@@ -1,13 +1,9 @@
 """Utility functions"""
 
-from datetime import datetime
-from decimal import Decimal
 from inspect import Parameter
-from typing import Any, Optional
+from typing import Optional
 
 from docstring_parser import Docstring, DocstringParam
-
-import bareasgi_rest.typing_inspect as typing_inspect
 
 
 def _check_is_required(param: Parameter) -> bool:
