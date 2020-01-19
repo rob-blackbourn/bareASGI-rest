@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bareASGI-rest"
-version = "3.0.0-rc.4"
+version = "3.0.0-rc.5"
 description = "REST support for bareASGI"
 repository = "https://github.com/rob-blackbourn/bareASGI-rest"
 authors = ["Rob Blackbourn <rob.blackbourn@gmail.com>"]
