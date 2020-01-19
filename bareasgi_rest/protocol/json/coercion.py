@@ -10,6 +10,7 @@ from typing import (
     Optional,
     Type,
     TypeVar,
+    Union,
     cast
 )
 
@@ -153,6 +154,13 @@ def from_json_value(value: Any, annotation: Any) -> Any:
         return _from_json_value_to_builtin(single_value, annotation)
 
     if typing_inspect.is_optional_type(annotation):
+        # An optional is a union where the last element is the None type.
+        union_types = typing_inspect.get_args(annotation)[:-1]
+        if len(union_types) == 1:
+            return None if not value else from_json_value(value, union_types[0])
+        else:
+            union = Union[tuple(union_types)]  # type: ignore
+            return from_json_value(value, union)
         optional_type = typing_inspect.get_optional(annotation)
         return None if not value else from_json_value(value, optional_type)
     elif typing_inspect.is_list(annotation):
@@ -162,8 +170,14 @@ def from_json_value(value: Any, annotation: Any) -> Any:
         return underscore_object(value)
     elif typing_inspect.is_typed_dict(annotation):
         return _from_json_value_to_typed_dict(value, annotation)
-    else:
-        raise TypeError
+    elif typing_inspect.is_union_type(annotation):
+        for arg_annotation in typing_inspect.get_args(annotation):
+            try:
+                return from_json_value(value, arg_annotation)
+            except:  # pylint: disable=bare-except
+                pass
+
+    raise TypeError
 
 
 def _from_json_value_to_typed_dict(
