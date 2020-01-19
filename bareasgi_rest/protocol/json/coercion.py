@@ -45,8 +45,8 @@ def _rename_object(obj: T, rename: Callable[[str], str]) -> T:
         return obj
 
 
-def _camelize(text: str) -> str:
-    return camelize(text, uppercase_first_letter=False)
+def _camelize(value: Any) -> Any:
+    return camelize(value, False) if isinstance(value, str) else value
 
 
 def camelize_object(obj: T) -> T:
@@ -60,6 +60,10 @@ def camelize_object(obj: T) -> T:
     return _rename_object(obj, _camelize)
 
 
+def _underscore(value: Any) -> Any:
+    return underscore(value) if isinstance(value, str) else value
+
+
 def underscore_object(obj: T) -> T:
     """Convert any dictionary keys in the object to underscore
 
@@ -68,7 +72,7 @@ def underscore_object(obj: T) -> T:
     :return: The object with keys converted to underscore
     :rtype: T
     """
-    return _rename_object(obj, underscore)
+    return _rename_object(obj, _underscore)
 
 
 def is_json_container(annotation: Any) -> bool:
