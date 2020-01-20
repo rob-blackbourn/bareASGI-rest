@@ -52,7 +52,7 @@ class BookController:
         )
         router.add_rest(
             {'GET'},
-            '/books/{bookId:int}',
+            '/books/{book_id:int}',
             self.get_book,
             tags=tags,
             status_code=200
@@ -66,7 +66,7 @@ class BookController:
         )
         router.add_rest(
             {'PUT'},
-            '/books/{bookId:int}',
+            '/books/{book_id:int}',
             self.update_book,
             tags=tags,
             status_code=204

@@ -48,7 +48,7 @@ class SwaggerRepository:
     def add(
             self,
             method: str,
-            path: str,
+            path_definition: PathDefinition,
             callback: RestCallback,
             accept: bytes,
             content_type: bytes,
@@ -61,7 +61,7 @@ class SwaggerRepository:
 
         Args:
             method (str): The HTTP method
-            path (str): The router path
+            path_definition (PathDefinition): The router path
             callback (RestCallback): The callback
             accept (bytes): The accept header
             content_type (bytes): The content type
@@ -70,7 +70,6 @@ class SwaggerRepository:
             status_code (int): The ok status code
             status_description (str): The ok status description
         """
-        path_definition = PathDefinition(path)
 
         entry = make_swagger_entry(
             method,

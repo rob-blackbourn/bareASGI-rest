@@ -52,9 +52,19 @@ from .types import (
     DictProduces,
     RestCallback
 )
-from .utils import camelcase, rename_object
+from .utils import camelcase
 
 LOGGER = logging.getLogger(__name__)
+
+
+def _rename_path_definition(
+    path_definition: PathDefinition,
+    rename: Callable[[str], str]
+) -> PathDefinition:
+    for segment in path_definition.segments:
+        if segment.is_variable:
+            segment.name = rename(segment.name)
+    return path_definition
 
 
 class RestHttpRouter(BasicHttpRouter):
@@ -173,7 +183,10 @@ class RestHttpRouter(BasicHttpRouter):
             )
             self.swagger_repo.add(
                 method,
-                path,
+                _rename_path_definition(
+                    PathDefinition(path),
+                    self.rename_external
+                ),
                 callback,
                 accept,
                 content_type,
@@ -192,7 +205,10 @@ class RestHttpRouter(BasicHttpRouter):
             status_code: int
     ) -> None:
         signature = inspect.signature(callback)
-        path_definition = PathDefinition(self.base_path + path)
+        path_definition = _rename_path_definition(
+            PathDefinition(self.base_path + path),
+            self.rename_external
+        )
 
         async def rest_callback(
                 scope: Scope,
