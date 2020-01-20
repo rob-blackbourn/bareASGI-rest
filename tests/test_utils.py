@@ -2,6 +2,7 @@
 
 from datetime import datetime
 from decimal import Decimal
+from functools import partial
 import inspect
 from typing import Any, Dict, List, Optional
 try:
@@ -10,6 +11,7 @@ except:  # pylint: disable=bare-except
     from typing_extensions import TypedDict
 
 import pytest
+from inflection import underscore
 
 from bareasgi_rest.types import Body
 from bareasgi_rest.protocol.json import (
@@ -18,6 +20,7 @@ from bareasgi_rest.protocol.json import (
     from_json_value
 )
 from bareasgi_rest.arg_builder import make_args
+from bareasgi_rest.utils import camelcase
 
 
 class MockDict(TypedDict):
@@ -58,12 +61,12 @@ async def test_make_args():
 
     foo_sig = inspect.signature(foo)
     foo_matches = {
-        'argNum1': 'hello'
+        'arg_num1': 'hello'
     }
     foo_query = {
-        'argNum2': ['1', '2'],
-        'argNum3': '1967-08-12T00:00:00Z',
-        'argNum4': '3.142'
+        'arg_num2': ['1', '2'],
+        'arg_num3': ['1967-08-12T00:00:00Z'],
+        'arg_num4': ['3.142']
     }
 
     async def foo_body_reader(annotation: Any) -> Any:
@@ -73,7 +76,8 @@ async def test_make_args():
         foo_sig,
         foo_matches,
         foo_query,
-        foo_body_reader
+        foo_body_reader,
+        partial(from_json_value, underscore, camelcase)
     )
     assert foo_args == ('hello',)
     assert foo_kwargs == {
@@ -91,10 +95,10 @@ async def test_make_args():
         return None
 
     bar_matches = {
-        'argId': 42
+        'arg_id': 42
     }
     bar_query = {
-        'argQuery': 'query'
+        'arg_query': ['query']
     }
 
     async def bar_body_reader(annotation: Any) -> Any:
@@ -111,7 +115,8 @@ async def test_make_args():
         bar_sig,
         bar_matches,
         bar_query,
-        bar_body_reader
+        bar_body_reader,
+        partial(from_json_value, underscore, camelcase)
     )
     assert len(bar_args) == 3
     assert len(bar_kwargs) == 0

@@ -24,8 +24,8 @@ def make_swagger_entry(
         content_type: bytes,
         collection_format: str,
         tags: Optional[List[str]],
-        status_code: int,
-        status_description: str
+        ok_status_code: int,
+        ok_status_description: str
 ) -> Dict[str, Any]:
     signature = inspect.signature(callback)
     docstring = docstring_parser.parse(inspect.getdoc(callback))
@@ -42,8 +42,8 @@ def make_swagger_entry(
         signature.return_annotation,
         docstring.returns if docstring else None,
         docstring.raises if docstring else None,
-        status_code,
-        status_description,
+        ok_status_code,
+        ok_status_description,
         collection_format
     )
 

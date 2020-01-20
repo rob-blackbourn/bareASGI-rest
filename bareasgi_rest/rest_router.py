@@ -34,8 +34,8 @@ from baretypes import (
     HttpResponse
 )
 import bareutils.header as header
+from inflection import underscore
 
-from .protocol.json import camelcase_object
 from .arg_builder import make_args
 from .swagger import SwaggerRepository, SwaggerConfig, SwaggerController
 from .constants import (
@@ -44,16 +44,30 @@ from .constants import (
     DEFAULT_CONSUMES,
     DEFAULT_PRODUCES,
     DEFAULT_COLLECTION_FORMAT,
-    DEFAULT_NOT_FOUND_RESPONSE
+    DEFAULT_NOT_FOUND_RESPONSE,
+    DEFAULT_ARG_DESERIALIZER_FACTORY
 )
 from .types import (
     Deserializer,
     DictConsumes,
     DictProduces,
-    RestCallback
+    RestCallback,
+    Renamer,
+    ArgDeserializerFactory
 )
+from .utils import camelcase
 
 LOGGER = logging.getLogger(__name__)
+
+
+def _rename_path_definition(
+    path_definition: PathDefinition,
+    rename: Renamer
+) -> PathDefinition:
+    for segment in path_definition.segments:
+        if segment.is_variable:
+            segment.name = rename(segment.name)
+    return path_definition
 
 
 class RestHttpRouter(BasicHttpRouter):
@@ -72,7 +86,10 @@ class RestHttpRouter(BasicHttpRouter):
             tags: Optional[List[Mapping[str, Any]]] = None,
             swagger_base_url: str = DEFAULT_SWAGGER_BASE_URL,
             typeface_url: str = DEFAULT_TYPEFACE_URL,
-            config: Optional[SwaggerConfig] = None
+            config: Optional[SwaggerConfig] = None,
+            rename_internal: Renamer = underscore,
+            rename_external: Renamer = camelcase,
+            arg_deserializer_factory: ArgDeserializerFactory = DEFAULT_ARG_DESERIALIZER_FACTORY
     ) -> None:
         """Initialise the REST router
 
@@ -105,6 +122,10 @@ class RestHttpRouter(BasicHttpRouter):
         self.accepts: Dict[str, Dict[PathDefinition, bytes]] = {}
         self.collection_formats: Dict[str, Dict[PathDefinition, str]] = {}
 
+        self.rename_internal = rename_internal
+        self.rename_external = rename_external
+        self.arg_deserializer_factory = arg_deserializer_factory
+
         self.swagger_repo = SwaggerRepository(
             title,
             version,
@@ -135,7 +156,10 @@ class RestHttpRouter(BasicHttpRouter):
             collection_format: str = DEFAULT_COLLECTION_FORMAT,
             tags: Optional[List[str]] = None,
             status_code: int = 200,
-            status_description: str = 'OK'
+            status_description: str = 'OK',
+            rename_internal: Optional[Renamer] = None,
+            rename_external: Optional[Renamer] = None,
+            arg_deserializer_factory: Optional[ArgDeserializerFactory] = None
     ) -> None:
         """Register a callback to a method and path
 
@@ -163,11 +187,17 @@ class RestHttpRouter(BasicHttpRouter):
                 path,
                 callback,
                 content_type,
-                status_code
+                status_code,
+                rename_internal,
+                rename_external,
+                arg_deserializer_factory
             )
             self.swagger_repo.add(
                 method,
-                path,
+                _rename_path_definition(
+                    PathDefinition(path),
+                    self.rename_external
+                ),
                 callback,
                 accept,
                 content_type,
@@ -183,10 +213,23 @@ class RestHttpRouter(BasicHttpRouter):
             path: str,
             callback: RestCallback,
             content_type: bytes,
-            status_code: int
+            status_code: int,
+            rename_internal: Optional[Renamer],
+            rename_external: Optional[Renamer],
+            arg_deserializer_factory: Optional[ArgDeserializerFactory]
     ) -> None:
         signature = inspect.signature(callback)
-        path_definition = PathDefinition(self.base_path + path)
+        path_definition = _rename_path_definition(
+            PathDefinition(self.base_path + path),
+            self.rename_external
+        )
+
+        arg_deserializer = (
+            arg_deserializer_factory or self.arg_deserializer_factory
+        )(
+            rename_internal or self.rename_internal,
+            rename_external or self.rename_external
+        )
 
         async def rest_callback(
                 scope: Scope,
@@ -195,14 +238,23 @@ class RestHttpRouter(BasicHttpRouter):
                 content: Content
         ) -> HttpResponse:
 
-            query_args = parse_qs(scope['query_string'].decode())
+            route_args: Dict[str, str] = {
+                self.rename_internal(name): value
+                for name, value in matches.items()
+            }
+            query_string = scope['query_string'].decode()
+            query_args: Dict[str, List[str]] = {
+                self.rename_internal(name): values
+                for name, values in parse_qs(query_string).items()
+            }
             body_reader = self._get_body_reader(scope, content)
 
             args, kwargs = await make_args(
                 signature,
-                matches,
+                route_args,
                 query_args,
-                body_reader
+                body_reader,
+                arg_deserializer
             )
 
             try:
@@ -217,7 +269,11 @@ class RestHttpRouter(BasicHttpRouter):
                 )
 
             accept = header.accept(scope['headers'])
-            writer = self._make_writer(body, accept)
+            writer = self._make_writer(
+                body,
+                accept,
+                signature.return_annotation
+            )
             headers = [
                 (b'content-type', content_type)
             ]
@@ -228,7 +284,8 @@ class RestHttpRouter(BasicHttpRouter):
     def _make_writer(
             self,
             data: Optional[Any],
-            accept: Optional[Mapping[bytes, float]]
+            accept: Optional[Mapping[bytes, float]],
+            return_annotation: Any
     ) -> Optional[AsyncIterator[bytes]]:
         if data is None:
             # No need for a writer if there is no data.
@@ -239,12 +296,20 @@ class RestHttpRouter(BasicHttpRouter):
 
         for media_type in accept.keys():
             if media_type in self.produces:
-                serializer = self.produces[media_type]
                 break
         else:
-            serializer = self.produces[b'application/json']
+            media_type = b'application/json'
 
-        text = serializer(camelcase_object(data))
+        serializer = self.produces[media_type]
+
+        text = serializer(
+            media_type,
+            {},
+            self.rename_internal,
+            self.rename_external,
+            data,
+            return_annotation
+        )
         return text_writer(text)
 
     def _get_body_reader(
@@ -264,6 +329,13 @@ class RestHttpRouter(BasicHttpRouter):
             if deserializer is None:
                 raise RuntimeError('No deserializer')
             text = await text_reader(content)
-            return deserializer(text, media_type, params, annotation)
+            return deserializer(
+                media_type,
+                params,
+                self.rename_internal,
+                self.rename_external,
+                text,
+                annotation
+            )
 
         return body_reader

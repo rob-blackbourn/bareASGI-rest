@@ -6,74 +6,19 @@ from typing import (
     Any,
     Callable,
     Dict,
-    List,
     Optional,
     Type,
-    TypeVar,
-    Union,
-    cast
+    Union
 )
 
-from inflection import underscore
 
 import bareasgi_rest.typing_inspect as typing_inspect
-from ...utils import camelcase
 from ..iso_8601 import (
     iso_8601_to_datetime,
     iso_8601_to_timedelta
 )
-
-T = TypeVar('T')  # pylint: disable=invalid-name
-
-
-def _rename_dict(dct: Dict[str, Any], rename: Callable[[str], str]) -> Dict[str, Any]:
-    return {
-        rename(name): _rename_object(obj, rename)
-        for name, obj in dct.items()
-    }
-
-
-def _rename_list(lst: List[Any], rename: Callable[[str], str]) -> List[Any]:
-    return [_rename_object(obj, rename) for obj in lst]
-
-
-def _rename_object(obj: T, rename: Callable[[str], str]) -> T:
-    if isinstance(obj, dict):
-        return cast(T, _rename_dict(cast(Dict[str, Any], obj), rename))
-    elif isinstance(obj, list):
-        return cast(T, _rename_list(cast(List[Any], obj), rename))
-    else:
-        return obj
-
-
-def _camelcase(value: Any) -> Any:
-    return camelcase(value) if isinstance(value, str) else value
-
-
-def camelcase_object(obj: T) -> T:
-    """Convert any dictionary keys in the object to camelcase
-
-    :param obj: The object
-    :type obj: T
-    :return: The object with keys converted to camelcase
-    :rtype: T
-    """
-    return _rename_object(obj, _camelcase)
-
-
-def _underscore(value: Any) -> Any:
-    return underscore(value) if isinstance(value, str) else value
-
-
-def underscore_object(obj: T) -> T:
-    """Convert any dictionary keys in the object to underscore
-
-    :param obj: The object
-    :type obj: T
-    :return: The object with keys converted to underscore
-    :rtype: T
-    """
-    return _rename_object(obj, _underscore)
+from ...utils import rename_object
+from ...types import Renamer, Annotation
 
 
 def is_json_container(annotation: Any) -> bool:
@@ -141,12 +86,18 @@ def _from_json_value_to_builtin(value: Any, builtin_type: Type) -> Any:
         raise RuntimeError(f'Unable to coerce value {value}')
 
 
-def from_json_value(value: Any, annotation: Any) -> Any:
+def from_json_value(
+        rename_internal: Renamer,
+        rename_external: Renamer,
+        value: Any,
+        annotation: Annotation,
+) -> Any:
     """Convert a JSON value info a Python value
 
     Args:
         value (Any): The JSON value
         annotation (Any): The Python type annotation
+        rename_external (Callable[[str], str]): A function to rename object keys.
 
     Raises:
         TypeError: If the value cannot be converter
@@ -162,58 +113,101 @@ def from_json_value(value: Any, annotation: Any) -> Any:
         # An optional is a union where the last element is the None type.
         union_types = typing_inspect.get_args(annotation)[:-1]
         if len(union_types) == 1:
-            return None if not value else from_json_value(value, union_types[0])
+            return None if not value else from_json_value(
+                rename_internal,
+                rename_external,
+                value,
+                union_types[0],
+            )
         else:
             union = Union[tuple(union_types)]  # type: ignore
-            return from_json_value(value, union)
+            return from_json_value(
+                rename_internal,
+                rename_external,
+                value,
+                union,
+            )
         optional_type = typing_inspect.get_optional(annotation)
-        return None if not value else from_json_value(value, optional_type)
+        return None if not value else from_json_value(
+            rename_internal,
+            rename_external,
+            value,
+            optional_type,
+        )
     elif typing_inspect.is_list(annotation):
         element_type, *_rest = typing_inspect.get_args(annotation)
-        return [from_json_value(item, element_type) for item in value]
+        return [
+            from_json_value(
+                rename_internal,
+                rename_external,
+                item,
+                element_type,
+            )
+            for item in value
+        ]
     elif typing_inspect.is_dict(annotation):
-        return underscore_object(value)
+        return rename_object(value, rename_internal)
     elif typing_inspect.is_typed_dict(annotation):
-        return _from_json_value_to_typed_dict(value, annotation)
+        return _from_json_obj_to_typed_dict(
+            value,
+            annotation,
+            rename_internal,
+            rename_external
+        )
     elif typing_inspect.is_union_type(annotation):
         for arg_annotation in typing_inspect.get_args(annotation):
             try:
-                return from_json_value(value, arg_annotation)
+                return from_json_value(
+                    rename_internal,
+                    rename_external,
+                    value,
+                    arg_annotation,
+                )
             except:  # pylint: disable=bare-except
                 pass
 
     raise TypeError
 
 
-def _from_json_value_to_typed_dict(
-        values: Optional[Dict[str, Any]],
-        annotation: Any
+def _from_json_obj_to_typed_dict(
+        obj: Optional[Dict[str, Any]],
+        annotation: Annotation,
+        rename_internal: Renamer,
+        rename_external: Renamer
 ) -> Optional[Dict[str, Any]]:
-    if values is None or not typing_inspect.is_typed_dict(annotation):
-        return values
+    if obj is None or not typing_inspect.is_typed_dict(annotation):
+        return obj
 
     coerced_values: Dict[str, Any] = {}
 
     member_annotations = typing_inspect.typed_dict_annotation(annotation)
     for name, member in member_annotations.items():
-        camelcase_name = camelcase(name)
-        if camelcase_name in values:
+        external_name = rename_external(name)
+        if external_name in obj:
             if typing_inspect.is_typed_dict(member.annotation):
-                coerced_values[name] = _from_json_value_to_typed_dict(
-                    values[camelcase_name],
-                    member.annotation
+                coerced_values[name] = _from_json_obj_to_typed_dict(
+                    obj[external_name],
+                    member.annotation,
+                    rename_internal,
+                    rename_external
                 )
             else:
                 coerced_values[name] = from_json_value(
-                    values[camelcase_name],
-                    member.annotation
+                    rename_internal,
+                    rename_external,
+                    obj[external_name],
+                    member.annotation,
                 )
         elif member.default is typing_inspect.TypedDictMember.empty:
             raise KeyError(
-                f'Required key "{camelcase_name}" is missing'
+                f'Required key "{external_name}" is missing'
             )
         else:
             coerced_values[name] = from_json_value(
-                member.default, member.annotation)
+                rename_internal,
+                rename_external,
+                member.default,
+                member.annotation,
+            )
 
     return coerced_values

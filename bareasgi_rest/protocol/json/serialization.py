@@ -3,9 +3,10 @@
 from cgi import parse_multipart
 from datetime import datetime, timedelta
 from decimal import Decimal
+from functools import partial
 import io
 import json
-from typing import Any, Dict
+from typing import Any, Callable, Dict
 
 from urllib.parse import parse_qs
 
@@ -16,6 +17,13 @@ from ..iso_8601 import (
     timedelta_to_iso_8601
 )
 from .coercion import from_json_value
+from ...utils import rename_object
+from ...types import (
+    Renamer,
+    Annotation,
+    MediaType,
+    MediaTypeParams
+)
 
 
 def json_to_python(dct):
@@ -60,7 +68,14 @@ class JSONEncoderEx(json.JSONEncoder):
             return super(JSONEncoderEx, self).default(obj)
 
 
-def to_json(obj: Any) -> str:
+def to_json(
+        _media_type: MediaType,
+        _params: MediaTypeParams,
+        _rename_internal: Renamer,
+        rename_external: Renamer,
+        obj: Any,
+        _annotation: Any,
+) -> str:
     """Convert the object to JSON
 
     Args:
@@ -69,14 +84,16 @@ def to_json(obj: Any) -> str:
     Returns:
         str: The stringified object
     """
-    return json.dumps(obj, cls=JSONEncoderEx)
+    return json.dumps(rename_object(obj, rename_external), cls=JSONEncoderEx)
 
 
 def from_json(
+        _media_type: MediaType,
+        _params: MediaTypeParams,
+        rename_internal: Renamer,
+        rename_external: Renamer,
         text: str,
-        _media_type: bytes,
-        _params: Dict[bytes, bytes],
-        annotation: Any
+        annotation: Annotation
 ) -> Any:
     """Convert JSON to an object
 
@@ -85,19 +102,27 @@ def from_json(
         _media_type (bytes): The media type
         _params (Dict[bytes, bytes]): The params from content-type header
         annotation (str): The type annotation
+        rename (Callable[[str], str]): A function to rename object keys.
 
     Returns:
         Any: The deserialized object.
     """
     obj = json.loads(text)
-    return from_json_value(obj, annotation)
+    return from_json_value(
+        rename_internal,
+        rename_external,
+        obj,
+        annotation,
+    )
 
 
 def from_query_string(
+        _media_type: MediaType,
+        _params: MediaTypeParams,
+        _rename_internal: Renamer,
+        _rename_external: Renamer,
         text: str,
-        _media_type: bytes,
-        _params: Dict[bytes, bytes],
-        _annotation: Any
+        _annotation: Annotation
 ) -> Any:
     """Convert a query string to a dict
 
@@ -106,6 +131,7 @@ def from_query_string(
         _media_type (bytes): The media type from the content-type header.
         _params (Dict[bytes, bytes]): The params from the content-type header
         _annotation (str): The type annotation
+        rename (Callable[[str], str]): A function to rename object keys.
 
     Returns:
         Any: The query string as a dict
@@ -114,10 +140,12 @@ def from_query_string(
 
 
 def from_form_data(
+        _media_type: MediaType,
+        params: MediaTypeParams,
+        _rename_internal: Renamer,
+        _rename_external: Renamer,
         text: str,
-        _media_type: bytes,
-        params: Dict[bytes, bytes],
-        _annotation: Any
+        _annotation: Annotation
 ) -> Any:
     """Convert form data to a dict
 
@@ -126,6 +154,7 @@ def from_form_data(
         _media_type (bytes): The media type from the content-type header
         params (Dict[bytes, bytes]): The params from the content-type header.
         _annotation(str): The type annotation
+        rename (Callable[[str], str]): A function to rename object keys.
 
     Raises:
         RuntimeError: If 'boundary' was not in the params
@@ -140,3 +169,10 @@ def from_form_data(
         for name, value in params.items()
     }
     return parse_multipart(io.StringIO(text), pdict)
+
+
+def json_arg_deserializer_factory(
+    rename_internal: Renamer,
+    rename_external: Renamer
+) -> Callable[[str, Annotation], Any]:
+    return partial(from_json_value, rename_internal, rename_external)

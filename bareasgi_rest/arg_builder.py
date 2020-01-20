@@ -4,18 +4,17 @@ from inspect import Parameter, Signature
 from typing import Any, Awaitable, Callable, Dict, List, Tuple
 
 import bareasgi_rest.typing_inspect as typing_inspect
-from .utils import camelcase
 
-from .types import Body
+from .types import Body, ArgDeserializer
 from .utils import is_body_type, get_body_type
-from .protocol.json import from_json_value
 
 
 async def make_args(
         signature: Signature,
         matches: Dict[str, str],
-        query: Dict[str, Any],
-        body: Callable[[Any], Awaitable[Any]]
+        query: Dict[str, List[str]],
+        body: Callable[[Any], Awaitable[Any]],
+        arg_deserializer: ArgDeserializer
 ) -> Tuple[Tuple[Any, ...], Dict[str, Any]]:
     """Make args and kwargs for the given signature from the route matches,
     query args and body.
@@ -25,6 +24,7 @@ async def make_args(
         matches (Dict[str, str]): The route matches
         query (Dict[str, Any]): A dictionary built from the query string
         body (Callable[[AsyncIterator[bytes], Any], Any]): Get the body
+        arg_deserializer (ArgDeserializer): A deserializer for args
 
     Raises:
         KeyError: If a parameter was not found
@@ -41,22 +41,33 @@ async def make_args(
             body_type = get_body_type(parameter.annotation)
             value: Any = Body(await body(body_type))
         else:
-            camelcase_name = camelcase(parameter.name)
+            if parameter.name in matches:
+                value = arg_deserializer(
+                    matches[parameter.name],
+                    parameter.annotation
+                )
+            elif parameter.name in query:
+                if typing_inspect.is_list(parameter.annotation):
+                    element_type, *_rest = typing_inspect.get_args(
+                        parameter.annotation
+                    )
+                    value = [
+                        arg_deserializer(
+                            item,
+                            element_type
+                        )
+                        for item in query[parameter.name]
+                    ]
+                else:
+                    value = arg_deserializer(
+                        query[parameter.name][0],
+                        parameter.annotation
+                    )
 
-            if camelcase_name in matches:
-                value = from_json_value(
-                    matches[camelcase_name],
-                    parameter.annotation
-                )
-            elif camelcase_name in query:
-                value = from_json_value(
-                    query[camelcase_name],
-                    parameter.annotation
-                )
             elif typing_inspect.is_optional_type(parameter.annotation):
                 value = None
             else:
-                raise KeyError
+                raise KeyError(parameter.name)
 
         if (
                 parameter.kind == Parameter.POSITIONAL_ONLY
@@ -64,7 +75,6 @@ async def make_args(
         ):
             args.append(value)
         else:
-            # Use the non-camelcased name
             kwargs[parameter.name] = value
 
     bound_args = signature.bind(*args, **kwargs)

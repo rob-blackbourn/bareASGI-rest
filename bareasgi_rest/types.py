@@ -9,13 +9,45 @@ from typing import (
     TypeVar
 )
 
-Deserializer = Callable[[str, bytes, Dict[bytes, bytes], Any], Any]
+Renamer = Callable[[str], str]
+Annotation = Any
+MediaType = bytes
+MediaTypeParams = Dict[bytes, bytes]
+
+Deserializer = Callable[
+    [
+        MediaType,
+        MediaTypeParams,
+        Renamer,
+        Renamer,
+        str,
+        Annotation
+    ],
+    Any
+]
 DictConsumes = Dict[bytes, Deserializer]
 
-Serializer = Callable[[Any], str]
+Serializer = Callable[
+    [
+        MediaType,
+        MediaTypeParams,
+        Renamer,
+        Renamer,
+        Any,
+        Annotation
+    ],
+    str
+]
 DictProduces = Dict[bytes, Serializer]
 
 RestCallback = Callable[..., Awaitable[Any]]
+
+ArgDeserializer = Callable[[str, Annotation], Any]
+
+ArgDeserializerFactory = Callable[
+    [Renamer, Renamer],
+    Callable[[str, Annotation], Any]
+]
 
 T = TypeVar('T')
 

@@ -12,7 +12,8 @@ from .protocol.json import (
     to_json,
     from_json,
     from_form_data,
-    from_query_string
+    from_query_string,
+    json_arg_deserializer_factory
 )
 
 DEFAULT_SWAGGER_BASE_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/3.4.0"
@@ -38,3 +39,5 @@ DEFAULT_NOT_FOUND_RESPONSE: HttpResponse = (
     text_writer('Not Found'),
     None
 )
+
+DEFAULT_ARG_DESERIALIZER_FACTORY = json_arg_deserializer_factory
