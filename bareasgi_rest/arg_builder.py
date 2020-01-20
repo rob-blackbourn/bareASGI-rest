@@ -5,7 +5,7 @@ from typing import Any, Awaitable, Callable, Dict, List, Tuple
 
 import bareasgi_rest.typing_inspect as typing_inspect
 
-from .types import Body
+from .types import Body, ArgDeserializer
 from .utils import is_body_type, get_body_type
 
 
@@ -14,7 +14,7 @@ async def make_args(
         matches: Dict[str, str],
         query: Dict[str, List[str]],
         body: Callable[[Any], Awaitable[Any]],
-        arg_deserializer: Callable[[str, Any], Any]
+        arg_deserializer: ArgDeserializer
 ) -> Tuple[Tuple[Any, ...], Dict[str, Any]]:
     """Make args and kwargs for the given signature from the route matches,
     query args and body.
@@ -24,7 +24,7 @@ async def make_args(
         matches (Dict[str, str]): The route matches
         query (Dict[str, Any]): A dictionary built from the query string
         body (Callable[[AsyncIterator[bytes], Any], Any]): Get the body
-        rename (Callable[[str], str]): A function to rename object keys
+        arg_deserializer (ArgDeserializer): A deserializer for args
 
     Raises:
         KeyError: If a parameter was not found

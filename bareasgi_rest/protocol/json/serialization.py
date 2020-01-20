@@ -3,6 +3,7 @@
 from cgi import parse_multipart
 from datetime import datetime, timedelta
 from decimal import Decimal
+from functools import partial
 import io
 import json
 from typing import Any, Callable, Dict
@@ -17,6 +18,7 @@ from ..iso_8601 import (
 )
 from .coercion import from_json_value
 from ...utils import rename_object
+from ...types import Renamer, Annotation
 
 
 def json_to_python(dct):
@@ -162,3 +164,10 @@ def from_form_data(
         for name, value in params.items()
     }
     return parse_multipart(io.StringIO(text), pdict)
+
+
+def json_arg_deserializer_factory(
+    rename_internal: Renamer,
+    rename_external: Renamer
+) -> Callable[[str, Annotation], Any]:
+    return partial(from_json_value, rename_internal, rename_external)

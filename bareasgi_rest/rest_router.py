@@ -45,13 +45,17 @@ from .constants import (
     DEFAULT_CONSUMES,
     DEFAULT_PRODUCES,
     DEFAULT_COLLECTION_FORMAT,
-    DEFAULT_NOT_FOUND_RESPONSE
+    DEFAULT_NOT_FOUND_RESPONSE,
+    DEFAULT_ARG_DESERIALIZER_FACTORY
 )
 from .types import (
     Deserializer,
     DictConsumes,
     DictProduces,
-    RestCallback
+    RestCallback,
+    Renamer,
+    Annotation,
+    ArgDeserializerFactory
 )
 from .utils import camelcase
 from .protocol.json.coercion import from_json_value
@@ -88,15 +92,7 @@ class RestHttpRouter(BasicHttpRouter):
             config: Optional[SwaggerConfig] = None,
             rename_internal: Callable[[str], str] = underscore,
             rename_external: Callable[[str], str] = camelcase,
-            arg_deserializer: Callable[
-                [
-                    Callable[[str], str],
-                    Callable[[str], str],
-                    Any,
-                    Any
-                ],
-                Any
-            ] = from_json_value
+            arg_deserializer_factory: ArgDeserializerFactory = DEFAULT_ARG_DESERIALIZER_FACTORY
     ) -> None:
         """Initialise the REST router
 
@@ -131,7 +127,7 @@ class RestHttpRouter(BasicHttpRouter):
 
         self.rename_internal = rename_internal
         self.rename_external = rename_external
-        self.arg_deserializer = arg_deserializer
+        self.arg_deserializer_factory = arg_deserializer_factory
 
         self.swagger_repo = SwaggerRepository(
             title,
@@ -163,7 +159,10 @@ class RestHttpRouter(BasicHttpRouter):
             collection_format: str = DEFAULT_COLLECTION_FORMAT,
             tags: Optional[List[str]] = None,
             status_code: int = 200,
-            status_description: str = 'OK'
+            status_description: str = 'OK',
+            rename_internal: Optional[Renamer] = None,
+            rename_external: Optional[Renamer] = None,
+            arg_deserializer_factory: Optional[ArgDeserializerFactory] = None
     ) -> None:
         """Register a callback to a method and path
 
@@ -191,7 +190,10 @@ class RestHttpRouter(BasicHttpRouter):
                 path,
                 callback,
                 content_type,
-                status_code
+                status_code,
+                rename_internal,
+                rename_external,
+                arg_deserializer_factory
             )
             self.swagger_repo.add(
                 method,
@@ -214,12 +216,22 @@ class RestHttpRouter(BasicHttpRouter):
             path: str,
             callback: RestCallback,
             content_type: bytes,
-            status_code: int
+            status_code: int,
+            rename_internal: Optional[Renamer],
+            rename_external: Optional[Renamer],
+            arg_deserializer_factory: Optional[ArgDeserializerFactory]
     ) -> None:
         signature = inspect.signature(callback)
         path_definition = _rename_path_definition(
             PathDefinition(self.base_path + path),
             self.rename_external
+        )
+
+        arg_deserializer = (
+            arg_deserializer_factory or self.arg_deserializer_factory
+        )(
+            rename_internal or self.rename_internal,
+            rename_external or self.rename_external
         )
 
         async def rest_callback(
@@ -245,11 +257,7 @@ class RestHttpRouter(BasicHttpRouter):
                 route_args,
                 query_args,
                 body_reader,
-                partial(
-                    self.arg_deserializer,
-                    self.rename_internal,
-                    self.rename_external
-                )
+                arg_deserializer
             )
 
             try:

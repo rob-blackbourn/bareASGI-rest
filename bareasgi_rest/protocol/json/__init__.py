@@ -11,7 +11,8 @@ from .serialization import (
     from_form_data,
     from_query_string,
     JSONEncoderEx,
-    json_to_python
+    json_to_python,
+    json_arg_deserializer_factory
 )
 
 __all__ = [
@@ -24,5 +25,6 @@ __all__ = [
     'from_form_data',
     'from_query_string',
     'JSONEncoderEx',
-    'json_to_python'
+    'json_to_python',
+    'json_arg_deserializer_factory'
 ]
