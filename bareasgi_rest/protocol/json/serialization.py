@@ -16,6 +16,7 @@ from ..iso_8601 import (
     timedelta_to_iso_8601
 )
 from .coercion import from_json_value
+from ...utils import rename_object
 
 
 def json_to_python(dct):
@@ -60,7 +61,10 @@ class JSONEncoderEx(json.JSONEncoder):
             return super(JSONEncoderEx, self).default(obj)
 
 
-def to_json(obj: Any) -> str:
+def to_json(
+        obj: Any,
+        rename_external: Callable[[str], str]
+) -> str:
     """Convert the object to JSON
 
     Args:
@@ -69,7 +73,7 @@ def to_json(obj: Any) -> str:
     Returns:
         str: The stringified object
     """
-    return json.dumps(obj, cls=JSONEncoderEx)
+    return json.dumps(rename_object(obj, rename_external), cls=JSONEncoderEx)
 
 
 def from_json(

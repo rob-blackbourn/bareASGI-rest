@@ -36,7 +36,6 @@ from baretypes import (
 import bareutils.header as header
 from inflection import underscore
 
-from .protocol.json import camelcase_object
 from .arg_builder import make_args
 from .swagger import SwaggerRepository, SwaggerConfig, SwaggerController
 from .constants import (
@@ -53,7 +52,7 @@ from .types import (
     DictProduces,
     RestCallback
 )
-from .utils import camelcase
+from .utils import camelcase, rename_object
 
 LOGGER = logging.getLogger(__name__)
 
@@ -74,7 +73,9 @@ class RestHttpRouter(BasicHttpRouter):
             tags: Optional[List[Mapping[str, Any]]] = None,
             swagger_base_url: str = DEFAULT_SWAGGER_BASE_URL,
             typeface_url: str = DEFAULT_TYPEFACE_URL,
-            config: Optional[SwaggerConfig] = None
+            config: Optional[SwaggerConfig] = None,
+            rename_internal: Callable[[str], str] = underscore,
+            rename_external: Callable[[str], str] = camelcase
     ) -> None:
         """Initialise the REST router
 
@@ -106,6 +107,9 @@ class RestHttpRouter(BasicHttpRouter):
 
         self.accepts: Dict[str, Dict[PathDefinition, bytes]] = {}
         self.collection_formats: Dict[str, Dict[PathDefinition, str]] = {}
+
+        self.rename_internal = rename_internal
+        self.rename_external = rename_external
 
         self.swagger_repo = SwaggerRepository(
             title,
@@ -198,12 +202,12 @@ class RestHttpRouter(BasicHttpRouter):
         ) -> HttpResponse:
 
             route_args: Dict[str, str] = {
-                underscore(name): value
+                self.rename_internal(name): value
                 for name, value in matches.items()
             }
             query_string = scope['query_string'].decode()
             query_args: Dict[str, List[str]] = {
-                underscore(name): values
+                self.rename_internal(name): values
                 for name, values in parse_qs(query_string).items()
             }
             body_reader = self._get_body_reader(scope, content)
@@ -213,7 +217,7 @@ class RestHttpRouter(BasicHttpRouter):
                 route_args,
                 query_args,
                 body_reader,
-                camelcase
+                self.rename_external
             )
 
             try:
@@ -255,7 +259,7 @@ class RestHttpRouter(BasicHttpRouter):
         else:
             serializer = self.produces[b'application/json']
 
-        text = serializer(camelcase_object(data))
+        text = serializer(data, self.rename_external)
         return text_writer(text)
 
     def _get_body_reader(
@@ -280,7 +284,7 @@ class RestHttpRouter(BasicHttpRouter):
                 media_type,
                 params,
                 annotation,
-                camelcase
+                self.rename_external
             )
 
         return body_reader

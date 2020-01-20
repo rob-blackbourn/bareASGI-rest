@@ -21,7 +21,13 @@ Deserializer = Callable[
 ]
 DictConsumes = Dict[bytes, Deserializer]
 
-Serializer = Callable[[Any], str]
+Serializer = Callable[
+    [
+        Any,
+        Callable[[str], str]
+    ],
+    str
+]
 DictProduces = Dict[bytes, Serializer]
 
 RestCallback = Callable[..., Awaitable[Any]]
