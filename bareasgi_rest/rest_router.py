@@ -213,7 +213,6 @@ class RestHttpRouter(BasicHttpRouter):
                 route_args,
                 query_args,
                 body_reader,
-                underscore,
                 camelcase
             )
 
@@ -281,7 +280,6 @@ class RestHttpRouter(BasicHttpRouter):
                 media_type,
                 params,
                 annotation,
-                underscore,
                 camelcase
             )
 

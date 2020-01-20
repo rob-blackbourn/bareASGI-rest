@@ -77,7 +77,6 @@ def from_json(
         _media_type: bytes,
         _params: Dict[bytes, bytes],
         annotation: Any,
-        rename_internal: Callable[[str], str],
         rename_external: Callable[[str], str],
 ) -> Any:
     """Convert JSON to an object
@@ -93,7 +92,7 @@ def from_json(
         Any: The deserialized object.
     """
     obj = json.loads(text)
-    return from_json_value(obj, annotation, rename_internal, rename_external)
+    return from_json_value(obj, annotation, rename_external)
 
 
 def from_query_string(
@@ -101,7 +100,6 @@ def from_query_string(
         _media_type: bytes,
         _params: Dict[bytes, bytes],
         annotation: Any,
-        rename_internal: Callable[[str], str],
         rename_external: Callable[[str], str],
 ) -> Any:
     """Convert a query string to a dict
@@ -124,7 +122,6 @@ def from_form_data(
         _media_type: bytes,
         params: Dict[bytes, bytes],
         annotation: Any,
-        rename_internal: Callable[[str], str],
         rename_external: Callable[[str], str],
 ) -> Any:
     """Convert form data to a dict

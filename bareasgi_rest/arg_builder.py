@@ -15,7 +15,6 @@ async def make_args(
         matches: Dict[str, str],
         query: Dict[str, List[str]],
         body: Callable[[Any], Awaitable[Any]],
-        rename_internal: Callable[[str], str],
         rename_external: Callable[[str], str]
 ) -> Tuple[Tuple[Any, ...], Dict[str, Any]]:
     """Make args and kwargs for the given signature from the route matches,
@@ -47,14 +46,12 @@ async def make_args(
                 value = from_json_value(
                     matches[parameter.name],
                     parameter.annotation,
-                    rename_internal,
                     rename_external
                 )
             elif parameter.name in query:
                 value = from_json_value(
                     query[parameter.name],
                     parameter.annotation,
-                    rename_internal,
                     rename_external
                 )
             elif typing_inspect.is_optional_type(parameter.annotation):

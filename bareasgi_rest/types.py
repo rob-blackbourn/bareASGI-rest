@@ -15,7 +15,6 @@ Deserializer = Callable[
         bytes,
         Dict[bytes, bytes],
         Any,
-        Callable[[str], str],
         Callable[[str], str]
     ],
     Any

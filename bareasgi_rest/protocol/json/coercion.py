@@ -118,7 +118,6 @@ def _from_json_value_to_builtin(value: Any, builtin_type: Type) -> Any:
 def from_json_value(
         value: Any,
         annotation: Any,
-        rename_internal: Callable[[str], str],
         rename_external: Callable[[str], str]
 ) -> Any:
     """Convert a JSON value info a Python value
@@ -126,7 +125,6 @@ def from_json_value(
     Args:
         value (Any): The JSON value
         annotation (Any): The Python type annotation
-        rename_internal (Callable[[str], str]): A function to rename object keys.
         rename_external (Callable[[str], str]): A function to rename object keys.
 
     Raises:
@@ -146,7 +144,6 @@ def from_json_value(
             return None if not value else from_json_value(
                 value,
                 union_types[0],
-                rename_internal,
                 rename_external
             )
         else:
@@ -154,14 +151,12 @@ def from_json_value(
             return from_json_value(
                 value,
                 union,
-                rename_internal,
                 rename_external
             )
         optional_type = typing_inspect.get_optional(annotation)
         return None if not value else from_json_value(
             value,
             optional_type,
-            rename_internal,
             rename_external
         )
     elif typing_inspect.is_list(annotation):
@@ -170,7 +165,6 @@ def from_json_value(
             from_json_value(
                 item,
                 element_type,
-                rename_internal,
                 rename_external
             )
             for item in value
@@ -181,7 +175,6 @@ def from_json_value(
         return _from_json_value_to_typed_dict(
             value,
             annotation,
-            rename_internal,
             rename_external
         )
     elif typing_inspect.is_union_type(annotation):
@@ -190,7 +183,6 @@ def from_json_value(
                 return from_json_value(
                     value,
                     arg_annotation,
-                    rename_internal,
                     rename_external
                 )
             except:  # pylint: disable=bare-except
@@ -202,7 +194,6 @@ def from_json_value(
 def _from_json_value_to_typed_dict(
         values: Optional[Dict[str, Any]],
         annotation: Any,
-        rename_internal: Callable[[str], str],
         rename_external: Callable[[str], str],
 ) -> Optional[Dict[str, Any]]:
     if values is None or not typing_inspect.is_typed_dict(annotation):
@@ -213,20 +204,17 @@ def _from_json_value_to_typed_dict(
     member_annotations = typing_inspect.typed_dict_annotation(annotation)
     for name, member in member_annotations.items():
         external_name = rename_external(name)
-        internal_name = rename_internal(name)
         if external_name in values:
             if typing_inspect.is_typed_dict(member.annotation):
-                coerced_values[internal_name] = _from_json_value_to_typed_dict(
+                coerced_values[name] = _from_json_value_to_typed_dict(
                     values[external_name],
                     member.annotation,
-                    rename_internal,
                     rename_external
                 )
             else:
-                coerced_values[internal_name] = from_json_value(
+                coerced_values[name] = from_json_value(
                     values[external_name],
                     member.annotation,
-                    rename_internal,
                     rename_external
                 )
         elif member.default is typing_inspect.TypedDictMember.empty:
@@ -234,10 +222,9 @@ def _from_json_value_to_typed_dict(
                 f'Required key "{external_name}" is missing'
             )
         else:
-            coerced_values[external_name] = from_json_value(
+            coerced_values[name] = from_json_value(
                 member.default,
                 member.annotation,
-                rename_internal,
                 rename_external
             )
 
