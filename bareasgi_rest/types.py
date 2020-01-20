@@ -11,12 +11,12 @@ from typing import (
 
 Deserializer = Callable[
     [
-        str,
         bytes,
         Dict[bytes, bytes],
-        Any,
         Callable[[str], str],
-        Callable[[str], str]
+        Callable[[str], str],
+        str,
+        Any,
     ],
     Any
 ]
@@ -24,9 +24,12 @@ DictConsumes = Dict[bytes, Deserializer]
 
 Serializer = Callable[
     [
-        Any,
+        bytes,
+        Dict[bytes, bytes],
         Callable[[str], str],
-        Callable[[str], str]
+        Callable[[str], str],
+        Any,
+        Any
     ],
     str
 ]

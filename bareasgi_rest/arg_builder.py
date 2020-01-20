@@ -7,7 +7,6 @@ import bareasgi_rest.typing_inspect as typing_inspect
 
 from .types import Body
 from .utils import is_body_type, get_body_type
-from .protocol.json import from_json_value
 
 
 async def make_args(
@@ -15,8 +14,7 @@ async def make_args(
         matches: Dict[str, str],
         query: Dict[str, List[str]],
         body: Callable[[Any], Awaitable[Any]],
-        rename_internal: Callable[[str], str],
-        rename_external: Callable[[str], str]
+        arg_deserializer: Callable[[str, Any], Any]
 ) -> Tuple[Tuple[Any, ...], Dict[str, Any]]:
     """Make args and kwargs for the given signature from the route matches,
     query args and body.
@@ -44,19 +42,28 @@ async def make_args(
             value: Any = Body(await body(body_type))
         else:
             if parameter.name in matches:
-                value = from_json_value(
+                value = arg_deserializer(
                     matches[parameter.name],
-                    parameter.annotation,
-                    rename_internal,
-                    rename_external
+                    parameter.annotation
                 )
             elif parameter.name in query:
-                value = from_json_value(
-                    query[parameter.name],
-                    parameter.annotation,
-                    rename_internal,
-                    rename_external
-                )
+                if typing_inspect.is_list(parameter.annotation):
+                    element_type, *_rest = typing_inspect.get_args(
+                        parameter.annotation
+                    )
+                    value = [
+                        arg_deserializer(
+                            item,
+                            element_type
+                        )
+                        for item in query[parameter.name]
+                    ]
+                else:
+                    value = arg_deserializer(
+                        query[parameter.name][0],
+                        parameter.annotation
+                    )
+
             elif typing_inspect.is_optional_type(parameter.annotation):
                 value = None
             else:

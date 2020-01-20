@@ -7,6 +7,7 @@ Attributes:
     DEFAULT_CONSUMES
 """
 
+from functools import partial
 import inspect
 import logging
 from typing import (
@@ -53,6 +54,7 @@ from .types import (
     RestCallback
 )
 from .utils import camelcase
+from .protocol.json.coercion import from_json_value
 
 LOGGER = logging.getLogger(__name__)
 
@@ -233,8 +235,11 @@ class RestHttpRouter(BasicHttpRouter):
                 route_args,
                 query_args,
                 body_reader,
-                self.rename_internal,
-                self.rename_external
+                partial(
+                    from_json_value,
+                    self.rename_internal,
+                    self.rename_external
+                )
             )
 
             try:
@@ -249,7 +254,11 @@ class RestHttpRouter(BasicHttpRouter):
                 )
 
             accept = header.accept(scope['headers'])
-            writer = self._make_writer(body, accept)
+            writer = self._make_writer(
+                body,
+                accept,
+                signature.return_annotation
+            )
             headers = [
                 (b'content-type', content_type)
             ]
@@ -260,7 +269,8 @@ class RestHttpRouter(BasicHttpRouter):
     def _make_writer(
             self,
             data: Optional[Any],
-            accept: Optional[Mapping[bytes, float]]
+            accept: Optional[Mapping[bytes, float]],
+            return_annotation: Any
     ) -> Optional[AsyncIterator[bytes]]:
         if data is None:
             # No need for a writer if there is no data.
@@ -271,12 +281,20 @@ class RestHttpRouter(BasicHttpRouter):
 
         for media_type in accept.keys():
             if media_type in self.produces:
-                serializer = self.produces[media_type]
                 break
         else:
-            serializer = self.produces[b'application/json']
+            media_type = b'application/json'
 
-        text = serializer(data, self.rename_internal, self.rename_external)
+        serializer = self.produces[media_type]
+
+        text = serializer(
+            media_type,
+            {},
+            self.rename_internal,
+            self.rename_external,
+            data,
+            return_annotation
+        )
         return text_writer(text)
 
     def _get_body_reader(
@@ -297,12 +315,12 @@ class RestHttpRouter(BasicHttpRouter):
                 raise RuntimeError('No deserializer')
             text = await text_reader(content)
             return deserializer(
-                text,
                 media_type,
                 params,
-                annotation,
                 self.rename_internal,
-                self.rename_external
+                self.rename_external,
+                text,
+                annotation
             )
 
         return body_reader

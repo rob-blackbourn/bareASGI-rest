@@ -2,6 +2,7 @@
 
 from datetime import datetime
 from decimal import Decimal
+from functools import partial
 import inspect
 from typing import Any, Dict, List, Optional
 try:
@@ -64,8 +65,8 @@ async def test_make_args():
     }
     foo_query = {
         'arg_num2': ['1', '2'],
-        'arg_num3': '1967-08-12T00:00:00Z',
-        'arg_num4': '3.142'
+        'arg_num3': ['1967-08-12T00:00:00Z'],
+        'arg_num4': ['3.142']
     }
 
     async def foo_body_reader(annotation: Any) -> Any:
@@ -76,8 +77,7 @@ async def test_make_args():
         foo_matches,
         foo_query,
         foo_body_reader,
-        underscore,
-        camelcase
+        partial(from_json_value, underscore, camelcase)
     )
     assert foo_args == ('hello',)
     assert foo_kwargs == {
@@ -98,7 +98,7 @@ async def test_make_args():
         'arg_id': 42
     }
     bar_query = {
-        'arg_query': 'query'
+        'arg_query': ['query']
     }
 
     async def bar_body_reader(annotation: Any) -> Any:
@@ -116,8 +116,7 @@ async def test_make_args():
         bar_matches,
         bar_query,
         bar_body_reader,
-        underscore,
-        camelcase
+        partial(from_json_value, underscore, camelcase)
     )
     assert len(bar_args) == 3
     assert len(bar_kwargs) == 0

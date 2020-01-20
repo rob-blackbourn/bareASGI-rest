@@ -40,7 +40,7 @@ def test_from_json_value():
             }
         ]
     }
-    result = from_json_value(source, Dict[str, Any], underscore, camelcase)
+    result = from_json_value(underscore, camelcase, source, Dict[str, Any])
     assert result == {
         'arg_num1': 'foo',
         'arg_num2': [

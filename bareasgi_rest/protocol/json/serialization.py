@@ -62,9 +62,12 @@ class JSONEncoderEx(json.JSONEncoder):
 
 
 def to_json(
+        _media_type: bytes,
+        _params: Dict[bytes, bytes],
+        _rename_internal: Callable[[str], str],
+        rename_external: Callable[[str], str],
         obj: Any,
-        rename_internal: Callable[[str], str],
-        rename_external: Callable[[str], str]
+        _annotation: Any,
 ) -> str:
     """Convert the object to JSON
 
@@ -78,12 +81,12 @@ def to_json(
 
 
 def from_json(
-        text: str,
         _media_type: bytes,
         _params: Dict[bytes, bytes],
-        annotation: Any,
         rename_internal: Callable[[str], str],
-        rename_external: Callable[[str], str]
+        rename_external: Callable[[str], str],
+        text: str,
+        annotation: Any,
 ) -> Any:
     """Convert JSON to an object
 
@@ -99,20 +102,20 @@ def from_json(
     """
     obj = json.loads(text)
     return from_json_value(
+        rename_internal,
+        rename_external,
         obj,
         annotation,
-        rename_internal,
-        rename_external
     )
 
 
 def from_query_string(
-        text: str,
         _media_type: bytes,
         _params: Dict[bytes, bytes],
-        annotation: Any,
-        rename_internal: Callable[[str], str],
-        rename_external: Callable[[str], str]
+        _rename_internal: Callable[[str], str],
+        _rename_external: Callable[[str], str],
+        text: str,
+        _annotation: Any,
 ) -> Any:
     """Convert a query string to a dict
 
@@ -130,12 +133,12 @@ def from_query_string(
 
 
 def from_form_data(
-        text: str,
         _media_type: bytes,
         params: Dict[bytes, bytes],
-        annotation: Any,
-        rename_internal: Callable[[str], str],
-        rename_external: Callable[[str], str]
+        _rename_internal: Callable[[str], str],
+        _rename_external: Callable[[str], str],
+        text: str,
+        _annotation: Any,
 ) -> Any:
     """Convert form data to a dict
 
