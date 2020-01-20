@@ -87,7 +87,16 @@ class RestHttpRouter(BasicHttpRouter):
             typeface_url: str = DEFAULT_TYPEFACE_URL,
             config: Optional[SwaggerConfig] = None,
             rename_internal: Callable[[str], str] = underscore,
-            rename_external: Callable[[str], str] = camelcase
+            rename_external: Callable[[str], str] = camelcase,
+            arg_deserializer: Callable[
+                [
+                    Callable[[str], str],
+                    Callable[[str], str],
+                    Any,
+                    Any
+                ],
+                Any
+            ] = from_json_value
     ) -> None:
         """Initialise the REST router
 
@@ -122,6 +131,7 @@ class RestHttpRouter(BasicHttpRouter):
 
         self.rename_internal = rename_internal
         self.rename_external = rename_external
+        self.arg_deserializer = arg_deserializer
 
         self.swagger_repo = SwaggerRepository(
             title,
@@ -236,7 +246,7 @@ class RestHttpRouter(BasicHttpRouter):
                 query_args,
                 body_reader,
                 partial(
-                    from_json_value,
+                    self.arg_deserializer,
                     self.rename_internal,
                     self.rename_external
                 )
