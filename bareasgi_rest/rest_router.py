@@ -34,6 +34,7 @@ from baretypes import (
     HttpResponse
 )
 import bareutils.header as header
+from inflection import underscore
 
 from .protocol.json import camelcase_object
 from .arg_builder import make_args
@@ -195,12 +196,20 @@ class RestHttpRouter(BasicHttpRouter):
                 content: Content
         ) -> HttpResponse:
 
-            query_args = parse_qs(scope['query_string'].decode())
+            route_args: Dict[str, str] = {
+                underscore(name): value
+                for name, value in matches.items()
+            }
+            query_string = scope['query_string'].decode()
+            query_args: Dict[str, List[str]] = {
+                underscore(name): values
+                for name, values in parse_qs(query_string).items()
+            }
             body_reader = self._get_body_reader(scope, content)
 
             args, kwargs = await make_args(
                 signature,
-                matches,
+                route_args,
                 query_args,
                 body_reader
             )

@@ -14,7 +14,7 @@ from .protocol.json import from_json_value
 async def make_args(
         signature: Signature,
         matches: Dict[str, str],
-        query: Dict[str, Any],
+        query: Dict[str, List[str]],
         body: Callable[[Any], Awaitable[Any]]
 ) -> Tuple[Tuple[Any, ...], Dict[str, Any]]:
     """Make args and kwargs for the given signature from the route matches,
@@ -41,22 +41,20 @@ async def make_args(
             body_type = get_body_type(parameter.annotation)
             value: Any = Body(await body(body_type))
         else:
-            camelcase_name = camelcase(parameter.name)
-
-            if camelcase_name in matches:
+            if parameter.name in matches:
                 value = from_json_value(
-                    matches[camelcase_name],
+                    matches[parameter.name],
                     parameter.annotation
                 )
-            elif camelcase_name in query:
+            elif parameter.name in query:
                 value = from_json_value(
-                    query[camelcase_name],
+                    query[parameter.name],
                     parameter.annotation
                 )
             elif typing_inspect.is_optional_type(parameter.annotation):
                 value = None
             else:
-                raise KeyError
+                raise KeyError(parameter.name)
 
         if (
                 parameter.kind == Parameter.POSITIONAL_ONLY
@@ -64,7 +62,6 @@ async def make_args(
         ):
             args.append(value)
         else:
-            # Use the non-camelcased name
             kwargs[parameter.name] = value
 
     bound_args = signature.bind(*args, **kwargs)

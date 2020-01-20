@@ -58,12 +58,12 @@ async def test_make_args():
 
     foo_sig = inspect.signature(foo)
     foo_matches = {
-        'argNum1': 'hello'
+        'arg_num1': 'hello'
     }
     foo_query = {
-        'argNum2': ['1', '2'],
-        'argNum3': '1967-08-12T00:00:00Z',
-        'argNum4': '3.142'
+        'arg_num2': ['1', '2'],
+        'arg_num3': '1967-08-12T00:00:00Z',
+        'arg_num4': '3.142'
     }
 
     async def foo_body_reader(annotation: Any) -> Any:
@@ -91,10 +91,10 @@ async def test_make_args():
         return None
 
     bar_matches = {
-        'argId': 42
+        'arg_id': 42
     }
     bar_query = {
-        'argQuery': 'query'
+        'arg_query': 'query'
     }
 
     async def bar_body_reader(annotation: Any) -> Any:
