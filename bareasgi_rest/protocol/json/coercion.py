@@ -8,46 +8,16 @@ from typing import (
     Dict,
     Optional,
     Type,
-    TypeVar,
     Union
 )
 
-from inflection import underscore
 
 import bareasgi_rest.typing_inspect as typing_inspect
-from ...utils import camelcase, rename_object
 from ..iso_8601 import (
     iso_8601_to_datetime,
     iso_8601_to_timedelta
 )
-
-T = TypeVar('T')  # pylint: disable=invalid-name
-
-
-def camelcase_object(obj: T) -> T:
-    """Convert any dictionary keys in the object to camelcase
-
-    :param obj: The object
-    :type obj: T
-    :return: The object with keys converted to camelcase
-    :rtype: T
-    """
-    return rename_object(obj, camelcase)
-
-
-def _underscore(value: Any) -> Any:
-    return underscore(value) if isinstance(value, str) else value
-
-
-def underscore_object(obj: T) -> T:
-    """Convert any dictionary keys in the object to underscore
-
-    :param obj: The object
-    :type obj: T
-    :return: The object with keys converted to underscore
-    :rtype: T
-    """
-    return rename_object(obj, _underscore)
+from ...utils import rename_object
 
 
 def is_json_container(annotation: Any) -> bool:
@@ -118,6 +88,7 @@ def _from_json_value_to_builtin(value: Any, builtin_type: Type) -> Any:
 def from_json_value(
         value: Any,
         annotation: Any,
+        rename_internal: Callable[[str], str],
         rename_external: Callable[[str], str]
 ) -> Any:
     """Convert a JSON value info a Python value
@@ -144,6 +115,7 @@ def from_json_value(
             return None if not value else from_json_value(
                 value,
                 union_types[0],
+                rename_internal,
                 rename_external
             )
         else:
@@ -151,12 +123,14 @@ def from_json_value(
             return from_json_value(
                 value,
                 union,
+                rename_internal,
                 rename_external
             )
         optional_type = typing_inspect.get_optional(annotation)
         return None if not value else from_json_value(
             value,
             optional_type,
+            rename_internal,
             rename_external
         )
     elif typing_inspect.is_list(annotation):
@@ -165,16 +139,18 @@ def from_json_value(
             from_json_value(
                 item,
                 element_type,
+                rename_internal,
                 rename_external
             )
             for item in value
         ]
     elif typing_inspect.is_dict(annotation):
-        return underscore_object(value)
+        return rename_object(value, rename_internal)
     elif typing_inspect.is_typed_dict(annotation):
-        return _from_json_value_to_typed_dict(
+        return _from_json_obj_to_typed_dict(
             value,
             annotation,
+            rename_internal,
             rename_external
         )
     elif typing_inspect.is_union_type(annotation):
@@ -183,6 +159,7 @@ def from_json_value(
                 return from_json_value(
                     value,
                     arg_annotation,
+                    rename_internal,
                     rename_external
                 )
             except:  # pylint: disable=bare-except
@@ -191,30 +168,33 @@ def from_json_value(
     raise TypeError
 
 
-def _from_json_value_to_typed_dict(
-        values: Optional[Dict[str, Any]],
+def _from_json_obj_to_typed_dict(
+        obj: Optional[Dict[str, Any]],
         annotation: Any,
-        rename_external: Callable[[str], str],
+        rename_internal: Callable[[str], str],
+        rename_external: Callable[[str], str]
 ) -> Optional[Dict[str, Any]]:
-    if values is None or not typing_inspect.is_typed_dict(annotation):
-        return values
+    if obj is None or not typing_inspect.is_typed_dict(annotation):
+        return obj
 
     coerced_values: Dict[str, Any] = {}
 
     member_annotations = typing_inspect.typed_dict_annotation(annotation)
     for name, member in member_annotations.items():
         external_name = rename_external(name)
-        if external_name in values:
+        if external_name in obj:
             if typing_inspect.is_typed_dict(member.annotation):
-                coerced_values[name] = _from_json_value_to_typed_dict(
-                    values[external_name],
+                coerced_values[name] = _from_json_obj_to_typed_dict(
+                    obj[external_name],
                     member.annotation,
+                    rename_internal,
                     rename_external
                 )
             else:
                 coerced_values[name] = from_json_value(
-                    values[external_name],
+                    obj[external_name],
                     member.annotation,
+                    rename_internal,
                     rename_external
                 )
         elif member.default is typing_inspect.TypedDictMember.empty:
@@ -225,6 +205,7 @@ def _from_json_value_to_typed_dict(
             coerced_values[name] = from_json_value(
                 member.default,
                 member.annotation,
+                rename_internal,
                 rename_external
             )
 

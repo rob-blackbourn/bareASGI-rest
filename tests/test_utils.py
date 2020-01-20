@@ -76,6 +76,7 @@ async def test_make_args():
         foo_matches,
         foo_query,
         foo_body_reader,
+        underscore,
         camelcase
     )
     assert foo_args == ('hello',)
@@ -115,6 +116,7 @@ async def test_make_args():
         bar_matches,
         bar_query,
         bar_body_reader,
+        underscore,
         camelcase
     )
     assert len(bar_args) == 3

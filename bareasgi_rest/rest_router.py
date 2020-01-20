@@ -233,6 +233,7 @@ class RestHttpRouter(BasicHttpRouter):
                 route_args,
                 query_args,
                 body_reader,
+                self.rename_internal,
                 self.rename_external
             )
 
@@ -275,7 +276,7 @@ class RestHttpRouter(BasicHttpRouter):
         else:
             serializer = self.produces[b'application/json']
 
-        text = serializer(data, self.rename_external)
+        text = serializer(data, self.rename_internal, self.rename_external)
         return text_writer(text)
 
     def _get_body_reader(
@@ -300,6 +301,7 @@ class RestHttpRouter(BasicHttpRouter):
                 media_type,
                 params,
                 annotation,
+                self.rename_internal,
                 self.rename_external
             )
 

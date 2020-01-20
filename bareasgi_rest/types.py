@@ -15,6 +15,7 @@ Deserializer = Callable[
         bytes,
         Dict[bytes, bytes],
         Any,
+        Callable[[str], str],
         Callable[[str], str]
     ],
     Any
@@ -24,6 +25,7 @@ DictConsumes = Dict[bytes, Deserializer]
 Serializer = Callable[
     [
         Any,
+        Callable[[str], str],
         Callable[[str], str]
     ],
     str
