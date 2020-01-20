@@ -18,7 +18,12 @@ from ..iso_8601 import (
 )
 from .coercion import from_json_value
 from ...utils import rename_object
-from ...types import Renamer, Annotation
+from ...types import (
+    Renamer,
+    Annotation,
+    MediaType,
+    MediaTypeParams
+)
 
 
 def json_to_python(dct):
@@ -64,10 +69,10 @@ class JSONEncoderEx(json.JSONEncoder):
 
 
 def to_json(
-        _media_type: bytes,
-        _params: Dict[bytes, bytes],
-        _rename_internal: Callable[[str], str],
-        rename_external: Callable[[str], str],
+        _media_type: MediaType,
+        _params: MediaTypeParams,
+        _rename_internal: Renamer,
+        rename_external: Renamer,
         obj: Any,
         _annotation: Any,
 ) -> str:
@@ -83,12 +88,12 @@ def to_json(
 
 
 def from_json(
-        _media_type: bytes,
-        _params: Dict[bytes, bytes],
-        rename_internal: Callable[[str], str],
-        rename_external: Callable[[str], str],
+        _media_type: MediaType,
+        _params: MediaTypeParams,
+        rename_internal: Renamer,
+        rename_external: Renamer,
         text: str,
-        annotation: Any,
+        annotation: Annotation
 ) -> Any:
     """Convert JSON to an object
 
@@ -112,12 +117,12 @@ def from_json(
 
 
 def from_query_string(
-        _media_type: bytes,
-        _params: Dict[bytes, bytes],
-        _rename_internal: Callable[[str], str],
-        _rename_external: Callable[[str], str],
+        _media_type: MediaType,
+        _params: MediaTypeParams,
+        _rename_internal: Renamer,
+        _rename_external: Renamer,
         text: str,
-        _annotation: Any,
+        _annotation: Annotation
 ) -> Any:
     """Convert a query string to a dict
 
@@ -135,12 +140,12 @@ def from_query_string(
 
 
 def from_form_data(
-        _media_type: bytes,
-        params: Dict[bytes, bytes],
-        _rename_internal: Callable[[str], str],
-        _rename_external: Callable[[str], str],
+        _media_type: MediaType,
+        params: MediaTypeParams,
+        _rename_internal: Renamer,
+        _rename_external: Renamer,
         text: str,
-        _annotation: Any,
+        _annotation: Annotation
 ) -> Any:
     """Convert form data to a dict
 

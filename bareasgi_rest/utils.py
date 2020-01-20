@@ -11,7 +11,7 @@ from typing import (
 from inflection import camelize
 
 import bareasgi_rest.typing_inspect as typing_inspect
-from .types import Body
+from .types import Body, Renamer, Annotation
 
 T = TypeVar('T')
 
@@ -26,7 +26,7 @@ class NullIter(Generic[T]):
         raise StopAsyncIteration
 
 
-def is_body_type(annotation: Any) -> bool:
+def is_body_type(annotation: Annotation) -> bool:
     """Determine if the annotation is of type Body[T]
 
     Args:
@@ -38,7 +38,7 @@ def is_body_type(annotation: Any) -> bool:
     return typing_inspect.get_origin(annotation) is Body
 
 
-def get_body_type(annotation: Any) -> Any:
+def get_body_type(annotation: Annotation) -> Annotation:
     """Gets the type T of Body[T]
 
     Args:
@@ -63,22 +63,22 @@ def camelcase(text: str) -> str:
     return camelize(text, uppercase_first_letter=False)
 
 
-def _rename_if_str(value: Any, rename: Callable[[str], str]) -> Any:
+def _rename_if_str(value: Any, rename: Renamer) -> Any:
     return rename(value) if isinstance(value, str) else value
 
 
-def _rename_dict(dct: dict, rename: Callable[[str], str]) -> dict:
+def _rename_dict(dct: dict, rename: Renamer) -> dict:
     return {
         _rename_if_str(name, rename): rename_object(obj, rename)
         for name, obj in dct.items()
     }
 
 
-def _rename_list(lst: list, rename: Callable[[str], str]) -> list:
+def _rename_list(lst: list, rename: Renamer) -> list:
     return [rename_object(obj, rename) for obj in lst]
 
 
-def rename_object(obj: T, rename: Callable[[str], str]) -> T:
+def rename_object(obj: T, rename: Renamer) -> T:
     """Recursively rename the keys of an object
 
     Args:

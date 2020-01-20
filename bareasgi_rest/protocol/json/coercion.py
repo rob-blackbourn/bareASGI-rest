@@ -18,6 +18,7 @@ from ..iso_8601 import (
     iso_8601_to_timedelta
 )
 from ...utils import rename_object
+from ...types import Renamer, Annotation
 
 
 def is_json_container(annotation: Any) -> bool:
@@ -86,10 +87,10 @@ def _from_json_value_to_builtin(value: Any, builtin_type: Type) -> Any:
 
 
 def from_json_value(
-        rename_internal: Callable[[str], str],
-        rename_external: Callable[[str], str],
+        rename_internal: Renamer,
+        rename_external: Renamer,
         value: Any,
-        annotation: Any,
+        annotation: Annotation,
 ) -> Any:
     """Convert a JSON value info a Python value
 
@@ -170,9 +171,9 @@ def from_json_value(
 
 def _from_json_obj_to_typed_dict(
         obj: Optional[Dict[str, Any]],
-        annotation: Any,
-        rename_internal: Callable[[str], str],
-        rename_external: Callable[[str], str]
+        annotation: Annotation,
+        rename_internal: Renamer,
+        rename_external: Renamer
 ) -> Optional[Dict[str, Any]]:
     if obj is None or not typing_inspect.is_typed_dict(annotation):
         return obj

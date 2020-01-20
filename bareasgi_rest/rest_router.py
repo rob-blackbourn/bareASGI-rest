@@ -7,7 +7,6 @@ Attributes:
     DEFAULT_CONSUMES
 """
 
-from functools import partial
 import inspect
 import logging
 from typing import (
@@ -54,18 +53,16 @@ from .types import (
     DictProduces,
     RestCallback,
     Renamer,
-    Annotation,
     ArgDeserializerFactory
 )
 from .utils import camelcase
-from .protocol.json.coercion import from_json_value
 
 LOGGER = logging.getLogger(__name__)
 
 
 def _rename_path_definition(
     path_definition: PathDefinition,
-    rename: Callable[[str], str]
+    rename: Renamer
 ) -> PathDefinition:
     for segment in path_definition.segments:
         if segment.is_variable:
@@ -90,8 +87,8 @@ class RestHttpRouter(BasicHttpRouter):
             swagger_base_url: str = DEFAULT_SWAGGER_BASE_URL,
             typeface_url: str = DEFAULT_TYPEFACE_URL,
             config: Optional[SwaggerConfig] = None,
-            rename_internal: Callable[[str], str] = underscore,
-            rename_external: Callable[[str], str] = camelcase,
+            rename_internal: Renamer = underscore,
+            rename_external: Renamer = camelcase,
             arg_deserializer_factory: ArgDeserializerFactory = DEFAULT_ARG_DESERIALIZER_FACTORY
     ) -> None:
         """Initialise the REST router
