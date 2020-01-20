@@ -1,7 +1,7 @@
 """Tests for JSON serialization"""
 
 from bareasgi_rest.protocol.json.coercion import (
-    camelize_object,
+    camelcase_object,
     underscore_object,
 )
 
@@ -19,7 +19,7 @@ def test_casing():
             }
         ]
     }
-    camel_dct = camelize_object(orig_dct)
+    camel_dct = camelcase_object(orig_dct)
     assert camel_dct == {
         'firstName': 'rob',
         'addresses': [

@@ -4,7 +4,7 @@ from .coercion import (
     from_json_value,
     is_json_container,
     is_json_literal,
-    camelize_object,
+    camelcase_object,
     underscore_object
 )
 from .serialization import (
@@ -20,7 +20,7 @@ __all__ = [
     'from_json_value',
     'is_json_container',
     'is_json_literal',
-    'camelize_object',
+    'camelcase_object',
     'underscore_object',
 
     'to_json',

@@ -3,9 +3,9 @@
 from inspect import Parameter, Signature
 from typing import Any, Awaitable, Callable, Dict, List, Tuple
 
-from inflection import camelize
-
 import bareasgi_rest.typing_inspect as typing_inspect
+from .utils import camelcase
+
 from .types import Body
 from .utils import is_body_type, get_body_type
 from .protocol.json import from_json_value
@@ -41,10 +41,8 @@ async def make_args(
             body_type = get_body_type(parameter.annotation)
             value: Any = Body(await body(body_type))
         else:
-            camelcase_name = camelize(
-                parameter.name,
-                uppercase_first_letter=False
-            )
+            camelcase_name = camelcase(parameter.name)
+
             if camelcase_name in matches:
                 value = from_json_value(
                     matches[camelcase_name],

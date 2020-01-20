@@ -6,6 +6,8 @@ from typing import (
     TypeVar
 )
 
+from inflection import camelize
+
 import bareasgi_rest.typing_inspect as typing_inspect
 from .types import Body
 
@@ -45,3 +47,15 @@ def get_body_type(annotation: Any) -> Any:
     """
     body_type, *_rest = typing_inspect.get_args(annotation)
     return body_type
+
+
+def camelcase(text: str) -> str:
+    """Apply camelcase
+
+    Args:
+        text (str): The text to transform
+
+    Returns:
+        str: The camelcase version of the text
+    """
+    return camelize(text, uppercase_first_letter=False)

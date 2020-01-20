@@ -14,9 +14,10 @@ from typing import (
     cast
 )
 
-from inflection import camelize, underscore
+from inflection import underscore
 
 import bareasgi_rest.typing_inspect as typing_inspect
+from ...utils import camelcase
 from ..iso_8601 import (
     iso_8601_to_datetime,
     iso_8601_to_timedelta
@@ -45,11 +46,11 @@ def _rename_object(obj: T, rename: Callable[[str], str]) -> T:
         return obj
 
 
-def _camelize(value: Any) -> Any:
-    return camelize(value, False) if isinstance(value, str) else value
+def _camelcase(value: Any) -> Any:
+    return camelcase(value) if isinstance(value, str) else value
 
 
-def camelize_object(obj: T) -> T:
+def camelcase_object(obj: T) -> T:
     """Convert any dictionary keys in the object to camelcase
 
     :param obj: The object
@@ -57,7 +58,7 @@ def camelize_object(obj: T) -> T:
     :return: The object with keys converted to camelcase
     :rtype: T
     """
-    return _rename_object(obj, _camelize)
+    return _rename_object(obj, _camelcase)
 
 
 def _underscore(value: Any) -> Any:
@@ -195,7 +196,7 @@ def _from_json_value_to_typed_dict(
 
     member_annotations = typing_inspect.typed_dict_annotation(annotation)
     for name, member in member_annotations.items():
-        camelcase_name = camelize(name, False)
+        camelcase_name = camelcase(name)
         if camelcase_name in values:
             if typing_inspect.is_typed_dict(member.annotation):
                 coerced_values[name] = _from_json_value_to_typed_dict(

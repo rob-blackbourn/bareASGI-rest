@@ -13,11 +13,12 @@ from typing import (
 
 from bareasgi.basic_router.path_definition import PathDefinition
 from docstring_parser import Docstring, DocstringParam
-from inflection import camelize, underscore
+from inflection import underscore
 
 from ..utils import (
     is_body_type,
-    get_body_type
+    get_body_type,
+    camelcase
 )
 
 from .properties import get_property
@@ -34,7 +35,7 @@ def _make_swagger_parameter(
 
     prop = get_property(
         param.annotation,
-        camelize(param.name, False),
+        camelcase(param.name),
         docstring_param.description if docstring_param else None,
         param.default,
         collection_format
@@ -133,7 +134,7 @@ def make_swagger_parameters(
                 body_type = get_body_type(parameter.annotation)
                 schema = get_property(
                     body_type,
-                    camelize(parameter.name, False),
+                    camelcase(parameter.name),
                     None,
                     Parameter.empty,
                     collection_format

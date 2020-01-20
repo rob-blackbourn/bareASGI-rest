@@ -11,9 +11,9 @@ from typing import (
 
 import docstring_parser
 from docstring_parser import Docstring
-from inflection import camelize
 
 import bareasgi_rest.typing_inspect as typing_inspect
+from ..utils import camelcase
 
 from .utils import find_docstring_param
 
@@ -122,7 +122,7 @@ def get_properties(
     """
     properties: Dict[str, Any] = {}
     for name, member in annotations.items():
-        camelcase_name = camelize(name, False)
+        camelcase_name = camelcase(name)
         docstring_param = find_docstring_param(name, docstring)
         description = docstring_param.description if docstring_param else None
 

@@ -35,7 +35,7 @@ from baretypes import (
 )
 import bareutils.header as header
 
-from .protocol.json import camelize_object
+from .protocol.json import camelcase_object
 from .arg_builder import make_args
 from .swagger import SwaggerRepository, SwaggerConfig, SwaggerController
 from .constants import (
@@ -244,7 +244,7 @@ class RestHttpRouter(BasicHttpRouter):
         else:
             serializer = self.produces[b'application/json']
 
-        text = serializer(camelize_object(data))
+        text = serializer(camelcase_object(data))
         return text_writer(text)
 
     def _get_body_reader(
