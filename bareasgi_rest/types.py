@@ -9,7 +9,17 @@ from typing import (
     TypeVar
 )
 
-Deserializer = Callable[[str, bytes, Dict[bytes, bytes], Any], Any]
+Deserializer = Callable[
+    [
+        str,
+        bytes,
+        Dict[bytes, bytes],
+        Any,
+        Callable[[str], str],
+        Callable[[str], str]
+    ],
+    Any
+]
 DictConsumes = Dict[bytes, Deserializer]
 
 Serializer = Callable[[Any], str]

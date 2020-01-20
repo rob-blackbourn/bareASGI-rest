@@ -53,6 +53,7 @@ from .types import (
     DictProduces,
     RestCallback
 )
+from .utils import camelcase
 
 LOGGER = logging.getLogger(__name__)
 
@@ -211,7 +212,9 @@ class RestHttpRouter(BasicHttpRouter):
                 signature,
                 route_args,
                 query_args,
-                body_reader
+                body_reader,
+                underscore,
+                camelcase
             )
 
             try:
@@ -273,6 +276,13 @@ class RestHttpRouter(BasicHttpRouter):
             if deserializer is None:
                 raise RuntimeError('No deserializer')
             text = await text_reader(content)
-            return deserializer(text, media_type, params, annotation)
+            return deserializer(
+                text,
+                media_type,
+                params,
+                annotation,
+                underscore,
+                camelcase
+            )
 
         return body_reader

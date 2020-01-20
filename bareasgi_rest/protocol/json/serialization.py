@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 import io
 import json
-from typing import Any, Dict
+from typing import Any, Callable, Dict
 
 from urllib.parse import parse_qs
 
@@ -76,7 +76,9 @@ def from_json(
         text: str,
         _media_type: bytes,
         _params: Dict[bytes, bytes],
-        annotation: Any
+        annotation: Any,
+        rename_internal: Callable[[str], str],
+        rename_external: Callable[[str], str],
 ) -> Any:
     """Convert JSON to an object
 
@@ -85,19 +87,22 @@ def from_json(
         _media_type (bytes): The media type
         _params (Dict[bytes, bytes]): The params from content-type header
         annotation (str): The type annotation
+        rename (Callable[[str], str]): A function to rename object keys.
 
     Returns:
         Any: The deserialized object.
     """
     obj = json.loads(text)
-    return from_json_value(obj, annotation)
+    return from_json_value(obj, annotation, rename_internal, rename_external)
 
 
 def from_query_string(
         text: str,
         _media_type: bytes,
         _params: Dict[bytes, bytes],
-        _annotation: Any
+        annotation: Any,
+        rename_internal: Callable[[str], str],
+        rename_external: Callable[[str], str],
 ) -> Any:
     """Convert a query string to a dict
 
@@ -106,6 +111,7 @@ def from_query_string(
         _media_type (bytes): The media type from the content-type header.
         _params (Dict[bytes, bytes]): The params from the content-type header
         _annotation (str): The type annotation
+        rename (Callable[[str], str]): A function to rename object keys.
 
     Returns:
         Any: The query string as a dict
@@ -117,7 +123,9 @@ def from_form_data(
         text: str,
         _media_type: bytes,
         params: Dict[bytes, bytes],
-        _annotation: Any
+        annotation: Any,
+        rename_internal: Callable[[str], str],
+        rename_external: Callable[[str], str],
 ) -> Any:
     """Convert form data to a dict
 
@@ -126,6 +134,7 @@ def from_form_data(
         _media_type (bytes): The media type from the content-type header
         params (Dict[bytes, bytes]): The params from the content-type header.
         _annotation(str): The type annotation
+        rename (Callable[[str], str]): A function to rename object keys.
 
     Raises:
         RuntimeError: If 'boundary' was not in the params

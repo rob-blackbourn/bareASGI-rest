@@ -10,6 +10,7 @@ except:  # pylint: disable=bare-except
     from typing_extensions import TypedDict
 
 import pytest
+from inflection import underscore
 
 from bareasgi_rest.types import Body
 from bareasgi_rest.protocol.json import (
@@ -18,6 +19,7 @@ from bareasgi_rest.protocol.json import (
     from_json_value
 )
 from bareasgi_rest.arg_builder import make_args
+from bareasgi_rest.utils import camelcase
 
 
 class MockDict(TypedDict):
@@ -73,7 +75,9 @@ async def test_make_args():
         foo_sig,
         foo_matches,
         foo_query,
-        foo_body_reader
+        foo_body_reader,
+        underscore,
+        camelcase
     )
     assert foo_args == ('hello',)
     assert foo_kwargs == {
@@ -111,7 +115,9 @@ async def test_make_args():
         bar_sig,
         bar_matches,
         bar_query,
-        bar_body_reader
+        bar_body_reader,
+        underscore,
+        camelcase
     )
     assert len(bar_args) == 3
     assert len(bar_kwargs) == 0

@@ -2,8 +2,10 @@
 
 from typing import (
     Any,
+    Callable,
     Generic,
-    TypeVar
+    TypeVar,
+    cast
 )
 
 from inflection import camelize
@@ -59,3 +61,36 @@ def camelcase(text: str) -> str:
         str: The camelcase version of the text
     """
     return camelize(text, uppercase_first_letter=False)
+
+
+def _rename_if_str(value: Any, rename: Callable[[str], str]) -> Any:
+    return rename(value) if isinstance(value, str) else value
+
+
+def _rename_dict(dct: dict, rename: Callable[[str], str]) -> dict:
+    return {
+        _rename_if_str(name, rename): rename_object(obj, rename)
+        for name, obj in dct.items()
+    }
+
+
+def _rename_list(lst: list, rename: Callable[[str], str]) -> list:
+    return [rename_object(obj, rename) for obj in lst]
+
+
+def rename_object(obj: T, rename: Callable[[str], str]) -> T:
+    """Recursively rename the keys of an object
+
+    Args:
+        obj (T): The object
+        rename (Callable[[str], str]): The function to rename the keys.
+
+    Returns:
+        T: The object with it's keys renamed.
+    """
+    if isinstance(obj, dict):
+        return cast(T, _rename_dict(obj, rename))
+    elif isinstance(obj, list):
+        return cast(T, _rename_list(obj, rename))
+    else:
+        return obj

@@ -4,7 +4,6 @@ from inspect import Parameter, Signature
 from typing import Any, Awaitable, Callable, Dict, List, Tuple
 
 import bareasgi_rest.typing_inspect as typing_inspect
-from .utils import camelcase
 
 from .types import Body
 from .utils import is_body_type, get_body_type
@@ -15,7 +14,9 @@ async def make_args(
         signature: Signature,
         matches: Dict[str, str],
         query: Dict[str, List[str]],
-        body: Callable[[Any], Awaitable[Any]]
+        body: Callable[[Any], Awaitable[Any]],
+        rename_internal: Callable[[str], str],
+        rename_external: Callable[[str], str]
 ) -> Tuple[Tuple[Any, ...], Dict[str, Any]]:
     """Make args and kwargs for the given signature from the route matches,
     query args and body.
@@ -25,6 +26,7 @@ async def make_args(
         matches (Dict[str, str]): The route matches
         query (Dict[str, Any]): A dictionary built from the query string
         body (Callable[[AsyncIterator[bytes], Any], Any]): Get the body
+        rename (Callable[[str], str]): A function to rename object keys
 
     Raises:
         KeyError: If a parameter was not found
@@ -44,12 +46,16 @@ async def make_args(
             if parameter.name in matches:
                 value = from_json_value(
                     matches[parameter.name],
-                    parameter.annotation
+                    parameter.annotation,
+                    rename_internal,
+                    rename_external
                 )
             elif parameter.name in query:
                 value = from_json_value(
                     query[parameter.name],
-                    parameter.annotation
+                    parameter.annotation,
+                    rename_internal,
+                    rename_external
                 )
             elif typing_inspect.is_optional_type(parameter.annotation):
                 value = None
