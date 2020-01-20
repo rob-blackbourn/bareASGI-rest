@@ -15,7 +15,7 @@ from inflection import camelize
 
 import bareasgi_rest.typing_inspect as typing_inspect
 
-from .utils import _find_docstring_param
+from .utils import find_docstring_param
 
 
 def get_property(
@@ -25,6 +25,21 @@ def get_property(
         default: Any,
         collection_format: str
 ) -> Dict[str, Any]:
+    """Get a swagger property
+
+    Args:
+        annotation (Any): The type annotation
+        name (Optional[str]): An optional property name
+        description (Optional[str]): An optional property description
+        default (Any): An optional default where inspect.Parameter.empty indicates no default
+        collection_format (str): The swagger collection format
+
+    Raises:
+        TypeError: If the property type is not handled.
+
+    Returns:
+        Dict[str, Any]: The swagger property.
+    """
     if typing_inspect.is_optional_type(annotation):
         optional_type = typing_inspect.get_optional(annotation)
         return get_property(
@@ -60,6 +75,7 @@ def get_property(
         prop['type'] = 'string'
         prop['format'] = 'date-time'
     elif annotation is timedelta:
+        # Note: Swagger has no support for durations. I made up the format.
         prop['type'] = 'string'
         prop['format'] = 'duration'
     elif typing_inspect.is_list(annotation):
@@ -83,7 +99,7 @@ def get_property(
             collection_format
         )
     else:
-        raise RuntimeError('Invalid JSON literal')
+        raise TypeError('Unhandled type annotation')
 
     return prop
 
@@ -93,10 +109,21 @@ def get_properties(
         docstring: Docstring,
         collection_format: str
 ) -> Dict[str, Any]:
+    """Get the properties of a TypedDict
+
+    Args:
+        annotations (Dict[str, typing_inspect.TypedDictMember]): The member
+            annotations
+        docstring (Docstring): The docstring
+        collection_format (str): The collection format
+
+    Returns:
+        Dict[str, Any]: The swagger properties.
+    """
     properties: Dict[str, Any] = {}
     for name, member in annotations.items():
         camelcase_name = camelize(name, False)
-        docstring_param = _find_docstring_param(name, docstring)
+        docstring_param = find_docstring_param(name, docstring)
         description = docstring_param.description if docstring_param else None
 
         properties[camelcase_name] = get_property(

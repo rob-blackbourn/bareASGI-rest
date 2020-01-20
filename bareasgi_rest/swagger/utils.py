@@ -1,19 +1,23 @@
-"""Utility functions"""
+"""Swagger Utility functions"""
 
-from inspect import Parameter
 from typing import Optional
 
 from docstring_parser import Docstring, DocstringParam
 
 
-def _check_is_required(param: Parameter) -> bool:
-    return param.default is Parameter.empty
-
-
-def _find_docstring_param(
+def find_docstring_param(
         name: str,
         docstring: Docstring
 ) -> Optional[DocstringParam]:
+    """Find the docstring param for the given parameter name.
+
+    Args:
+        name (str): The parameter name
+        docstring (Docstring): The docstring
+
+    Returns:
+        Optional[DocstringParam]: The docstring param or None if not found.
+    """
     for param in docstring.params:
         if param.arg_name == name:
             return param

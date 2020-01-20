@@ -5,15 +5,10 @@ import inspect
 
 from bareasgi.basic_router.path_definition import PathDefinition
 from docstring_parser import parse, Style
-from inflection import camelize
 
 from bareasgi_rest.swagger.parameters import (
     _make_swagger_parameter,
     make_swagger_parameters,
-)
-
-from bareasgi_rest.swagger.utils import (
-    _find_docstring_param,
 )
 
 from .mocks import mock_func

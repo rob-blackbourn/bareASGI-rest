@@ -5,7 +5,7 @@ import inspect
 from typing import List
 
 from docstring_parser import parse
-from bareasgi_rest.swagger.type_info import get_property
+from bareasgi_rest.swagger.properties import get_property
 
 from .mocks import MockDict
 

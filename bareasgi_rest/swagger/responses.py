@@ -12,7 +12,7 @@ from docstring_parser import DocstringReturns, DocstringRaises
 import bareasgi_rest.typing_inspect as typing_inspect
 
 from .errors import gather_error_responses
-from .type_info import get_property
+from .properties import get_property
 
 
 def make_swagger_responses(

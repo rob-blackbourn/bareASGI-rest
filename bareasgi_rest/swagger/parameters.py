@@ -8,26 +8,20 @@ from typing import (
     List,
     Mapping,
     Optional,
-    Set,
-    Tuple
+    Set
 )
 
 from bareasgi.basic_router.path_definition import PathDefinition
 from docstring_parser import Docstring, DocstringParam
 from inflection import camelize, underscore
 
-import bareasgi_rest.typing_inspect as typing_inspect
-
 from ..utils import (
     is_body_type,
     get_body_type
 )
 
-from .type_info import get_property
-from .utils import (
-    _check_is_required,
-    _find_docstring_param
-)
+from .properties import get_property
+from .utils import find_docstring_param
 
 
 def _make_swagger_parameter(
@@ -36,7 +30,7 @@ def _make_swagger_parameter(
         collection_format: str,
         docstring_param: Optional[DocstringParam]
 ) -> Dict[str, Any]:
-    is_required = _check_is_required(param)
+    is_required = param.default is Parameter.empty
 
     prop = get_property(
         param.annotation,
@@ -65,7 +59,7 @@ def _make_swagger_parameters_inline(
     for parameter in parameters.values():
         if parameter.name in path_variables:
             continue
-        docstring_param = _find_docstring_param(parameter.name, docstring)
+        docstring_param = find_docstring_param(parameter.name, docstring)
         props.append(
             _make_swagger_parameter(
                 source,
@@ -100,7 +94,7 @@ def make_swagger_parameters(
             path_variable = underscore(segment.name)
             path_variables.add(path_variable)
             parameter = available_parameters.pop(path_variable)
-            docstring_param = _find_docstring_param(parameter.name, docstring)
+            docstring_param = find_docstring_param(parameter.name, docstring)
             prop = _make_swagger_parameter(
                 'path',
                 parameter,
@@ -134,7 +128,7 @@ def make_swagger_parameters(
     else:
         # Fall back to b'application/json'.
         for parameter in available_parameters.values():
-            docstring_param = _find_docstring_param(parameter.name, docstring)
+            docstring_param = find_docstring_param(parameter.name, docstring)
             if is_body_type(parameter.annotation):
                 body_type = get_body_type(parameter.annotation)
                 schema = get_property(

@@ -1,4 +1,4 @@
-"""Configuration"""
+"""Swagger Configuration"""
 
 from typing import List, NamedTuple, Optional
 
