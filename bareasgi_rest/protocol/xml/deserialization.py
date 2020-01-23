@@ -99,52 +99,67 @@ def _from_xml_element(
 ) -> Any:
 
     if is_simple_type(element_type):
-        if not isinstance(xml_annotation, XMLAttribute):
-            text = element.text
-        else:
-            text = element.attrib[xml_annotation.tag]
-        if text is None:
-            raise ValueError(f'Expected "{xml_annotation.tag}" to be non-null')
-        return _from_xml_element_to_builtin(text, element_type)
-
+        return _from_xml_to_simple_type(element, element_type, xml_annotation)
     if typing_inspect.is_optional_type(element_type):
-        # An optional is a union where the last element is the None type.
-        union_types = typing_inspect.get_args(element_type)[:-1]
-        if len(union_types) == 1:
-            # This was Optional[T]
-            return None if _is_element_empty(element) else from_xml_element(
-                element,
-                union_types[0]
-            )
-        else:
-            # This was Optional[Union[...]]
-            union = Union[tuple(union_types)]  # type: ignore
+        return _from_xml_to_optional_type(element, element_type, xml_annotation)
+    elif typing_inspect.is_list(element_type):
+        return _from_xml_element_to_list(element, element_type, xml_annotation)
+    elif typing_inspect.is_typed_dict(element_type):
+        return _from_xml_element_to_typed_dict(element, element_type)
+    elif typing_inspect.is_union_type(element_type):
+        return _from_xml_element_to_union(element, element_type, xml_annotation)
+    raise TypeError
+
+
+def _from_xml_element_to_union(
+        element: Element,
+        element_type: Annotation,
+        _xml_annotation: XMLAnnotation
+) -> Any:
+    for arg_annotation in typing_inspect.get_args(element_type):
+        try:
             return from_xml_element(
                 element,
-                union,
+                arg_annotation,
             )
-    elif typing_inspect.is_list(element_type):
-        return _from_xml_element_to_list(
-            element,
-            element_type,
-            xml_annotation
-        )
-    elif typing_inspect.is_typed_dict(element_type):
-        return _from_xml_element_to_typed_dict(
-            element,
-            element_type
-        )
-    elif typing_inspect.is_union_type(element_type):
-        for arg_annotation in typing_inspect.get_args(element_type):
-            try:
-                return from_xml_element(
-                    element,
-                    arg_annotation,
-                )
-            except:  # pylint: disable=bare-except
-                pass
+        except:  # pylint: disable=bare-except
+            pass
 
-    raise TypeError
+
+def _from_xml_to_optional_type(
+        element: Element,
+        element_type: Annotation,
+        _xml_annotation: XMLAnnotation
+) -> Any:
+    # An optional is a union where the last element is the None type.
+    union_types = typing_inspect.get_args(element_type)[:-1]
+    if len(union_types) == 1:
+        # This was Optional[T]
+        return None if _is_element_empty(element) else from_xml_element(
+            element,
+            union_types[0]
+        )
+    else:
+        # This was Optional[Union[...]]
+        union = Union[tuple(union_types)]  # type: ignore
+        return from_xml_element(
+            element,
+            union,
+        )
+
+
+def _from_xml_to_simple_type(
+        element: Element,
+        element_type: Annotation,
+        xml_annotation: XMLAnnotation
+) -> Any:
+    if not isinstance(xml_annotation, XMLAttribute):
+        text = element.text
+    else:
+        text = element.attrib[xml_annotation.tag]
+    if text is None:
+        raise ValueError(f'Expected "{xml_annotation.tag}" to be non-null')
+    return _from_xml_element_to_builtin(text, element_type)
 
 
 def _from_xml_element_to_list(
