@@ -21,7 +21,7 @@ try:
 except ImportError:
     # For 3.7
     from typing_extensions import TypedDict, _TypedDictMeta  # type: ignore
-from typing_extensions import Literal
+from typing_extensions import Literal, Annotated, _AnnotatedAlias  # type: ignore
 
 
 def is_typed_dict(annotation):
@@ -34,6 +34,18 @@ def is_typed_dict(annotation):
         bool: True if the type annotation was for a typed dict
     """
     return isinstance(annotation, _TypedDictMeta)
+
+
+def is_annotated_type(annotation):
+    return isinstance(annotation, _AnnotatedAlias)
+
+
+def get_annotated_type(annotation):
+    return get_origin(annotation)
+
+
+def get_annotated_type_metadata(annotation):
+    return getattr(annotation, '__metadata__', None)
 
 
 def is_generic_type(annotation):

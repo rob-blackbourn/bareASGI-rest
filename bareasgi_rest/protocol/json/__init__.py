@@ -1,9 +1,7 @@
 """JSON Serialization"""
 
 from .coercion import (
-    from_json_value,
-    is_json_container,
-    is_json_literal
+    from_json_value
 )
 from .serialization import (
     to_json,
@@ -17,8 +15,6 @@ from .serialization import (
 
 __all__ = [
     'from_json_value',
-    'is_json_container',
-    'is_json_literal',
 
     'to_json',
     'from_json',

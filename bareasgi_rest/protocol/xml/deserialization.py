@@ -1,0 +1,234 @@
+"""XML Serialization"""
+
+from datetime import datetime, timedelta
+from decimal import Decimal
+from typing import (
+    Any,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Type,
+    Union
+)
+
+from lxml import etree
+from lxml.etree import Element  # pylint: disable=no-name-in-module
+
+import bareasgi_rest.typing_inspect as typing_inspect
+from ..iso_8601 import (
+    iso_8601_to_datetime,
+    iso_8601_to_timedelta
+)
+from ...types import (
+    Annotation,
+    MediaType,
+    MediaTypeParams
+)
+from ..utils import is_simple_type
+
+from .annotations import (
+    XMLAnnotation,
+    XMLAttribute,
+    get_xml_annotation
+)
+
+
+def _is_element_empty(element: Element) -> bool:
+    """Returns true if the elements
+
+    Args:
+        element (ET.Element): The element to test
+
+    Returns:
+        bool: True if the element has no children, text or attributes.
+    """
+    return (
+        element.find('*') is None and
+        element.text is None and
+        not element.attrib
+    )
+
+
+def _from_xml_element_to_builtin(text: str, builtin_type: Type) -> Any:
+    if builtin_type is str:
+        return text
+    elif builtin_type is int:
+        return int(text)
+    elif builtin_type is bool:
+        return text.lower() == 'true'
+    elif builtin_type is float:
+        return float(text)
+    elif builtin_type is Decimal:
+        return Decimal(text)
+    elif builtin_type is datetime:
+        return iso_8601_to_datetime(text)
+    elif builtin_type is timedelta:
+        return iso_8601_to_timedelta(text)
+    else:
+        raise TypeError(f'Unhandled type {builtin_type}')
+
+
+def from_xml_element(
+        element: Element,
+        annotation: Annotation,
+) -> Any:
+    """Convert a XML value info a Python value
+
+    Args:
+        element (ET.Element): The XML element
+        annotation (Any): The Python type annotation
+        rename_external (Callable[[str], str]): A function to rename object keys.
+
+    Raises:
+        TypeError: If the value cannot be converter
+
+    Returns:
+        Any: The Python value
+    """
+
+    element_type, xml_annotation = get_xml_annotation(annotation)
+
+    return _from_xml_element(element, element_type, xml_annotation)
+
+
+def _from_xml_element(
+        element: Element,
+        element_type: Annotation,
+        xml_annotation: XMLAnnotation
+) -> Any:
+
+    if is_simple_type(element_type):
+        if not isinstance(xml_annotation, XMLAttribute):
+            text = element.text
+        else:
+            text = element.attrib[xml_annotation.tag]
+        if text is None:
+            raise ValueError(f'Expected "{xml_annotation.tag}" to be non-null')
+        return _from_xml_element_to_builtin(text, element_type)
+
+    if typing_inspect.is_optional_type(element_type):
+        # An optional is a union where the last element is the None type.
+        union_types = typing_inspect.get_args(element_type)[:-1]
+        if len(union_types) == 1:
+            # This was Optional[T]
+            return None if _is_element_empty(element) else from_xml_element(
+                element,
+                union_types[0]
+            )
+        else:
+            # This was Optional[Union[...]]
+            union = Union[tuple(union_types)]  # type: ignore
+            return from_xml_element(
+                element,
+                union,
+            )
+    elif typing_inspect.is_list(element_type):
+        return _from_xml_element_to_list(
+            element,
+            element_type,
+            xml_annotation
+        )
+    elif typing_inspect.is_typed_dict(element_type):
+        return _from_xml_element_to_typed_dict(
+            element,
+            element_type
+        )
+    elif typing_inspect.is_union_type(element_type):
+        for arg_annotation in typing_inspect.get_args(element_type):
+            try:
+                return from_xml_element(
+                    element,
+                    arg_annotation,
+                )
+            except:  # pylint: disable=bare-except
+                pass
+
+    raise TypeError
+
+
+def _from_xml_element_to_list(
+        element: Element,
+        element_type: Annotation,
+        xml_annotation: XMLAnnotation
+) -> List[Any]:
+    element_annotation, *_rest = typing_inspect.get_args(element_type)
+    element_type, element_xml_annotation = get_xml_annotation(
+        element_annotation
+    )
+
+    if xml_annotation.tag == element_xml_annotation.tag:
+        elements: Iterable[Element] = element.iterfind(
+            '../' + element_xml_annotation.tag)
+    else:
+        elements = element.iter(element_xml_annotation.tag)
+
+    return [
+        _from_xml_element(
+            child,
+            element_type,
+            element_xml_annotation
+        )
+        for child in elements
+    ]
+
+
+def _from_xml_element_to_typed_dict(
+        element: Optional[Element],
+        annotation: Annotation,
+) -> Optional[Dict[str, Any]]:
+    if element is None:
+        return None
+
+    coerced_values: Dict[str, Any] = {}
+
+    member_annotations = typing_inspect.typed_dict_annotation(annotation)
+    for name, member in member_annotations.items():
+        element_type, xml_annotation = get_xml_annotation(member.annotation)
+        if not isinstance(xml_annotation, XMLAttribute):
+            member_element = element.find('./' + xml_annotation.tag)
+        else:
+            member_element = element
+        if member_element is not None:
+            coerced_values[name] = _from_xml_element(
+                member_element,
+                element_type,
+                xml_annotation
+            )
+        elif member.default is typing_inspect.TypedDictMember.empty:
+            raise KeyError(
+                f'Required key "{xml_annotation.tag}" is missing'
+            )
+        else:
+            coerced_values[name] = _from_xml_element(
+                member.default,
+                element_type,
+                xml_annotation
+            )
+
+    return coerced_values
+
+
+def deserialise_xml(
+        _media_type: MediaType,
+        _params: MediaTypeParams,
+        text: str,
+        annotation: Annotation
+) -> Any:
+    """Convert XML to an object
+
+    Args:
+        text (str): The XML string
+        _media_type (bytes): The media type
+        _params (Dict[bytes, bytes]): The params from content-type header
+        annotation (str): The type annotation
+        rename (Callable[[str], str]): A function to rename object keys.
+
+    Returns:
+        Any: The deserialized object.
+    """
+    element = etree.fromstring(text)  # pylint: disable=c-extension-no-member
+    return from_xml_element(
+        element,
+        annotation
+    )

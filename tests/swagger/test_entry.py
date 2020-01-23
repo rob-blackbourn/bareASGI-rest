@@ -7,6 +7,7 @@ try:
     from typing import TypedDict  # type:ignore
 except:  # pylint: disable=bare-except
     from typing_extensions import TypedDict
+from typing_extensions import Annotated  # type: ignore
 from urllib.error import HTTPError
 
 from bareasgi.basic_router.path_definition import PathDefinition
@@ -227,14 +228,14 @@ def test_post():
     async def update_if_withdrawn(
             library: str,
             is_withdrawn: bool,
-            book: Body[Book]
+            book: Annotated[Book, Body]
     ) -> None:
         """Update the book if not withdrawn
 
         Args:
             library (str): The library
             is_withdrawn (bool): True if the book has been withdrawn
-            book (Body[Book]): The book details to update
+            book (Annotated[Book, Body]): The book details to update
         """
         return list(BOOKS.values())
 

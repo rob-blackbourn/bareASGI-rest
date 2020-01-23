@@ -9,14 +9,17 @@ try:
     from typing import TypedDict  # type:ignore
 except:  # pylint: disable=bare-except
     from typing_extensions import TypedDict
+from typing_extensions import Annotated  # type: ignore
 
 import pytest
 from inflection import underscore
 
 from bareasgi_rest.types import Body
-from bareasgi_rest.protocol.json import (
-    is_json_container,
-    is_json_literal,
+from bareasgi_rest.protocol.utils import (
+    is_simple_type,
+    is_container_type,
+)
+from bareasgi_rest.protocol.json.coercion import (
     from_json_value
 )
 from bareasgi_rest.arg_builder import make_args
@@ -90,7 +93,7 @@ async def test_make_args():
     async def bar(
             arg_id: int,
             arg_query: str,
-            arg_body: Body[MockDict]
+            arg_body: Annotated[MockDict, Body]
     ) -> Optional[MockDict]:
         return None
 
@@ -122,46 +125,46 @@ async def test_make_args():
     assert len(bar_kwargs) == 0
     assert bar_args[0] == 42
     assert bar_args[1] == 'query'
-    assert bar_args[2] == Body({
+    assert bar_args[2] == {
         'arg_num1': 'hello',
         'arg_num2': [1, 2],
         'arg_num3': datetime.fromisoformat('1967-08-12T00:00:00'),
         'arg_num4': Decimal('3.142'),
         'arg_num5': None
-    })
+    }
 
 
 def test_is_json_container():
-    """Test is_json_container"""
+    """Test is_container_type"""
 
     def str_func() -> str:
         pass
     str_sig = inspect.signature(str_func)
-    assert not is_json_container(str_sig.return_annotation)
+    assert not is_container_type(str_sig.return_annotation)
 
     def list_func() -> List[Dict[str, Any]]:
         pass
     list_sig = inspect.signature(list_func)
-    assert is_json_container(list_sig.return_annotation)
+    assert is_container_type(list_sig.return_annotation)
 
     def dict_func() -> Dict[str, Any]:
         pass
     dict_sig = inspect.signature(dict_func)
-    assert is_json_container(dict_sig.return_annotation)
+    assert is_container_type(dict_sig.return_annotation)
 
     def typed_dict_func() -> List[Dict[str, Any]]:
         pass
     typed_dict_sig = inspect.signature(typed_dict_func)
-    assert is_json_container(typed_dict_sig.return_annotation)
+    assert is_container_type(typed_dict_sig.return_annotation)
 
 
 def test_is_json_literal():
-    """Test is_json_literal"""
-    assert is_json_literal(str)
-    assert is_json_literal(int)
-    assert is_json_literal(float)
-    assert is_json_literal(Decimal)
-    assert is_json_literal(datetime)
-    assert not is_json_literal(List[str])
-    assert not is_json_literal(Dict[str, Any])
-    assert not is_json_literal(MockDict)
+    """Test is_simple_type"""
+    assert is_simple_type(str)
+    assert is_simple_type(int)
+    assert is_simple_type(float)
+    assert is_simple_type(Decimal)
+    assert is_simple_type(datetime)
+    assert not is_simple_type(List[str])
+    assert not is_simple_type(Dict[str, Any])
+    assert not is_simple_type(MockDict)

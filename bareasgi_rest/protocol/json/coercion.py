@@ -1,16 +1,14 @@
-"""Serialization"""
+"""JSON Serialization"""
 
 from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import (
     Any,
-    Callable,
     Dict,
     Optional,
     Type,
     Union
 )
-
 
 import bareasgi_rest.typing_inspect as typing_inspect
 from ..iso_8601 import (
@@ -20,46 +18,7 @@ from ..iso_8601 import (
 from ...utils import rename_object
 from ...types import Renamer, Annotation
 
-
-def is_json_container(annotation: Any) -> bool:
-    """Return True if this is a JSON container.
-
-    A JSON container can be an object (Like a Dict[str, Any]), or a List.
-
-    Args:
-        annotation (Any): The type annotation.
-
-    Returns:
-        bool: True if the annotation is represented in JSON as a container.
-    """
-    if typing_inspect.is_optional_type(annotation):
-        return is_json_container(typing_inspect.get_optional(annotation))
-    else:
-        return (
-            typing_inspect.is_list(annotation) or
-            typing_inspect.is_dict(annotation) or
-            typing_inspect.is_typed_dict(annotation)
-        )
-
-
-def is_json_literal(annoation: Any) -> bool:
-    """Return True if the annotation is a JSON literal
-
-    Args:
-        annoation (Any): The annotation
-
-    Returns:
-        bool: True if the annotation is a JSON literal, otherwise False
-    """
-    return annoation in (
-        str,
-        bool,
-        int,
-        float,
-        Decimal,
-        datetime,
-        timedelta
-    )
+from ..utils import is_simple_type
 
 
 def _from_json_value_to_builtin(value: Any, builtin_type: Type) -> Any:
@@ -105,7 +64,7 @@ def from_json_value(
     Returns:
         Any: The Python value
     """
-    if is_json_literal(annotation):
+    if is_simple_type(annotation):
         single_value = value[0] if isinstance(value, list) else value
         return _from_json_value_to_builtin(single_value, annotation)
 

@@ -9,6 +9,7 @@ try:
     from typing import TypedDict  # type:ignore
 except:  # pylint: disable=bare-except
     from typing_extensions import TypedDict
+from typing_extensions import Annotated  # type: ignore
 from urllib.error import HTTPError
 
 from bareasgi import Application
@@ -133,7 +134,7 @@ class BookController:
     async def update_book(
             self,
             book_id: int,
-            book: Body[Book]
+            book: Annotated[Book, Body]
     ) -> None:
         """Update a book
 
@@ -146,7 +147,7 @@ class BookController:
         """
         if book_id not in self.books:
             raise HTTPError(None, 404, None, None, None)
-        self.books[book_id] = book.value
+        self.books[book_id] = book
 
 
 if __name__ == "__main__":
