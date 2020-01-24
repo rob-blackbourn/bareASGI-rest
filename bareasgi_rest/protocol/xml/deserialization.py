@@ -62,15 +62,15 @@ def _from_xml_element_to_builtin(text: str, builtin_type: Type) -> Any:
     elif builtin_type is Decimal:
         return Decimal(text)
     elif builtin_type is datetime:
-        value = iso_8601_to_datetime(text)
-        if value is None:
-            raise ValueError(f"Unable co convert {text} to datetime")
-        return value
+        timestamp = iso_8601_to_datetime(text)
+        if timestamp is None:
+            raise ValueError(f"Unable co convert '{text}' to datetime")
+        return timestamp
     elif builtin_type is timedelta:
-        value = iso_8601_to_timedelta(text)
-        if value is None:
-            raise ValueError(f"Unable co convert {text} to timedelta")
-        return value
+        duration = iso_8601_to_timedelta(text)
+        if duration is None:
+            raise ValueError(f"Unable co convert '{text}' to timedelta")
+        return duration
     else:
         raise TypeError(f'Unhandled type {builtin_type}')
 
@@ -136,22 +136,21 @@ def _from_xml_element_to_union(
 def _from_xml_to_optional_type(
         element: Element,
         element_type: Annotation,
-        _xml_annotation: XMLAnnotation
+        xml_annotation: XMLAnnotation
 ) -> Any:
+    if _is_element_empty(element):
+        return None
+
     # An optional is a union where the last element is the None type.
     union_types = typing_inspect.get_args(element_type)[:-1]
     if len(union_types) == 1:
         # This was Optional[T]
-        return None if _is_element_empty(element) else from_xml_element(
-            element,
-            union_types[0]
-        )
+        return _from_xml_element(element, union_types[0], xml_annotation)
     else:
-        # This was Optional[Union[...]]
-        union = Union[tuple(union_types)]  # type: ignore
-        return from_xml_element(
+        return _from_xml_element_to_union(
             element,
-            union,
+            Union[tuple(union_types)],
+            xml_annotation
         )
 
 

@@ -1,7 +1,7 @@
 """Tests for serialization"""
 
 from datetime import datetime
-from typing import List, Union
+from typing import List, Optional, Union
 
 from typing_extensions import TypedDict, Annotated  # type: ignore
 
@@ -25,7 +25,7 @@ class Book(TypedDict, total=False):
         List[Annotated[str, XMLEntity("Phrase")]],
         XMLEntity("Phrase")
     ]
-    age: Annotated[Union[datetime, int], XMLEntity("Age")]
+    age: Annotated[Optional[Union[datetime, int]], XMLEntity("Age")]
 
 
 def test_from_xml_element():
