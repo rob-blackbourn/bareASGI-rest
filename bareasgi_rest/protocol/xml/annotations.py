@@ -12,7 +12,7 @@ from ...typing_inspect import (
 
 
 class XMLAnnotation(metaclass=ABCMeta):
-    """The base annotation class"""
+    """The base XML annotation class"""
 
     def __init__(self, tag: str):
         self.tag = tag
@@ -29,7 +29,7 @@ class XMLAttribute(XMLAnnotation):
     """An XML attribute"""
 
     def __repr__(self) -> str:
-        return f'XMLAnnotation(tag="{self.tag}")'
+        return f'XMLAttribute(tag="{self.tag}")'
 
 
 def is_xml_annotation(annotation: Annotation) -> bool:

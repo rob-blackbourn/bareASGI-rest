@@ -157,7 +157,7 @@ def _from_xml_element_to_typed_dict(
 
     member_annotations = typing_inspect.typed_dict_annotation(annotation)
     for name, member in member_annotations.items():
-        element_type, xml_annotation = get_xml_annotation(member.annotation)
+        member_type, xml_annotation = get_xml_annotation(member.annotation)
         if not isinstance(xml_annotation, XMLAttribute):
             member_element = element.find('./' + xml_annotation.tag)
         else:
@@ -165,7 +165,7 @@ def _from_xml_element_to_typed_dict(
         if member_element is not None:
             coerced_values[name] = _from_xml_element(
                 member_element,
-                element_type,
+                member_type,
                 xml_annotation
             )
         elif member.default is typing_inspect.TypedDictMember.empty:
@@ -175,7 +175,7 @@ def _from_xml_element_to_typed_dict(
         else:
             coerced_values[name] = _from_xml_element(
                 member.default,
-                element_type,
+                member_type,
                 xml_annotation
             )
 
