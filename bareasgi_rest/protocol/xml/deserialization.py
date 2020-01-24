@@ -62,9 +62,15 @@ def _from_xml_element_to_builtin(text: str, builtin_type: Type) -> Any:
     elif builtin_type is Decimal:
         return Decimal(text)
     elif builtin_type is datetime:
-        return iso_8601_to_datetime(text)
+        value = iso_8601_to_datetime(text)
+        if value is None:
+            raise ValueError(f"Unable co convert {text} to datetime")
+        return value
     elif builtin_type is timedelta:
-        return iso_8601_to_timedelta(text)
+        value = iso_8601_to_timedelta(text)
+        if value is None:
+            raise ValueError(f"Unable co convert {text} to timedelta")
+        return value
     else:
         raise TypeError(f'Unhandled type {builtin_type}')
 
@@ -113,14 +119,15 @@ def _from_xml_element(
 
 def _from_xml_element_to_union(
         element: Element,
-        element_type: Annotation,
-        _xml_annotation: XMLAnnotation
+        annotation: Annotation,
+        xml_annotation: XMLAnnotation
 ) -> Any:
-    for arg_annotation in typing_inspect.get_args(element_type):
+    for element_type in typing_inspect.get_args(annotation):
         try:
-            return from_xml_element(
+            return _from_xml_element(
                 element,
-                arg_annotation,
+                element_type,
+                xml_annotation
             )
         except:  # pylint: disable=bare-except
             pass

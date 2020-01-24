@@ -1,7 +1,7 @@
 """Tests for serialization"""
 
 from datetime import datetime
-from typing import List
+from typing import List, Union
 
 from typing_extensions import TypedDict, Annotated  # type: ignore
 
@@ -25,6 +25,7 @@ class Book(TypedDict, total=False):
         List[Annotated[str, XMLEntity("Phrase")]],
         XMLEntity("Phrase")
     ]
+    age: Annotated[Union[datetime, int], XMLEntity("Age")]
 
 
 def test_from_xml_element():
@@ -41,6 +42,7 @@ def test_from_xml_element():
     </Keywords>
     <Phrase>Revolutionary wars are inevitable in class society</Phrase>
     <Phrase>War is the continuation of politics</Phrase>
+    <Age>24</Age>
 </Book>
 """
     dct = deserialise_xml(
@@ -58,5 +60,6 @@ def test_from_xml_element():
         'phrases': [
             'Revolutionary wars are inevitable in class society',
             'War is the continuation of politics'
-        ]
+        ],
+        'age': 24
     }
