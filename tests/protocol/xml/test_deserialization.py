@@ -5,7 +5,7 @@ from typing import List, Optional, Union
 
 from typing_extensions import TypedDict, Annotated  # type: ignore
 
-from bareasgi_rest.protocol.xml.deserialization import deserialise_xml
+from bareasgi_rest.protocol.xml.deserializer import deserialise_xml
 from bareasgi_rest.protocol.xml.annotations import (
     XMLEntity,
     XMLAttribute
@@ -47,8 +47,6 @@ def test_from_xml_element():
 </Book>
 """
     dct = deserialise_xml(
-        b'application/xml',
-        {},
         text,
         Annotated[Book, XMLEntity("Book")]
     )

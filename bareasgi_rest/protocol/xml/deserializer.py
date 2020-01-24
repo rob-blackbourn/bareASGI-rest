@@ -203,8 +203,6 @@ def _from_xml_element(
 
 
 def deserialise_xml(
-        _media_type: MediaType,
-        _params: MediaTypeParams,
         text: str,
         annotation: Annotation
 ) -> Any:
@@ -212,10 +210,7 @@ def deserialise_xml(
 
     Args:
         text (str): The XML string
-        _media_type (bytes): The media type
-        _params (Dict[bytes, bytes]): The params from content-type header
         annotation (str): The type annotation
-        rename (Callable[[str], str]): A function to rename object keys.
 
     Returns:
         Any: The deserialized object.
