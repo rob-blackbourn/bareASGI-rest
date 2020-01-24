@@ -1,19 +1,15 @@
 """Tests for JSON serialization"""
 
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Union
+from datetime import datetime
+from typing import List, Optional, Union
 
 from typing_extensions import TypedDict, Annotated  # type: ignore
 
 from bareasgi_rest.protocol.json.deserializer import deserialize
 from bareasgi_rest.protocol.json.annotations import (
-    JSONAnnotation,
     JSONValue,
     JSONList,
-    JSONObject,
-    JSONProperty,
-    is_json_annotation,
-    get_json_annotation
+    JSONProperty
 )
 
 

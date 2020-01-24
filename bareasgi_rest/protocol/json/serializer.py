@@ -3,7 +3,7 @@
 from datetime import datetime, timedelta
 from decimal import Decimal
 import json
-from typing import Any, Optional, Type, Union, cast
+from typing import Any, Type, Union, cast
 
 import bareasgi_rest.typing_inspect as typing_inspect
 from ...types import Annotation
@@ -16,33 +16,9 @@ from ..iso_8601 import (
 from .annotations import (
     JSONAnnotation,
     JSONValue,
-    JSONObject,
-    JSONList,
     JSONProperty,
     get_json_annotation
 )
-
-
-def _simple_type_to_json_obj(
-        obj: Any,
-        element_type: Type
-) -> str:
-    if element_type is str:
-        return obj
-    elif element_type is int:
-        return obj
-    elif element_type is bool:
-        return obj
-    elif element_type is float:
-        return obj
-    elif element_type is Decimal:
-        return obj
-    elif element_type is datetime:
-        return datetime_to_iso_8601(obj)
-    elif element_type is timedelta:
-        return timedelta_to_iso_8601(obj)
-    else:
-        raise TypeError(f'Unhandled type {element_type}')
 
 
 def _from_optional_obj_to_json(
@@ -130,10 +106,24 @@ def _from_typed_dict_to_json(
 
 def _from_simple_to_json(
         obj: Any,
-        element_type: Annotation,
-        json_annotation: JSONAnnotation,
+        element_type: Annotation
 ) -> Any:
-    return _simple_type_to_json_obj(obj, element_type)
+    if element_type is str:
+        return obj
+    elif element_type is int:
+        return obj
+    elif element_type is bool:
+        return obj
+    elif element_type is float:
+        return obj
+    elif element_type is Decimal:
+        return obj
+    elif element_type is datetime:
+        return datetime_to_iso_8601(obj)
+    elif element_type is timedelta:
+        return timedelta_to_iso_8601(obj)
+    else:
+        raise TypeError(f'Unhandled type {element_type}')
 
 
 def _from_obj_to_json(
@@ -142,7 +132,7 @@ def _from_obj_to_json(
         json_annotation: JSONAnnotation,
 ) -> Any:
     if is_simple_type(element_type):
-        return _from_simple_to_json(obj, element_type, json_annotation)
+        return _from_simple_to_json(obj, element_type)
     elif typing_inspect.is_optional_type(element_type):
         return _from_optional_obj_to_json(obj, element_type, json_annotation)
     elif typing_inspect.is_list(element_type):

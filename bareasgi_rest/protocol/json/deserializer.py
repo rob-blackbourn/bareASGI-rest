@@ -23,8 +23,6 @@ from ..utils import is_simple_type
 from .annotations import (
     JSONAnnotation,
     JSONValue,
-    JSONObject,
-    JSONList,
     JSONProperty,
     get_json_annotation
 )
@@ -191,7 +189,7 @@ def deserialize(
     element_type, json_annotation = get_json_annotation(annotation)
     if not isinstance(json_annotation, JSONValue):
         raise TypeError(
-            "Expected the root value to have a JSONObject or JSONList annotation"
+            "Expected the root value to have a JSONValue annotation"
         )
 
     obj = json.loads(text)
