@@ -26,6 +26,7 @@ class Book(TypedDict, total=False):
         XMLEntity("Phrase")
     ]
     age: Annotated[Optional[Union[datetime, int]], XMLEntity("Age")]
+    pages: Annotated[Optional[int], XMLAttribute("pages")]
 
 
 def test_from_xml_element():
@@ -61,5 +62,6 @@ def test_from_xml_element():
             'Revolutionary wars are inevitable in class society',
             'War is the continuation of politics'
         ],
-        'age': 24
+        'age': 24,
+        'pages': None
     }

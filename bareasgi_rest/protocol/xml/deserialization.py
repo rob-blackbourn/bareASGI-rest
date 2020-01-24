@@ -34,20 +34,24 @@ from .annotations import (
 )
 
 
-def _is_element_empty(element: Element) -> bool:
+def _is_element_empty(element: Element, xml_annotation: XMLAnnotation) -> bool:
     """Returns true if the elements
 
     Args:
         element (ET.Element): The element to test
+        xml_annotation (ET.Element): The XML annotation to test
 
     Returns:
         bool: True if the element has no children, text or attributes.
     """
-    return (
-        element.find('*') is None and
-        element.text is None and
-        not element.attrib
-    )
+    if isinstance(xml_annotation, XMLAttribute):
+        return xml_annotation.tag not in element.attrib
+    else:
+        return (
+            element.find('*') is None and
+            element.text is None and
+            not element.attrib
+        )
 
 
 def _from_xml_element_to_builtin(text: str, builtin_type: Type) -> Any:
@@ -138,7 +142,7 @@ def _from_xml_to_optional_type(
         element_type: Annotation,
         xml_annotation: XMLAnnotation
 ) -> Any:
-    if _is_element_empty(element):
+    if _is_element_empty(element, xml_annotation):
         return None
 
     # An optional is a union where the last element is the None type.
