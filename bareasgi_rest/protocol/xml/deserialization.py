@@ -35,15 +35,6 @@ from .annotations import (
 
 
 def _is_element_empty(element: Element, xml_annotation: XMLAnnotation) -> bool:
-    """Returns true if the elements
-
-    Args:
-        element (ET.Element): The element to test
-        xml_annotation (ET.Element): The XML annotation to test
-
-    Returns:
-        bool: True if the element has no children, text or attributes.
-    """
     if isinstance(xml_annotation, XMLAttribute):
         return xml_annotation.tag not in element.attrib
     else:
@@ -77,48 +68,6 @@ def _from_xml_element_to_builtin(text: str, builtin_type: Type) -> Any:
         return duration
     else:
         raise TypeError(f'Unhandled type {builtin_type}')
-
-
-def from_xml_element(
-        element: Element,
-        annotation: Annotation,
-) -> Any:
-    """Convert a XML value info a Python value
-
-    Args:
-        element (ET.Element): The XML element
-        annotation (Any): The Python type annotation
-        rename_external (Callable[[str], str]): A function to rename object keys.
-
-    Raises:
-        TypeError: If the value cannot be converter
-
-    Returns:
-        Any: The Python value
-    """
-
-    element_type, xml_annotation = get_xml_annotation(annotation)
-
-    return _from_xml_element(element, element_type, xml_annotation)
-
-
-def _from_xml_element(
-        element: Element,
-        element_type: Annotation,
-        xml_annotation: XMLAnnotation
-) -> Any:
-
-    if is_simple_type(element_type):
-        return _from_xml_to_simple_type(element, element_type, xml_annotation)
-    if typing_inspect.is_optional_type(element_type):
-        return _from_xml_to_optional_type(element, element_type, xml_annotation)
-    elif typing_inspect.is_list(element_type):
-        return _from_xml_element_to_list(element, element_type, xml_annotation)
-    elif typing_inspect.is_typed_dict(element_type):
-        return _from_xml_element_to_typed_dict(element, element_type)
-    elif typing_inspect.is_union_type(element_type):
-        return _from_xml_element_to_union(element, element_type, xml_annotation)
-    raise TypeError
 
 
 def _from_xml_element_to_union(
@@ -234,6 +183,25 @@ def _from_xml_element_to_typed_dict(
     return coerced_values
 
 
+def _from_xml_element(
+        element: Element,
+        element_type: Annotation,
+        xml_annotation: XMLAnnotation
+) -> Any:
+
+    if is_simple_type(element_type):
+        return _from_xml_to_simple_type(element, element_type, xml_annotation)
+    if typing_inspect.is_optional_type(element_type):
+        return _from_xml_to_optional_type(element, element_type, xml_annotation)
+    elif typing_inspect.is_list(element_type):
+        return _from_xml_element_to_list(element, element_type, xml_annotation)
+    elif typing_inspect.is_typed_dict(element_type):
+        return _from_xml_element_to_typed_dict(element, element_type)
+    elif typing_inspect.is_union_type(element_type):
+        return _from_xml_element_to_union(element, element_type, xml_annotation)
+    raise TypeError
+
+
 def deserialise_xml(
         _media_type: MediaType,
         _params: MediaTypeParams,
@@ -253,7 +221,5 @@ def deserialise_xml(
         Any: The deserialized object.
     """
     element = etree.fromstring(text)  # pylint: disable=c-extension-no-member
-    return from_xml_element(
-        element,
-        annotation
-    )
+    element_type, xml_annotation = get_xml_annotation(annotation)
+    return _from_xml_element(element, element_type, xml_annotation)
