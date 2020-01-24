@@ -20,16 +20,13 @@ from ..iso_8601 import (
     iso_8601_to_datetime,
     iso_8601_to_timedelta
 )
-from ...types import (
-    Annotation,
-    MediaType,
-    MediaTypeParams
-)
+from ...types import Annotation
 from ..utils import is_simple_type
 
 from .annotations import (
     XMLAnnotation,
     XMLAttribute,
+    XMLEntity,
     get_xml_annotation
 )
 
@@ -123,18 +120,20 @@ def _from_xml_to_simple_type(
 
 def _from_xml_element_to_list(
         element: Element,
-        element_type: Annotation,
+        annotation: Annotation,
         xml_annotation: XMLAnnotation
 ) -> List[Any]:
-    element_annotation, *_rest = typing_inspect.get_args(element_type)
+    element_annotation, *_rest = typing_inspect.get_args(annotation)
     element_type, element_xml_annotation = get_xml_annotation(
         element_annotation
     )
 
     if xml_annotation.tag == element_xml_annotation.tag:
+        # siblings
         elements: Iterable[Element] = element.iterfind(
             '../' + element_xml_annotation.tag)
     else:
+        # nested
         elements = element.iter(element_xml_annotation.tag)
 
     return [
@@ -215,6 +214,10 @@ def deserialise_xml(
     Returns:
         Any: The deserialized object.
     """
-    element = etree.fromstring(text)  # pylint: disable=c-extension-no-member
     element_type, xml_annotation = get_xml_annotation(annotation)
+    if not isinstance(xml_annotation, XMLEntity):
+        raise TypeError(
+            "Expected the root value to have an XMLEntity annotation")
+
+    element = etree.fromstring(text)  # pylint: disable=c-extension-no-member
     return _from_xml_element(element, element_type, xml_annotation)

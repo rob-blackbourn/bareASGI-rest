@@ -16,16 +16,16 @@ from ..typing_inspect import (
 )
 
 
-def is_simple_type(annoation: Annotation) -> bool:
+def is_simple_type(annotation: Annotation) -> bool:
     """Return True if the annotation is a simple type like an int or a str.
 
     Args:
-        annoation (Any): The annotation
+        annotation (Any): The annotation
 
     Returns:
         bool: True if the annotation is a JSON literal, otherwise False
     """
-    return annoation in (
+    return annotation in (
         str,
         bool,
         int,
