@@ -62,7 +62,12 @@ def _from_optional_obj_to_xml(
     union_types = typing_inspect.get_args(element_type)[:-1]
     if len(union_types) == 1:
         # This was Optional[T]
-        return _from_obj_to_xml(element, union_types[0], xml_annotation, element)
+        return _from_obj_to_xml(
+            obj,
+            union_types[0],
+            xml_annotation,
+            element
+        )
     else:
         return _from_union_obj_to_xml(
             obj,
