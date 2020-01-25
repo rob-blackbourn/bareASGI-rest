@@ -11,9 +11,9 @@ from typing import (
 
 import docstring_parser
 from docstring_parser import Docstring
+from stringcase import camelcase
 
 import bareasgi_rest.typing_inspect as typing_inspect
-from ..utils import camelcase
 
 from .utils import find_docstring_param
 

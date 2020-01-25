@@ -34,7 +34,7 @@ from baretypes import (
     HttpResponse
 )
 import bareutils.header as header
-from inflection import underscore
+from stringcase import snakecase, camelcase
 
 from .arg_builder import make_args
 from .swagger import SwaggerRepository, SwaggerConfig, SwaggerController
@@ -55,7 +55,6 @@ from .types import (
     Renamer,
     ArgDeserializerFactory
 )
-from .utils import camelcase
 
 LOGGER = logging.getLogger(__name__)
 
@@ -87,7 +86,7 @@ class RestHttpRouter(BasicHttpRouter):
             swagger_base_url: str = DEFAULT_SWAGGER_BASE_URL,
             typeface_url: str = DEFAULT_TYPEFACE_URL,
             config: Optional[SwaggerConfig] = None,
-            rename_internal: Renamer = underscore,
+            rename_internal: Renamer = snakecase,
             rename_external: Renamer = camelcase,
             arg_deserializer_factory: ArgDeserializerFactory = DEFAULT_ARG_DESERIALIZER_FACTORY
     ) -> None:

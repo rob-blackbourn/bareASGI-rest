@@ -8,8 +8,6 @@ from typing import (
     cast
 )
 
-from inflection import camelize
-
 import bareasgi_rest.typing_inspect as typing_inspect
 from .types import Body, Renamer, Annotation
 
@@ -52,18 +50,6 @@ def get_body_type(annotation: Annotation) -> Annotation:
         Any: The type of the body
     """
     return typing_inspect.get_origin(annotation)
-
-
-def camelcase(text: str) -> str:
-    """Apply camelcase
-
-    Args:
-        text (str): The text to transform
-
-    Returns:
-        str: The camelcase version of the text
-    """
-    return camelize(text, uppercase_first_letter=False)
 
 
 def _rename_if_str(value: Any, rename: Renamer) -> Any:

@@ -4,14 +4,13 @@ from datetime import datetime, timedelta
 import json
 from typing import Any, Dict
 
-from inflection import underscore
+from stringcase import snakecase, camelcase
 
 from bareasgi_rest.protocol.json.serialization import (
     JSONEncoderEx,
     json_to_python,
 )
 from bareasgi_rest.protocol.json.coercion import from_json_value
-from bareasgi_rest.utils import camelcase
 
 
 def test_json():
@@ -40,7 +39,7 @@ def test_from_json_value():
             }
         ]
     }
-    result = from_json_value(underscore, camelcase, source, Dict[str, Any])
+    result = from_json_value(snakecase, camelcase, source, Dict[str, Any])
     assert result == {
         'arg_num1': 'foo',
         'arg_num2': [

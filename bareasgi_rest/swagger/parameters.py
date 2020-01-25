@@ -13,12 +13,11 @@ from typing import (
 
 from bareasgi.basic_router.path_definition import PathDefinition
 from docstring_parser import Docstring, DocstringParam
-from inflection import underscore
+from stringcase import snakecase, camelcase
 
 from ..utils import (
     is_body_type,
     get_body_type,
-    camelcase
 )
 
 from .properties import get_property
@@ -92,7 +91,7 @@ def make_swagger_parameters(
     path_variables: Set[str] = set()
     for segment in path_definition.segments:
         if segment.is_variable:
-            path_variable = underscore(segment.name)
+            path_variable = snakecase(segment.name)
             path_variables.add(path_variable)
             parameter = available_parameters.pop(path_variable)
             docstring_param = find_docstring_param(parameter.name, docstring)
