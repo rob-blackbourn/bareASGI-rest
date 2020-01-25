@@ -3,11 +3,10 @@
 from datetime import datetime, timedelta
 from decimal import Decimal
 import json
-from typing import Any, Dict, Type, Union, cast
+from typing import Any, Type, Union, cast
 
 import bareasgi_rest.typing_inspect as typing_inspect
 from ...types import Annotation
-from ...utils import camelcase
 from ..utils import is_simple_type
 from ..iso_8601 import (
     datetime_to_iso_8601,
@@ -107,7 +106,7 @@ def _from_typed_dict_to_json(
 
 def _from_simple_to_json(
         obj: Any,
-        type_annotation: Annotation
+        type_annotation: Type
 ) -> Any:
     if type_annotation is str:
         return obj
@@ -164,10 +163,22 @@ def _from_value_to_json(
 
 
 def serialize(obj: Any, annotation: Annotation) -> str:
-    element_type, json_annotation = get_json_annotation(annotation)
+    """Serialize an object to JSON
+
+    Args:
+        obj (Any): The object to serialize
+        annotation (Annotation): The objects type annotation
+
+    Raises:
+        TypeError: If the object cannot be serialized
+
+    Returns:
+        str: The JSON string
+    """
+    type_annotation, json_annotation = get_json_annotation(annotation)
     if not isinstance(json_annotation, JSONValue):
         raise TypeError(
             "Expected the root value to have an JSONValue annotation")
 
-    json_obj = _from_value_to_json(obj, element_type, json_annotation)
+    json_obj = _from_value_to_json(obj, type_annotation, json_annotation)
     return json.dumps(json_obj)

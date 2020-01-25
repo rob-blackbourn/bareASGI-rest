@@ -12,8 +12,6 @@ from typing import (
     cast
 )
 
-from inflection import underscore
-
 import bareasgi_rest.typing_inspect as typing_inspect
 from ..iso_8601 import (
     iso_8601_to_datetime,
