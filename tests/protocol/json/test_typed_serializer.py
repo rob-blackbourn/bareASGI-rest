@@ -1,11 +1,11 @@
 """Tests for JSON serialization"""
 
 from datetime import datetime
-from typing import List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from typing_extensions import TypedDict, Annotated  # type: ignore
 
-from bareasgi_rest.protocol.json.deserializer import deserialize
+from bareasgi_rest.protocol.json.typed_serializer import serialize
 from bareasgi_rest.protocol.json.annotations import (
     JSONValue,
     JSONList,
@@ -25,31 +25,10 @@ class Book(TypedDict, total=False):
     pages: Annotated[Optional[int], JSONProperty("pages")]
 
 
-def test_deserialize():
+def test_serialize():
     """Test for deserialize"""
 
-    text = """
-{
-    "bookId": 42,
-    "title": "Little Red Book",
-    "author": "Chairman Mao",
-    "publicationDate": "1973-01-01T21:52:13Z",
-    "keywords": [
-      "Revolution",
-      "Communism"
-    ],
-    "phrases": [
-        "Revolutionary wars are inevitable in class society",
-        "War is the continuation of politics"
-    ],
-    "age": 24
-}
-"""
-    dct = deserialize(
-        text,
-        Annotated[Book, JSONValue()]
-    )
-    assert dct == {
+    obj: Book = {
         'author': 'Chairman Mao',
         'book_id': 42,
         'title': 'Little Red Book',
@@ -60,5 +39,6 @@ def test_deserialize():
             'War is the continuation of politics'
         ],
         'age': 24,
-        'pages': None
     }
+    text = serialize(obj, Annotated[Book, JSONValue()])
+    assert text == '{"bookId": 42, "title": "Little Red Book", "author": "Chairman Mao", "publicationDate": "1973-01-01T21:52:13.00Z", "keywords": ["Revolution", "Communism"], "phrases": ["Revolutionary wars are inevitable in class society", "War is the continuation of politics"], "age": 24, "pages": null}'
