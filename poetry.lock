@@ -433,6 +433,17 @@ testing = ["pytest (>=3.5,<3.7.3 || >3.7.3)", "pytest-checkdocs", "pytest-flake8
 
 [[package]]
 category = "dev"
+description = "a python refactoring library..."
+name = "rope"
+optional = false
+python-versions = "*"
+version = "0.16.0"
+
+[package.extras]
+dev = ["pytest"]
+
+[[package]]
+category = "dev"
 description = "Python 2 and 3 compatibility utilities"
 name = "six"
 optional = false
@@ -539,7 +550,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["pathlib2", "contextlib2", "unittest2"]
 
 [metadata]
-content-hash = "4a062e61086a44db585f0571c4772e12d8ff5cfb5122dd497067ec2e9af81b58"
+content-hash = "b7597a3695e3f1360c8eb0303f3332329677e7942723b56fe045b7f467e06b06"
 python-versions = "^3.7"
 
 [metadata.files]
@@ -771,6 +782,11 @@ pytest-asyncio = [
 pytest-runner = [
     {file = "pytest-runner-5.2.tar.gz", hash = "sha256:96c7e73ead7b93e388c5d614770d2bae6526efd997757d3543fe17b557a0942b"},
     {file = "pytest_runner-5.2-py2.py3-none-any.whl", hash = "sha256:5534b08b133ef9a5e2c22c7886a8f8508c95bb0b0bdc6cc13214f269c3c70d51"},
+]
+rope = [
+    {file = "rope-0.16.0-py2-none-any.whl", hash = "sha256:ae1fa2fd56f64f4cc9be46493ce54bed0dd12dee03980c61a4393d89d84029ad"},
+    {file = "rope-0.16.0-py3-none-any.whl", hash = "sha256:52423a7eebb5306a6d63bdc91a7c657db51ac9babfb8341c9a1440831ecf3203"},
+    {file = "rope-0.16.0.tar.gz", hash = "sha256:d2830142c2e046f5fc26a022fe680675b6f48f81c7fc1f03a950706e746e9dfe"},
 ]
 six = [
     {file = "six-1.13.0-py2.py3-none-any.whl", hash = "sha256:1f1b7d42e254082a9db6279deae68afb421ceba6158efa6131de7b3003ee93fd"},
