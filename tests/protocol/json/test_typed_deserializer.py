@@ -3,14 +3,19 @@
 from datetime import datetime
 from typing import List, Optional, Union
 
+from stringcase import snakecase, camelcase
+
 from typing_extensions import TypedDict, Annotated  # type: ignore
 
+from bareasgi_rest.protocol.config import SerializerConfig
 from bareasgi_rest.protocol.json.typed_deserializer import deserialize
 from bareasgi_rest.protocol.json.annotations import (
     JSONValue,
     JSONList,
     JSONProperty
 )
+
+CONFIG = SerializerConfig(camelcase, snakecase)
 
 
 class Book(TypedDict, total=False):
@@ -47,7 +52,8 @@ def test_deserialize():
 """
     dct = deserialize(
         text,
-        Annotated[Book, JSONValue()]
+        Annotated[Book, JSONValue()],
+        CONFIG
     )
     assert dct == {
         'author': 'Chairman Mao',

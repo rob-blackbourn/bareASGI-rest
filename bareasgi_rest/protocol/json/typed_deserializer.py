@@ -17,6 +17,7 @@ from ..iso_8601 import (
     iso_8601_to_datetime,
     iso_8601_to_timedelta
 )
+from ..config import SerializerConfig
 from ...types import Annotation
 
 from ..utils import is_simple_type
@@ -55,7 +56,8 @@ def _from_json_value_to_builtin(value: Any, type_annotation: Type) -> Any:
 def _from_json_obj_to_optional(
         obj: Any,
         type_annotation: Annotation,
-        json_annotation: JSONAnnotation
+        json_annotation: JSONAnnotation,
+        config: SerializerConfig
 ) -> Any:
     # An optional is a union where the last element is the None type.
     union_types = typing_inspect.get_args(type_annotation)[:-1]
@@ -63,26 +65,30 @@ def _from_json_obj_to_optional(
         return None if not obj else _from_json_value(
             obj,
             union_types[0],
-            json_annotation
+            json_annotation,
+            config
         )
     else:
         union = Union[tuple(union_types)]  # type: ignore
         return _from_json_value(
             obj,
             union,
-            json_annotation
+            json_annotation,
+            config
         )
     optional_type = typing_inspect.get_optional(type_annotation)
     return None if not obj else _from_json_value(
         obj,
         optional_type,
-        json_annotation
+        json_annotation,
+        config
     )
 
 
 def _from_json_obj_to_list(
         lst: list,
-        type_annotation: Annotation
+        type_annotation: Annotation,
+        config: SerializerConfig
 ) -> Any:
     item_annotation, *_rest = typing_inspect.get_args(type_annotation)
     item_type_annotation, item_json_annotation = get_json_annotation(
@@ -93,7 +99,8 @@ def _from_json_obj_to_list(
         _from_json_value(
             item,
             item_type_annotation,
-            item_json_annotation
+            item_json_annotation,
+            config
         )
         for item in lst
     ]
@@ -102,14 +109,16 @@ def _from_json_obj_to_list(
 def _from_json_obj_to_union(
         obj: Optional[Dict[str, Any]],
         type_annotation: Annotation,
-        json_annotation: JSONAnnotation
+        json_annotation: JSONAnnotation,
+        config: SerializerConfig
 ) -> Any:
     for item_type_annotation in typing_inspect.get_args(type_annotation):
         try:
             return _from_json_value(
                 obj,
                 item_type_annotation,
-                json_annotation
+                json_annotation,
+                config
             )
         except:  # pylint: disable=bare-except
             pass
@@ -117,24 +126,32 @@ def _from_json_obj_to_union(
 
 def _from_json_obj_to_typed_dict(
         obj: Dict[str, Any],
-        type_annotation: Annotation
+        type_annotation: Annotation,
+        config: SerializerConfig
 ) -> Dict[str, Any]:
     json_obj: Dict[str, Any] = {}
 
     type_annotations = typing_inspect.typed_dict_annotation(type_annotation)
     for name, member in type_annotations.items():
-        item_type_annotation, item_json_annotation = get_json_annotation(
-            member.annotation
-        )
-        if not issubclass(type(item_json_annotation), JSONProperty):
-            raise TypeError("Must be a property")
-        json_property = cast(JSONProperty, item_json_annotation)
+        if typing_inspect.is_annotated_type(member.annotation):
+            item_type_annotation, item_json_annotation = get_json_annotation(
+                member.annotation
+            )
+            if not issubclass(type(item_json_annotation), JSONProperty):
+                raise TypeError("Must be a property")
+            json_property = cast(JSONProperty, item_json_annotation)
+        else:
+            property_name = config.deserialize_key(
+                member.name
+            ) if config.deserialize_key and isinstance(member.name, str) else member.name
+            json_property = JSONProperty(property_name)
 
         if json_property.tag in obj:
             json_obj[name] = _from_json_value(
                 obj[json_property.tag],
                 item_type_annotation,
-                item_json_annotation
+                item_json_annotation,
+                config
             )
         elif typing_inspect.is_optional_type(item_type_annotation):
             json_obj[name] = None
@@ -146,7 +163,8 @@ def _from_json_obj_to_typed_dict(
             json_obj[name] = _from_json_value(
                 member.default,
                 item_type_annotation,
-                item_json_annotation
+                item_json_annotation,
+                config
             )
 
     return json_obj
@@ -155,7 +173,8 @@ def _from_json_obj_to_typed_dict(
 def _from_json_value(
         json_value: Any,
         type_annotation: Annotation,
-        json_annotation: JSONAnnotation
+        json_annotation: JSONAnnotation,
+        config: SerializerConfig
 ) -> Any:
     if is_simple_type(type_annotation):
         return _from_json_value_to_builtin(
@@ -166,31 +185,48 @@ def _from_json_value(
         return _from_json_obj_to_optional(
             json_value,
             type_annotation,
-            json_annotation
+            json_annotation,
+            config
         )
     elif typing_inspect.is_list(type_annotation):
         return _from_json_obj_to_list(
             json_value,
-            type_annotation
+            type_annotation,
+            config
         )
     elif typing_inspect.is_typed_dict(type_annotation):
         return _from_json_obj_to_typed_dict(
             json_value,
-            type_annotation
+            type_annotation,
+            config
         )
     elif typing_inspect.is_union_type(type_annotation):
         return _from_json_obj_to_union(
             json_value,
             type_annotation,
-            json_annotation
+            json_annotation,
+            config
         )
     else:
         raise TypeError
 
 
+def from_json_value(
+    json_value: Any,
+    annotation: Annotation,
+    config: SerializerConfig
+) -> Any:
+    type_annotation, json_annotation = get_json_annotation(annotation)
+    if not isinstance(json_annotation, JSONValue):
+        raise TypeError(
+            "Expected the root value to have a JSONValue annotation"
+        )
+
+
 def deserialize(
         text: str,
-        annotation: Annotation
+        annotation: Annotation,
+        config: SerializerConfig
 ) -> Any:
     """Convert JSON to an object
 
@@ -201,15 +237,5 @@ def deserialize(
     Returns:
         Any: The deserialized object.
     """
-    type_annotation, json_annotation = get_json_annotation(annotation)
-    if not isinstance(json_annotation, JSONValue):
-        raise TypeError(
-            "Expected the root value to have a JSONValue annotation"
-        )
-
     json_value = json.loads(text)
-    return _from_json_value(
-        json_value,
-        type_annotation,
-        json_annotation
-    )
+    return from_json_value(json_value, annotation, config)

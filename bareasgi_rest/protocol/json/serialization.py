@@ -6,9 +6,11 @@ from decimal import Decimal
 from functools import partial
 import io
 import json
-from typing import Any, Callable, Dict
+from typing import Any, Callable
 
 from urllib.parse import parse_qs
+
+import bareasgi_rest.typing_inspect as typing_inspect
 
 from ..iso_8601 import (
     iso_8601_to_datetime,
@@ -16,65 +18,41 @@ from ..iso_8601 import (
     iso_8601_to_timedelta,
     timedelta_to_iso_8601
 )
-from .coercion import from_json_value
-from ...utils import rename_object
 from ...types import (
-    Renamer,
     Annotation,
     MediaType,
     MediaTypeParams
 )
+from ..config import SerializerConfig
+from .typed_deserializer import from_json_value
 
 
-def json_to_python(dct):
-    """Convert JSON recognized objects to Python.
-
-    This includes durations and dates.
-
-    Args:
-        dct ([type]): The source dictionary
-
-    Returns:
-        [type]: The dictionary with conversions.
-    """
-    for key, value in dct.items():
-        if isinstance(value, str):
-            timestamp = iso_8601_to_datetime(value)
-            if timestamp:
-                dct[key] = timestamp
-                continue
-            duration = iso_8601_to_timedelta(value)
-            if duration:
-                dct[key] = duration
-                continue
-    return dct
+from .typed_serializer import serialize as typed_serialize
+from .typed_deserializer import deserialize as typed_deserialize
+from .untyped_serializer import serialize as untyped_serialize
+from .untyped_deserializer import deserialize as untyped_deserialize
 
 
-class JSONEncoderEx(json.JSONEncoder):
-    """Encode json"""
-
-    def default(self, obj):  # pylint: disable=method-hidden,arguments-differ
-        if isinstance(obj, datetime):
-            return datetime_to_iso_8601(obj)
-        elif isinstance(obj, timedelta):
-            return timedelta_to_iso_8601(obj)
-        elif isinstance(obj, Decimal):
-            return float(
-                str(obj.quantize(Decimal(1))
-                    if obj == obj.to_integral() else
-                    obj.normalize())
-            )
-        else:
-            return super(JSONEncoderEx, self).default(obj)
+def _is_typed(annotation: Annotation) -> bool:
+    return (
+        typing_inspect.is_typed_dict(annotation) or
+        (
+            typing_inspect.is_list(annotation) and
+            _is_typed(typing_inspect.get_args(annotation)[0])
+        ) or
+        (
+            typing_inspect.is_annotated_type(annotation) and
+            _is_typed(typing_inspect.get_origin(annotation))
+        )
+    )
 
 
 def to_json(
         _media_type: MediaType,
         _params: MediaTypeParams,
-        _rename_internal: Renamer,
-        rename_external: Renamer,
+        config: SerializerConfig,
         obj: Any,
-        _annotation: Any,
+        annotation: Any,
 ) -> str:
     """Convert the object to JSON
 
@@ -84,14 +62,16 @@ def to_json(
     Returns:
         str: The stringified object
     """
-    return json.dumps(rename_object(obj, rename_external), cls=JSONEncoderEx)
+    if _is_typed(annotation):
+        return typed_serialize(obj, annotation, config)
+    else:
+        return untyped_serialize(obj, config)
 
 
 def from_json(
         _media_type: MediaType,
         _params: MediaTypeParams,
-        rename_internal: Renamer,
-        rename_external: Renamer,
+        config: SerializerConfig,
         text: str,
         annotation: Annotation
 ) -> Any:
@@ -107,20 +87,16 @@ def from_json(
     Returns:
         Any: The deserialized object.
     """
-    obj = json.loads(text)
-    return from_json_value(
-        rename_internal,
-        rename_external,
-        obj,
-        annotation,
-    )
+    if _is_typed(annotation):
+        return typed_deserialize(text, annotation, config)
+    else:
+        return untyped_deserialize(text, config)
 
 
 def from_query_string(
         _media_type: MediaType,
         _params: MediaTypeParams,
-        _rename_internal: Renamer,
-        _rename_external: Renamer,
+        _config: SerializerConfig,
         text: str,
         _annotation: Annotation
 ) -> Any:
@@ -142,8 +118,7 @@ def from_query_string(
 def from_form_data(
         _media_type: MediaType,
         params: MediaTypeParams,
-        _rename_internal: Renamer,
-        _rename_external: Renamer,
+        _config: SerializerConfig,
         text: str,
         _annotation: Annotation
 ) -> Any:
@@ -172,7 +147,6 @@ def from_form_data(
 
 
 def json_arg_deserializer_factory(
-    rename_internal: Renamer,
-    rename_external: Renamer
+        config: SerializerConfig,
 ) -> Callable[[str, Annotation], Any]:
-    return partial(from_json_value, rename_internal, rename_external)
+    return partial(from_json_value, config)

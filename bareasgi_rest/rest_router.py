@@ -45,6 +45,7 @@ from .constants import (
     DEFAULT_PRODUCES,
     DEFAULT_COLLECTION_FORMAT,
     DEFAULT_NOT_FOUND_RESPONSE,
+    DEFAULT_SERIALIZER_CONFIG,
     DEFAULT_ARG_DESERIALIZER_FACTORY
 )
 from .types import (
@@ -52,20 +53,22 @@ from .types import (
     DictConsumes,
     DictProduces,
     RestCallback,
-    Renamer,
     ArgDeserializerFactory
 )
+from .protocol.config import SerializerConfig
 
 LOGGER = logging.getLogger(__name__)
 
 
 def _rename_path_definition(
     path_definition: PathDefinition,
-    rename: Renamer
+    config: SerializerConfig
 ) -> PathDefinition:
     for segment in path_definition.segments:
         if segment.is_variable:
-            segment.name = rename(segment.name)
+            segment.name = config.serialize_key(
+                segment.name
+            ) if config.serialize_key else segment.name
     return path_definition
 
 
@@ -86,8 +89,7 @@ class RestHttpRouter(BasicHttpRouter):
             swagger_base_url: str = DEFAULT_SWAGGER_BASE_URL,
             typeface_url: str = DEFAULT_TYPEFACE_URL,
             config: Optional[SwaggerConfig] = None,
-            rename_internal: Renamer = snakecase,
-            rename_external: Renamer = camelcase,
+            serializer_config: SerializerConfig = DEFAULT_SERIALIZER_CONFIG,
             arg_deserializer_factory: ArgDeserializerFactory = DEFAULT_ARG_DESERIALIZER_FACTORY
     ) -> None:
         """Initialise the REST router
@@ -121,8 +123,7 @@ class RestHttpRouter(BasicHttpRouter):
         self.accepts: Dict[str, Dict[PathDefinition, bytes]] = {}
         self.collection_formats: Dict[str, Dict[PathDefinition, str]] = {}
 
-        self.rename_internal = rename_internal
-        self.rename_external = rename_external
+        self.serializer_config = serializer_config
         self.arg_deserializer_factory = arg_deserializer_factory
 
         self.swagger_repo = SwaggerRepository(
@@ -156,8 +157,7 @@ class RestHttpRouter(BasicHttpRouter):
             tags: Optional[List[str]] = None,
             status_code: int = 200,
             status_description: str = 'OK',
-            rename_internal: Optional[Renamer] = None,
-            rename_external: Optional[Renamer] = None,
+            serializer_config: Optional[SerializerConfig] = None,
             arg_deserializer_factory: Optional[ArgDeserializerFactory] = None
     ) -> None:
         """Register a callback to a method and path
@@ -187,15 +187,14 @@ class RestHttpRouter(BasicHttpRouter):
                 callback,
                 content_type,
                 status_code,
-                rename_internal,
-                rename_external,
+                serializer_config,
                 arg_deserializer_factory
             )
             self.swagger_repo.add(
                 method,
                 _rename_path_definition(
                     PathDefinition(path),
-                    self.rename_external
+                    self.serializer_config
                 ),
                 callback,
                 accept,
@@ -213,21 +212,19 @@ class RestHttpRouter(BasicHttpRouter):
             callback: RestCallback,
             content_type: bytes,
             status_code: int,
-            rename_internal: Optional[Renamer],
-            rename_external: Optional[Renamer],
+            serializer_config: Optional[SerializerConfig],
             arg_deserializer_factory: Optional[ArgDeserializerFactory]
     ) -> None:
         signature = inspect.signature(callback)
         path_definition = _rename_path_definition(
             PathDefinition(self.base_path + path),
-            self.rename_external
+            self.serializer_config
         )
 
         arg_deserializer = (
             arg_deserializer_factory or self.arg_deserializer_factory
         )(
-            rename_internal or self.rename_internal,
-            rename_external or self.rename_external
+            serializer_config or self.serializer_config
         )
 
         async def rest_callback(
@@ -238,12 +235,12 @@ class RestHttpRouter(BasicHttpRouter):
         ) -> HttpResponse:
 
             route_args: Dict[str, str] = {
-                self.rename_internal(name): value
+                self.serializer_config.deserialize_key(name): value
                 for name, value in matches.items()
             }
             query_string = scope['query_string'].decode()
             query_args: Dict[str, List[str]] = {
-                self.rename_internal(name): values
+                self.serializer_config.deserialize_key(name): values
                 for name, values in parse_qs(query_string).items()
             }
             body_reader = self._get_body_reader(scope, content)
@@ -304,8 +301,7 @@ class RestHttpRouter(BasicHttpRouter):
         text = serializer(
             media_type,
             {},
-            self.rename_internal,
-            self.rename_external,
+            self.serializer_config,
             data,
             return_annotation
         )
@@ -331,8 +327,7 @@ class RestHttpRouter(BasicHttpRouter):
             return deserializer(
                 media_type,
                 params,
-                self.rename_internal,
-                self.rename_external,
+                self.serializer_config,
                 text,
                 annotation
             )

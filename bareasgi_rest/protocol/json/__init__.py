@@ -1,6 +1,6 @@
 """JSON Serialization"""
 
-from .coercion import (
+from .typed_deserializer import (
     from_json_value
 )
 from .serialization import (
@@ -8,8 +8,6 @@ from .serialization import (
     from_json,
     from_form_data,
     from_query_string,
-    JSONEncoderEx,
-    json_to_python,
     json_arg_deserializer_factory
 )
 
@@ -20,7 +18,5 @@ __all__ = [
     'from_json',
     'from_form_data',
     'from_query_string',
-    'JSONEncoderEx',
-    'json_to_python',
     'json_arg_deserializer_factory'
 ]

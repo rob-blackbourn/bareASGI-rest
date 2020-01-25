@@ -3,14 +3,19 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 
+from stringcase import snakecase, camelcase
+
 from typing_extensions import TypedDict, Annotated  # type: ignore
 
+from bareasgi_rest.protocol.config import SerializerConfig
 from bareasgi_rest.protocol.json.typed_serializer import serialize
 from bareasgi_rest.protocol.json.annotations import (
     JSONValue,
     JSONList,
     JSONProperty
 )
+
+CONFIG = SerializerConfig(camelcase, snakecase)
 
 
 class Book(TypedDict, total=False):
@@ -40,5 +45,5 @@ def test_serialize():
         ],
         'age': 24,
     }
-    text = serialize(obj, Annotated[Book, JSONValue()])
+    text = serialize(obj, Annotated[Book, JSONValue()], CONFIG)
     assert text == '{"bookId": 42, "title": "Little Red Book", "author": "Chairman Mao", "publicationDate": "1973-01-01T21:52:13.00Z", "keywords": ["Revolution", "Communism"], "phrases": ["Revolutionary wars are inevitable in class society", "War is the continuation of politics"], "age": 24, "pages": null}'

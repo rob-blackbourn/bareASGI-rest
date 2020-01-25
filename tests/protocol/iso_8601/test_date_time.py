@@ -9,7 +9,7 @@ from bareasgi_rest.protocol.iso_8601 import (
 
 
 def test_roundtrip():
-    """Test for json_to_python"""
+    """Test for iso 8601"""
     for text in [
             '2014-01-01T23:28:56.782Z',
             '2014-02-01T09:28:56.321-10:00',

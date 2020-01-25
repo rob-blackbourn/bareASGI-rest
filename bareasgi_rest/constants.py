@@ -2,12 +2,14 @@
 
 from baretypes import HttpResponse
 from bareutils import text_writer
+from stringcase import camelcase, snakecase
 
 from .types import (
     DictConsumes,
     DictProduces
 )
 
+from .protocol.config import SerializerConfig
 from .protocol.json import (
     to_json,
     from_json,
@@ -39,5 +41,7 @@ DEFAULT_NOT_FOUND_RESPONSE: HttpResponse = (
     text_writer('Not Found'),
     None
 )
+
+DEFAULT_SERIALIZER_CONFIG = SerializerConfig(camelcase, snakecase)
 
 DEFAULT_ARG_DESERIALIZER_FACTORY = json_arg_deserializer_factory

@@ -8,7 +8,8 @@ from typing import (
     NewType
 )
 
-Renamer = Callable[[str], str]
+from .protocol.config import SerializerConfig
+
 Annotation = Any
 MediaType = bytes
 MediaTypeParams = Dict[bytes, bytes]
@@ -17,8 +18,7 @@ Deserializer = Callable[
     [
         MediaType,
         MediaTypeParams,
-        Renamer,
-        Renamer,
+        SerializerConfig,
         str,
         Annotation
     ],
@@ -30,8 +30,7 @@ Serializer = Callable[
     [
         MediaType,
         MediaTypeParams,
-        Renamer,
-        Renamer,
+        SerializerConfig,
         Any,
         Annotation
     ],
@@ -44,7 +43,7 @@ RestCallback = Callable[..., Awaitable[Any]]
 ArgDeserializer = Callable[[str, Annotation], Any]
 
 ArgDeserializerFactory = Callable[
-    [Renamer, Renamer],
+    [SerializerConfig],
     Callable[[str, Annotation], Any]
 ]
 
