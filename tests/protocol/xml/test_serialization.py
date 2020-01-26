@@ -1,4 +1,4 @@
-"""Tests for serialization"""
+"""Round trip tests for XML serialization"""
 
 from datetime import datetime
 from typing import List, Optional, Union
@@ -7,6 +7,7 @@ from stringcase import capitalcase, snakecase
 from typing_extensions import TypedDict, Annotated  # type: ignore
 
 from bareasgi_rest.protocol.config import SerializerConfig
+from bareasgi_rest.protocol.xml.serializer import serialize
 from bareasgi_rest.protocol.xml.deserializer import deserialize
 from bareasgi_rest.protocol.xml.annotations import (
     XMLEntity,
@@ -16,7 +17,7 @@ from bareasgi_rest.protocol.xml.annotations import (
 CONFIG = SerializerConfig(capitalcase, snakecase)
 
 
-class Book(TypedDict, total=False):
+class AnnotatedBook(TypedDict, total=False):
     book_id: Annotated[int, XMLAttribute("bookId")]
     title: Annotated[str, XMLEntity("Title")]
     author: Annotated[str, XMLEntity("Author")]
@@ -33,29 +34,8 @@ class Book(TypedDict, total=False):
     pages: Annotated[Optional[int], XMLAttribute("pages")]
 
 
-def test_from_xml_element():
-    """Test for from_xml_element"""
-
-    text = """
-<Book  bookId="42">
-    <Title>Little Red Book</Title>
-    <Author>Chairman Mao</Author>
-    <PublicationDate>1973-01-01T21:52:13Z</PublicationDate>
-    <Keywords>
-      <Keyword>Revolution</Keyword>
-      <Keyword>Communism</Keyword>
-    </Keywords>
-    <Phrase>Revolutionary wars are inevitable in class society</Phrase>
-    <Phrase>War is the continuation of politics</Phrase>
-    <Age>24</Age>
-</Book>
-"""
-    dct = deserialize(
-        text,
-        Annotated[Book, XMLEntity("Book")],
-        CONFIG
-    )
-    assert dct == {
+def test_typed():
+    dct: AnnotatedBook = {
         'author': 'Chairman Mao',
         'book_id': 42,
         'title': 'Little Red Book',
@@ -68,6 +48,12 @@ def test_from_xml_element():
         'age': 24,
         'pages': None
     }
+    annotation = Annotated[AnnotatedBook, XMLEntity('Book')]
+    config = SerializerConfig(capitalcase, snakecase)
+
+    text = serialize(dct, annotation, config)
+    roundtrip = deserialize(text, annotation, config)
+    assert dct == roundtrip
 
 
 class UnannotatedBook(TypedDict, total=False):
@@ -79,3 +65,25 @@ class UnannotatedBook(TypedDict, total=False):
     phrases: List[str]
     age: Optional[Union[datetime, int]]
     pages: Optional[int]
+
+
+def test_untyped():
+    dct: UnannotatedBook = {
+        'author': 'Chairman Mao',
+        'book_id': 42,
+        'title': 'Little Red Book',
+        'publication_date': datetime(1973, 1, 1, 21, 52, 13),
+        'keywords': ['Revolution', 'Communism'],
+        'phrases': [
+            'Revolutionary wars are inevitable in class society',
+            'War is the continuation of politics'
+        ],
+        'age': 24,
+        'pages': None
+    }
+    annotation = Annotated[UnannotatedBook, XMLEntity('Book')]
+    config = SerializerConfig(capitalcase, snakecase)
+
+    text = serialize(dct, annotation, config)
+    roundtrip = deserialize(text, annotation, config)
+    assert dct == roundtrip

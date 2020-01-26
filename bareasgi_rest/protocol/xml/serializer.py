@@ -108,12 +108,16 @@ def _from_list(
         element: Optional[Element],
         config: SerializerConfig
 ) -> Element:
-    element_annotation, *_rest = typing_inspect.get_args(type_annotation)
-    element_type_annotation, element_xml_annotation = get_xml_annotation(
-        element_annotation
-    )
+    item_annotation, *_rest = typing_inspect.get_args(type_annotation)
+    if typing_inspect.is_annotated_type(item_annotation):
+        item_type_annotation, item_xml_annotation = get_xml_annotation(
+            item_annotation
+        )
+    else:
+        item_type_annotation = item_annotation
+        item_xml_annotation = xml_annotation
 
-    if xml_annotation.tag == element_xml_annotation.tag:
+    if xml_annotation.tag == item_xml_annotation.tag:
         # siblings
         parent = element
     else:
@@ -122,8 +126,8 @@ def _from_list(
     for item in obj:
         _from_obj(
             item,
-            element_type_annotation,
-            element_xml_annotation,
+            item_type_annotation,
+            item_xml_annotation,
             parent,
             config
         )

@@ -69,7 +69,7 @@ def _to_builtin(text: str, type_annotation: Type) -> Any:
 
 
 def _to_union(
-        element: Element,
+        element: Optional[Element],
         type_annotation: Annotation,
         xml_annotation: XMLAnnotation,
         config: SerializerConfig
@@ -84,15 +84,16 @@ def _to_union(
             )
         except:  # pylint: disable=bare-except
             pass
+    raise ValueError('Unable to deserialize a Union')
 
 
 def _to_optional(
-        element: Element,
+        element: Optional[Element],
         type_annotation: Annotation,
         xml_annotation: XMLAnnotation,
         config: SerializerConfig
 ) -> Any:
-    if _is_element_empty(element, xml_annotation):
+    if element is None or _is_element_empty(element, xml_annotation):
         return None
 
     # An optional is a union where the last element is the None type.
@@ -115,10 +116,12 @@ def _to_optional(
 
 
 def _to_simple(
-        element: Element,
+        element: Optional[Element],
         type_annotation: Annotation,
         xml_annotation: XMLAnnotation
 ) -> Any:
+    if element is None:
+        raise ValueError('Found "None" while deserializing a value')
     if not isinstance(xml_annotation, XMLAttribute):
         text = element.text
     else:
@@ -129,29 +132,36 @@ def _to_simple(
 
 
 def _to_list(
-        element: Element,
+        element: Optional[Element],
         type_annotation: Annotation,
         xml_annotation: XMLAnnotation,
         config: SerializerConfig
 ) -> List[Any]:
-    element_annotation, *_rest = typing_inspect.get_args(type_annotation)
-    element_type, element_xml_annotation = get_xml_annotation(
-        element_annotation
-    )
+    if element is None:
+        raise ValueError('Received "None" while deserializing a list')
 
-    if xml_annotation.tag == element_xml_annotation.tag:
+    item_annotation, *_rest = typing_inspect.get_args(type_annotation)
+    if typing_inspect.is_annotated_type(item_annotation):
+        item_type_annotation, item_xml_annotation = get_xml_annotation(
+            item_annotation
+        )
+    else:
+        item_type_annotation = item_annotation
+        item_xml_annotation = xml_annotation
+
+    if xml_annotation.tag == item_xml_annotation.tag:
         # siblings
         elements: Iterable[Element] = element.iterfind(
-            '../' + element_xml_annotation.tag)
+            '../' + item_xml_annotation.tag)
     else:
         # nested
-        elements = element.iter(element_xml_annotation.tag)
+        elements = element.iter(item_xml_annotation.tag)
 
     return [
         _to_obj(
             child,
-            element_type,
-            element_xml_annotation,
+            item_type_annotation,
+            item_xml_annotation,
             config
         )
         for child in elements
@@ -164,9 +174,9 @@ def _to_typed_dict(
         config: SerializerConfig
 ) -> Optional[Dict[str, Any]]:
     if element is None:
-        return None
+        raise ValueError('Received "None" while deserializing a TypeDict')
 
-    coerced_values: Dict[str, Any] = {}
+    typed_dict: Dict[str, Any] = {}
 
     member_annotations = typing_inspect.typed_dict_annotation(type_annotation)
     for name, member in member_annotations.items():
@@ -183,30 +193,19 @@ def _to_typed_dict(
             item_element = element.find('./' + item_xml_annotation.tag)
         else:
             item_element = element
-        if item_element is not None:
-            coerced_values[name] = _to_obj(
-                item_element,
-                item_type_annotation,
-                item_xml_annotation,
-                config
-            )
-        elif member.default is typing_inspect.TypedDictMember.empty:
-            raise KeyError(
-                f'Required key "{item_xml_annotation.tag}" is missing'
-            )
-        else:
-            coerced_values[name] = _to_obj(
-                member.default,
-                item_type_annotation,
-                item_xml_annotation,
-                config
-            )
 
-    return coerced_values
+        typed_dict[name] = _to_obj(
+            item_element,
+            item_type_annotation,
+            item_xml_annotation,
+            config
+        )
+
+    return typed_dict
 
 
 def _to_obj(
-        element: Element,
+        element: Optional[Element],
         type_annotation: Annotation,
         xml_annotation: XMLAnnotation,
         config: SerializerConfig
