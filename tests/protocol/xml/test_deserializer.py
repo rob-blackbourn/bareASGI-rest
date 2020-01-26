@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import List, Optional, Union
 
-from stringcase import capitalcase, snakecase
+from stringcase import pascalcase, snakecase
 from typing_extensions import TypedDict, Annotated  # type: ignore
 
 from bareasgi_rest.protocol.config import SerializerConfig
@@ -13,7 +13,7 @@ from bareasgi_rest.protocol.xml.annotations import (
     XMLAttribute
 )
 
-CONFIG = SerializerConfig(capitalcase, snakecase)
+CONFIG = SerializerConfig(pascalcase, snakecase)
 
 
 class Book(TypedDict, total=False):

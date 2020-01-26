@@ -185,7 +185,7 @@ def _to_typed_dict(
                 member.annotation
             )
         else:
-            tag = config.deserialize_key(member.name)
+            tag = config.serialize_key(member.name)
             item_type_annotation = member.annotation
             item_xml_annotation = XMLEntity(tag)
 

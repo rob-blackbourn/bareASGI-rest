@@ -45,5 +45,5 @@ def test_serialize():
         ],
         'age': 24,
     }
-    text = serialize(obj, Annotated[Book, JSONValue()], CONFIG)
+    text = serialize(obj, Book, CONFIG)
     assert text == '{"bookId": 42, "title": "Little Red Book", "author": "Chairman Mao", "publicationDate": "1973-01-01T21:52:13.00Z", "keywords": ["Revolution", "Communism"], "phrases": ["Revolutionary wars are inevitable in class society", "War is the continuation of politics"], "age": 24, "pages": null}'

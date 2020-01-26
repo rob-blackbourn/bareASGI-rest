@@ -22,7 +22,7 @@ from .annotations import (
 )
 
 
-def _from_optional_obj_to_json(
+def _from_optional(
         obj: Any,
         type_annotation: Annotation,
         json_annotation: JSONAnnotation,
@@ -35,14 +35,14 @@ def _from_optional_obj_to_json(
     union_types = typing_inspect.get_args(type_annotation)[:-1]
     if len(union_types) == 1:
         # This was Optional[T]
-        return _from_value_to_json(
+        return _from_value(
             obj,
             union_types[0],
             json_annotation,
             config
         )
     else:
-        return _from_union_obj_to_json(
+        return _from_union(
             obj,
             Union[tuple(union_types)],
             json_annotation,
@@ -50,7 +50,7 @@ def _from_optional_obj_to_json(
         )
 
 
-def _from_union_obj_to_json(
+def _from_union(
         obj: Any,
         type_annotation: Annotation,
         json_annotation: JSONAnnotation,
@@ -58,7 +58,7 @@ def _from_union_obj_to_json(
 ) -> Any:
     for element_type in typing_inspect.get_args(type_annotation):
         try:
-            return _from_value_to_json(
+            return _from_value(
                 obj,
                 element_type,
                 json_annotation,
@@ -68,18 +68,22 @@ def _from_union_obj_to_json(
             pass
 
 
-def _from_list_to_json(
+def _from_list(
         lst: list,
         type_annotation: Annotation,
         config: SerializerConfig
 ) -> Any:
     item_annotation, *_rest = typing_inspect.get_args(type_annotation)
-    item_type_annotation, item_json_annotation = get_json_annotation(
-        item_annotation
-    )
+    if typing_inspect.is_annotated_type(item_annotation):
+        item_type_annotation, item_json_annotation = get_json_annotation(
+            item_annotation
+        )
+    else:
+        item_type_annotation = item_annotation
+        item_json_annotation = JSONValue()
 
     return [
-        _from_value_to_json(
+        _from_value(
             item,
             item_type_annotation,
             item_json_annotation,
@@ -89,7 +93,7 @@ def _from_list_to_json(
     ]
 
 
-def _from_typed_dict_to_json(
+def _from_typed_dict(
         dct: dict,
         type_annotation: Annotation,
         config: SerializerConfig
@@ -110,8 +114,9 @@ def _from_typed_dict_to_json(
                 name
             ) if config.serialize_key and isinstance(name, str) else name
             json_property = JSONProperty(property_name)
+            item_type_annotation = member.annotation
 
-        json_obj[json_property.tag] = _from_value_to_json(
+        json_obj[json_property.tag] = _from_value(
             dct.get(name),
             item_type_annotation,
             json_property,
@@ -120,7 +125,7 @@ def _from_typed_dict_to_json(
     return json_obj
 
 
-def _from_simple_to_json(
+def _from_simple(
         obj: Any,
         type_annotation: Type
 ) -> Any:
@@ -142,45 +147,45 @@ def _from_simple_to_json(
         raise TypeError(f'Unhandled type {type_annotation}')
 
 
-def _from_value_to_json(
+def _from_value(
         value: Any,
         type_annotation: Annotation,
         json_annotation: JSONAnnotation,
         config: SerializerConfig
 ) -> Any:
     if is_simple_type(type_annotation):
-        return _from_simple_to_json(
+        return _from_simple(
             value,
             type_annotation
         )
     elif typing_inspect.is_optional_type(type_annotation):
-        return _from_optional_obj_to_json(
+        return _from_optional(
             value,
             type_annotation,
             json_annotation,
             config
         )
     elif typing_inspect.is_list(type_annotation):
-        return _from_list_to_json(
+        return _from_list(
             value,
             type_annotation,
             config
         )
     elif typing_inspect.is_typed_dict(type_annotation):
-        return _from_typed_dict_to_json(
+        return _from_typed_dict(
             value,
             type_annotation,
             config
         )
     elif typing_inspect.is_union_type(type_annotation):
-        return _from_union_obj_to_json(
+        return _from_union(
             value,
             type_annotation,
             json_annotation,
             config
         )
     else:
-        raise TypeError
+        raise TypeError('Unhandled type')
 
 
 def serialize(
@@ -200,11 +205,11 @@ def serialize(
     Returns:
         str: The JSON string
     """
-    type_annotation, json_annotation = get_json_annotation(annotation)
-    if not isinstance(json_annotation, JSONValue):
-        raise TypeError(
-            "Expected the root value to have an JSONValue annotation")
 
-    json_obj = _from_value_to_json(
-        obj, type_annotation, json_annotation, config)
+    json_obj = _from_value(
+        obj,
+        annotation,
+        JSONValue(),
+        config
+    )
     return json.dumps(json_obj)

@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import List, Optional, Union
 
-from stringcase import capitalcase, snakecase
+from stringcase import pascalcase, snakecase
 from typing_extensions import TypedDict, Annotated  # type: ignore
 
 from bareasgi_rest.protocol.config import SerializerConfig
@@ -14,7 +14,7 @@ from bareasgi_rest.protocol.xml.annotations import (
     XMLAttribute
 )
 
-CONFIG = SerializerConfig(capitalcase, snakecase)
+CONFIG = SerializerConfig(pascalcase, snakecase)
 
 
 class AnnotatedBook(TypedDict, total=False):
@@ -49,7 +49,7 @@ def test_typed():
         'pages': None
     }
     annotation = Annotated[AnnotatedBook, XMLEntity('Book')]
-    config = SerializerConfig(capitalcase, snakecase)
+    config = SerializerConfig(pascalcase, snakecase)
 
     text = serialize(dct, annotation, config)
     roundtrip = deserialize(text, annotation, config)
@@ -82,7 +82,7 @@ def test_untyped():
         'pages': None
     }
     annotation = Annotated[UnannotatedBook, XMLEntity('Book')]
-    config = SerializerConfig(capitalcase, snakecase)
+    config = SerializerConfig(pascalcase, snakecase)
 
     text = serialize(dct, annotation, config)
     roundtrip = deserialize(text, annotation, config)

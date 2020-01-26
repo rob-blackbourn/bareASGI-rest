@@ -141,16 +141,18 @@ def _from_json_obj_to_typed_dict(
                 raise TypeError("Must be a property")
             json_property = cast(JSONProperty, item_json_annotation)
         else:
-            property_name = config.deserialize_key(
+            tag = config.serialize_key(
                 member.name
-            ) if config.deserialize_key and isinstance(member.name, str) else member.name
-            json_property = JSONProperty(property_name)
+            ) if isinstance(member.name, str) else member.name
+            json_property = JSONProperty(tag)
+            item_type_annotation = member.annotation
 
+        # TODO: No defaults in typed dicts
         if json_property.tag in obj:
             json_obj[name] = _from_json_value(
                 obj[json_property.tag],
                 item_type_annotation,
-                item_json_annotation,
+                json_property,
                 config
             )
         elif typing_inspect.is_optional_type(item_type_annotation):
