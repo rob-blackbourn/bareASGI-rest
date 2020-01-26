@@ -170,27 +170,35 @@ def _to_typed_dict(
 
     member_annotations = typing_inspect.typed_dict_annotation(type_annotation)
     for name, member in member_annotations.items():
-        member_type, xml_annotation = get_xml_annotation(member.annotation)
-        if not isinstance(xml_annotation, XMLAttribute):
-            member_element = element.find('./' + xml_annotation.tag)
+        if typing_inspect.is_annotated_type(member.annotation):
+            item_type_annotation, item_xml_annotation = get_xml_annotation(
+                member.annotation
+            )
         else:
-            member_element = element
-        if member_element is not None:
+            tag = config.deserialize_key(member.name)
+            item_type_annotation = member.annotation
+            item_xml_annotation = XMLEntity(tag)
+
+        if not isinstance(item_xml_annotation, XMLAttribute):
+            item_element = element.find('./' + item_xml_annotation.tag)
+        else:
+            item_element = element
+        if item_element is not None:
             coerced_values[name] = _to_obj(
-                member_element,
-                member_type,
-                xml_annotation,
+                item_element,
+                item_type_annotation,
+                item_xml_annotation,
                 config
             )
         elif member.default is typing_inspect.TypedDictMember.empty:
             raise KeyError(
-                f'Required key "{xml_annotation.tag}" is missing'
+                f'Required key "{item_xml_annotation.tag}" is missing'
             )
         else:
             coerced_values[name] = _to_obj(
                 member.default,
-                member_type,
-                xml_annotation,
+                item_type_annotation,
+                item_xml_annotation,
                 config
             )
 

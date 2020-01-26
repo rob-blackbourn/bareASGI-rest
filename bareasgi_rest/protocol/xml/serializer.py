@@ -142,14 +142,19 @@ def _from_typed_dict(
 
     member_annotations = typing_inspect.typed_dict_annotation(type_annotation)
     for name, member in member_annotations.items():
-        member_type_annotation, member_xml_annotation = get_xml_annotation(
-            member.annotation
-        )
+        if typing_inspect.is_annotated_type(member.annotation):
+            item_type_annotation, item_xml_annotation = get_xml_annotation(
+                member.annotation
+            )
+        else:
+            tag = config.deserialize_key(member.name)
+            item_type_annotation = member.annotation
+            item_xml_annotation = XMLEntity(tag)
 
         _from_obj(
             obj.get(name),
-            member_type_annotation,
-            member_xml_annotation,
+            item_type_annotation,
+            item_xml_annotation,
             dict_element,
             config
         )
