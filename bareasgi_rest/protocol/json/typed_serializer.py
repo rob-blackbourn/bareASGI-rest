@@ -18,6 +18,7 @@ from .annotations import (
     JSONAnnotation,
     JSONValue,
     JSONProperty,
+    is_json_annotation,
     get_json_annotation
 )
 
@@ -205,11 +206,15 @@ def serialize(
     Returns:
         str: The JSON string
     """
+    if is_json_annotation(annotation):
+        type_annotation, json_annotation = get_json_annotation(annotation)
+    else:
+        type_annotation, json_annotation = annotation, JSONValue()
 
     json_obj = _from_value(
         obj,
-        annotation,
-        JSONValue(),
+        type_annotation,
+        json_annotation,
         config
     )
     return json.dumps(json_obj)

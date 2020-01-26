@@ -62,8 +62,8 @@ LOGGER = logging.getLogger(__name__)
 
 
 def _rename_path_definition(
-    path_definition: PathDefinition,
-    config: SerializerConfig
+        path_definition: PathDefinition,
+        config: SerializerConfig
 ) -> PathDefinition:
     for segment in path_definition.segments:
         if segment.is_variable:
@@ -90,7 +90,7 @@ class RestHttpRouter(BasicHttpRouter):
             swagger_base_url: str = DEFAULT_SWAGGER_BASE_URL,
             typeface_url: str = DEFAULT_TYPEFACE_URL,
             config: Optional[SwaggerConfig] = None,
-            serializer_config: DictSerializerConfig = DEFAULT_SERIALIZER_CONFIG,
+            serializer_configs: DictSerializerConfig = DEFAULT_SERIALIZER_CONFIG,
             arg_serializer_config: SerializerConfig = DEFAULT_JSON_SERIALIZER_CONFIG,
             arg_deserializer_factory: ArgDeserializerFactory = DEFAULT_ARG_DESERIALIZER_FACTORY
     ) -> None:
@@ -125,7 +125,7 @@ class RestHttpRouter(BasicHttpRouter):
         self.accepts: Dict[str, Dict[PathDefinition, bytes]] = {}
         self.collection_formats: Dict[str, Dict[PathDefinition, str]] = {}
 
-        self.serializer_config = serializer_config
+        self.serializer_configs = serializer_configs
         self.arg_serializer_config = arg_serializer_config
         self.arg_deserializer_factory = arg_deserializer_factory
 
@@ -154,8 +154,8 @@ class RestHttpRouter(BasicHttpRouter):
             path: str,
             callback: RestCallback,
             *,
-            accept: bytes = b'application/json',
-            content_type: bytes = b'application/json',
+            consumes: List[bytes] = [b'application/json'],
+            produces: List[bytes] = [b'application/json'],
             collection_format: str = DEFAULT_COLLECTION_FORMAT,
             tags: Optional[List[str]] = None,
             status_code: int = 200,
@@ -170,9 +170,9 @@ class RestHttpRouter(BasicHttpRouter):
             methods (AbstractSet[str]): The set of methods
             path (str): The path
             callback (RestCallback): The callback
-            accept (bytes, optional): The accept media type. Defaults to
+            produces (List[bytes], optional): The accept media type. Defaults to
                 b'application/json'.
-            content_type (bytes, optional): The content media type. Defaults
+            consumes (List[bytes], optional): The content media type. Defaults
                 to b'application/json'.
             collection_format (str, optional): The format of repeated values.
                 Defaults to DEFAULT_COLLECTION_FORMAT.
@@ -189,7 +189,7 @@ class RestHttpRouter(BasicHttpRouter):
                 method,
                 path,
                 callback,
-                content_type,
+                produces,
                 status_code,
                 serializer_config,
                 arg_serializer_config,
@@ -202,8 +202,8 @@ class RestHttpRouter(BasicHttpRouter):
                     DEFAULT_JSON_SERIALIZER_CONFIG
                 ),
                 callback,
-                accept,
-                content_type,
+                consumes,
+                produces,
                 collection_format,
                 tags,
                 status_code,
@@ -215,9 +215,9 @@ class RestHttpRouter(BasicHttpRouter):
             method: str,
             path: str,
             callback: RestCallback,
-            content_type: bytes,
+            produces: List[bytes],
             status_code: int,
-            serializer_config: Optional[DictSerializerConfig],
+            serializer_configs: Optional[DictSerializerConfig],
             arg_serializer_config: Optional[SerializerConfig],
             arg_deserializer_factory: Optional[ArgDeserializerFactory]
     ) -> None:
@@ -275,8 +275,17 @@ class RestHttpRouter(BasicHttpRouter):
                 body,
                 accept,
                 signature.return_annotation,
-                serializer_config or self.serializer_config
+                serializer_configs or self.serializer_configs
             )
+            if not accept:
+                content_type = produces[0]
+            else:
+                for content_type in produces:
+                    if content_type in accept:
+                        break
+                else:
+                    raise HTTPError(
+                        None, 500, 'Unhandled content type', None, None)
             headers = [
                 (b'content-type', content_type)
             ]
@@ -329,7 +338,7 @@ class RestHttpRouter(BasicHttpRouter):
                 scope['headers']
             ) or (b'application/json', cast(Dict[bytes, Any], {}))
             deserializer = self.consumes[media_type]
-            serializer_config = self.serializer_config[media_type]
+            serializer_config = self.serializer_configs[media_type]
 
         async def body_reader(annotation: Any) -> Any:
             if deserializer is None:

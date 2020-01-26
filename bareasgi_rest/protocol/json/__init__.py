@@ -1,5 +1,6 @@
 """JSON Serialization"""
 
+from .annotations import JSONValue, JSONProperty
 from .typed_deserializer import (
     from_json_value
 )
@@ -12,6 +13,9 @@ from .serialization import (
 )
 
 __all__ = [
+    'JSONValue',
+    'JSONProperty',
+
     'from_json_value',
 
     'to_json',

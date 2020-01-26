@@ -6,7 +6,7 @@ from typing import Any, Awaitable, Callable, Dict, List, Tuple
 import bareasgi_rest.typing_inspect as typing_inspect
 
 from .types import ArgDeserializer
-from .utils import is_body_type, get_body_type
+from .protocol.annotations import is_any_serialization_annotation
 
 
 async def make_args(
@@ -37,9 +37,8 @@ async def make_args(
     args: List[Any] = []
 
     for parameter in signature.parameters.values():
-        if is_body_type(parameter.annotation):
-            body_type = get_body_type(parameter.annotation)
-            value: Any = await body(body_type)
+        if is_any_serialization_annotation(parameter.annotation):
+            value: Any = await body(parameter.annotation)
         else:
             if parameter.name in matches:
                 value = arg_deserializer(

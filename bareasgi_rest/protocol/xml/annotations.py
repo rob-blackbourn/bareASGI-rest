@@ -1,17 +1,16 @@
 """XML annotations"""
 
-from abc import ABCMeta
-from typing import Tuple
+from typing import Tuple, cast
 
 from ...types import Annotation
-from ...typing_inspect import (
-    is_annotated_type,
-    get_annotated_type_metadata,
-    get_origin
+from ..annotations import (
+    SerializationAnnotation,
+    is_any_serialization_annotation,
+    get_all_serialization_annotations
 )
 
 
-class XMLAnnotation(metaclass=ABCMeta):
+class XMLAnnotation(SerializationAnnotation):
     """The base XML annotation class"""
 
     def __init__(self, tag: str):
@@ -42,10 +41,17 @@ def is_xml_annotation(annotation: Annotation) -> bool:
         bool: True if the annotation is of type Annotation[T, XMLAnnotation],
             otherwise False
     """
-    return (
-        is_annotated_type(annotation) and
-        issubclass(get_annotated_type_metadata(annotation)[0], XMLAnnotation)
+    if not is_any_serialization_annotation(annotation):
+        return False
+    _, serialization_annotations = get_all_serialization_annotations(
+        annotation
     )
+    xml_annotations = [
+        serialization_annotation
+        for serialization_annotation in serialization_annotations
+        if issubclass(type(serialization_annotation), XMLAnnotation)
+    ]
+    return len(xml_annotations) == 1
 
 
 def get_xml_annotation(annotation: Annotation) -> Tuple[Annotation, XMLAnnotation]:
@@ -57,4 +63,12 @@ def get_xml_annotation(annotation: Annotation) -> Tuple[Annotation, XMLAnnotatio
     Returns:
         Tuple[Annotation, XMLAnnotation]: The type and the XML annotation
     """
-    return get_origin(annotation), get_annotated_type_metadata(annotation)[0]
+    type_annotation, serialization_annotations = get_all_serialization_annotations(
+        annotation
+    )
+    xml_annotations = [
+        serialization_annotation
+        for serialization_annotation in serialization_annotations
+        if issubclass(type(serialization_annotation), XMLAnnotation)
+    ]
+    return type_annotation, cast(XMLAnnotation, xml_annotations[0])

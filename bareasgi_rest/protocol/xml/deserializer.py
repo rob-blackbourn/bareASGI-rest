@@ -256,10 +256,10 @@ def deserialize(
     Returns:
         Any: The deserialized object.
     """
-    element_type, xml_annotation = get_xml_annotation(annotation)
+    type_annotation, xml_annotation = get_xml_annotation(annotation)
     if not isinstance(xml_annotation, XMLEntity):
         raise TypeError(
             "Expected the root value to have an XMLEntity annotation")
 
     element = etree.fromstring(text)  # pylint: disable=c-extension-no-member
-    return _to_obj(element, element_type, xml_annotation, config)
+    return _to_obj(element, type_annotation, xml_annotation, config)

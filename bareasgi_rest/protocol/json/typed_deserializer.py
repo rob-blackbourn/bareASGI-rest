@@ -25,6 +25,7 @@ from .annotations import (
     JSONAnnotation,
     JSONValue,
     JSONProperty,
+    is_json_annotation,
     get_json_annotation
 )
 
@@ -218,7 +219,7 @@ def from_json_value(
     json_value: Any,
     annotation: Annotation,
 ) -> Any:
-    if typing_inspect.is_annotated_type(annotation):
+    if is_json_annotation(annotation):
         type_annotation, json_annotation = get_json_annotation(annotation)
         if not isinstance(json_annotation, JSONValue):
             raise TypeError(

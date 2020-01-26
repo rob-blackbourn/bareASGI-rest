@@ -1,17 +1,16 @@
 """XML annotations"""
 
-from abc import ABCMeta
-from typing import Tuple
+from typing import Tuple, cast
 
 from ...types import Annotation
-from ...typing_inspect import (
-    is_annotated_type,
-    get_annotated_type_metadata,
-    get_origin
+from ..annotations import (
+    SerializationAnnotation,
+    is_any_serialization_annotation,
+    get_all_serialization_annotations
 )
 
 
-class JSONAnnotation(metaclass=ABCMeta):
+class JSONAnnotation(SerializationAnnotation):
     """The base JSON annotation class"""
 
 
@@ -32,20 +31,6 @@ class JSONProperty(JSONAnnotation):
         return f'JSONProperty(tag="{self.tag}")'
 
 
-class JSONObject(JSONProperty):
-    """A JSON object"""
-
-    def __repr__(self) -> str:
-        return f'JSONObject("tag={self.tag}")'
-
-
-class JSONList(JSONProperty):
-    """A JSON list"""
-
-    def __repr__(self) -> str:
-        return f'JSONList(tag="{self.tag}")'
-
-
 def is_json_annotation(annotation: Annotation) -> bool:
     """Determine if the annotation is of type Annotation[T, JSONAnnotation]
 
@@ -56,10 +41,17 @@ def is_json_annotation(annotation: Annotation) -> bool:
         bool: True if the annotation is of type Annotation[T, JSONAnnotation],
             otherwise False
     """
-    return (
-        is_annotated_type(annotation) and
-        issubclass(get_annotated_type_metadata(annotation)[0], JSONAnnotation)
+    if not is_any_serialization_annotation(annotation):
+        return False
+    _, serialization_annotations = get_all_serialization_annotations(
+        annotation
     )
+    json_annotations = [
+        serialization_annotation
+        for serialization_annotation in serialization_annotations
+        if issubclass(type(serialization_annotation), JSONAnnotation)
+    ]
+    return len(json_annotations) == 1
 
 
 def get_json_annotation(annotation: Annotation) -> Tuple[Annotation, JSONAnnotation]:
@@ -71,4 +63,12 @@ def get_json_annotation(annotation: Annotation) -> Tuple[Annotation, JSONAnnotat
     Returns:
         Tuple[Annotation, JSONAnnotation]: The type and the JSON annotation
     """
-    return get_origin(annotation), get_annotated_type_metadata(annotation)[0]
+    type_annotation, serialization_annotations = get_all_serialization_annotations(
+        annotation
+    )
+    json_annotations = [
+        serialization_annotation
+        for serialization_annotation in serialization_annotations
+        if issubclass(type(serialization_annotation), JSONAnnotation)
+    ]
+    return type_annotation, cast(JSONAnnotation, json_annotations[0])

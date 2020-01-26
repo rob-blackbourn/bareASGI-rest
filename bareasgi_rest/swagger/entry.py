@@ -20,8 +20,8 @@ def make_swagger_entry(
         method: str,
         path_definition: PathDefinition,
         callback: RestCallback,
-        accept: bytes,
-        content_type: bytes,
+        consumes: List[bytes],
+        produces: List[bytes],
         collection_format: str,
         tags: Optional[List[str]],
         ok_status_code: int,
@@ -31,7 +31,7 @@ def make_swagger_entry(
     docstring = docstring_parser.parse(inspect.getdoc(callback))
     params = make_swagger_parameters(
         method,
-        accept,
+        consumes,
         path_definition,
         signature.parameters,
         docstring,
@@ -49,8 +49,8 @@ def make_swagger_entry(
 
     entry = {
         'parameters': params,
-        'produces': [content_type.decode()],
-        'consumes': [accept.decode()],
+        'produces': [content_type.decode() for content_type in produces],
+        'consumes': [accept.decode() for accept in consumes],
         'responses': responses
     }
 

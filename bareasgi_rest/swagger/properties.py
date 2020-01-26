@@ -40,6 +40,15 @@ def get_property(
     Returns:
         Dict[str, Any]: The swagger property.
     """
+    if typing_inspect.is_annotated_type(annotation):
+        return get_property(
+            typing_inspect.get_origin(annotation),
+            name,
+            description,
+            default,
+            collection_format
+        )
+
     if typing_inspect.is_optional_type(annotation):
         optional_type = typing_inspect.get_optional(annotation)
         return get_property(

@@ -11,7 +11,6 @@ from bareasgi_rest.protocol.config import SerializerConfig
 from bareasgi_rest.protocol.json.typed_serializer import serialize
 from bareasgi_rest.protocol.json.annotations import (
     JSONValue,
-    JSONList,
     JSONProperty
 )
 
@@ -24,8 +23,9 @@ class Book(TypedDict, total=False):
     author: Annotated[str, JSONProperty("author")]
     publication_date: Annotated[datetime, JSONProperty("publicationDate")]
     keywords: Annotated[List[Annotated[str, JSONValue()]],
-                        JSONList("keywords")]
-    phrases: Annotated[List[Annotated[str, JSONValue()]], JSONList("phrases")]
+                        JSONProperty("keywords")]
+    phrases: Annotated[List[Annotated[str, JSONValue()]],
+                       JSONProperty("phrases")]
     age: Annotated[Optional[Union[datetime, int]], JSONProperty("age")]
     pages: Annotated[Optional[int], JSONProperty("pages")]
 

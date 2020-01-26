@@ -117,6 +117,9 @@ def _from_list(
         item_type_annotation = item_annotation
         item_xml_annotation = xml_annotation
 
+    if element is None:
+        element = Element(xml_annotation.tag)
+
     if xml_annotation.tag == item_xml_annotation.tag:
         # siblings
         parent = element
@@ -244,4 +247,6 @@ def serialize(
             "Expected the root value to have an XMLEntity annotation")
 
     element = _from_obj(obj, type_annotation, xml_annotation, None, config)
-    return etree.tostring(element)  # pylint: disable=c-extension-no-member
+    buf: bytes = etree.tostring(
+        element)  # pylint: disable=c-extension-no-member
+    return buf.decode()
