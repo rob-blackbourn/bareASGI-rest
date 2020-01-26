@@ -13,12 +13,11 @@ from typing import (
 
 from bareasgi.basic_router.path_definition import PathDefinition
 from docstring_parser import Docstring, DocstringParam
-from inflection import underscore
-
-from ..utils import (
-    is_body_type,
-    get_body_type,
-    camelcase
+from stringcase import snakecase, camelcase
+import bareasgi_rest.typing_inspect as typing_inspect
+from ..protocol.annotations import (
+    is_any_serialization_annotation,
+    get_all_serialization_annotations
 )
 
 from .properties import get_property
@@ -74,7 +73,7 @@ def _make_swagger_parameters_inline(
 
 def make_swagger_parameters(
         method: str,
-        accept: bytes,
+        consumes: List[bytes],
         path_definition: PathDefinition,
         parameters: Mapping[str, Parameter],
         docstring: Docstring,
@@ -92,7 +91,7 @@ def make_swagger_parameters(
     path_variables: Set[str] = set()
     for segment in path_definition.segments:
         if segment.is_variable:
-            path_variable = underscore(segment.name)
+            path_variable = snakecase(segment.name)
             path_variables.add(path_variable)
             parameter = available_parameters.pop(path_variable)
             docstring_param = find_docstring_param(parameter.name, docstring)
@@ -115,7 +114,10 @@ def make_swagger_parameters(
                 collection_format
             )
         )
-    elif accept in (b'application/x-www-form-urlencoded', b'multipart/form-data'):
+    elif (
+            b'application/x-www-form-urlencoded' in consumes or
+            b'multipart/form-data' in consumes
+    ):
         # Form body parameters
         props.extend(
             _make_swagger_parameters_inline(
@@ -130,8 +132,8 @@ def make_swagger_parameters(
         # Fall back to b'application/json'.
         for parameter in available_parameters.values():
             docstring_param = find_docstring_param(parameter.name, docstring)
-            if is_body_type(parameter.annotation):
-                body_type = get_body_type(parameter.annotation)
+            if is_any_serialization_annotation(parameter.annotation):
+                body_type = typing_inspect.get_origin(parameter.annotation)
                 schema = get_property(
                     body_type,
                     camelcase(parameter.name),

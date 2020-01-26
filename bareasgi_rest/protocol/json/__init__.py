@@ -1,30 +1,26 @@
 """JSON Serialization"""
 
-from .coercion import (
-    from_json_value,
-    is_json_container,
-    is_json_literal
+from .annotations import JSONValue, JSONProperty
+from .typed_deserializer import (
+    from_json_value
 )
 from .serialization import (
     to_json,
     from_json,
     from_form_data,
     from_query_string,
-    JSONEncoderEx,
-    json_to_python,
     json_arg_deserializer_factory
 )
 
 __all__ = [
+    'JSONValue',
+    'JSONProperty',
+
     'from_json_value',
-    'is_json_container',
-    'is_json_literal',
 
     'to_json',
     'from_json',
     'from_form_data',
     'from_query_string',
-    'JSONEncoderEx',
-    'json_to_python',
     'json_arg_deserializer_factory'
 ]

@@ -51,7 +51,7 @@ def iso_8601_to_datetime(value: str) -> Optional[datetime]:
         if pattern.match(value):
             text = transform(value) if transform else value
             return datetime.strptime(text, fmt)
-    return None
+    raise ValueError(f'Unable to convert "{value}" to a datetime')
 
 
 def datetime_to_iso_8601(timestamp: datetime) -> str:

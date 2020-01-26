@@ -35,7 +35,7 @@ def iso_8601_to_timedelta(duration: str) -> Optional[timedelta]:
     """
     match = DURATION_REGEX.match(duration)
     if not match:
-        return None
+        raise ValueError(f'Unable to convert "{duration}" to a timedelta.')
     sign = _parse_sign(match.group(1))
     years = _parse_int(match.group(2))
     months = _parse_int(match.group(3))

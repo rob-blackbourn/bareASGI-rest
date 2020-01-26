@@ -34,7 +34,6 @@ from baretypes import (
     HttpResponse
 )
 import bareutils.header as header
-from inflection import underscore
 
 from .arg_builder import make_args
 from .swagger import SwaggerRepository, SwaggerConfig, SwaggerController
@@ -45,28 +44,32 @@ from .constants import (
     DEFAULT_PRODUCES,
     DEFAULT_COLLECTION_FORMAT,
     DEFAULT_NOT_FOUND_RESPONSE,
+    DEFAULT_SERIALIZER_CONFIG,
+    DEFAULT_JSON_SERIALIZER_CONFIG,
     DEFAULT_ARG_DESERIALIZER_FACTORY
 )
 from .types import (
     Deserializer,
     DictConsumes,
     DictProduces,
+    DictSerializerConfig,
     RestCallback,
-    Renamer,
     ArgDeserializerFactory
 )
-from .utils import camelcase
+from .protocol.config import SerializerConfig
 
 LOGGER = logging.getLogger(__name__)
 
 
 def _rename_path_definition(
-    path_definition: PathDefinition,
-    rename: Renamer
+        path_definition: PathDefinition,
+        config: SerializerConfig
 ) -> PathDefinition:
     for segment in path_definition.segments:
         if segment.is_variable:
-            segment.name = rename(segment.name)
+            segment.name = config.serialize_key(
+                segment.name
+            ) if config.serialize_key else segment.name
     return path_definition
 
 
@@ -87,8 +90,8 @@ class RestHttpRouter(BasicHttpRouter):
             swagger_base_url: str = DEFAULT_SWAGGER_BASE_URL,
             typeface_url: str = DEFAULT_TYPEFACE_URL,
             config: Optional[SwaggerConfig] = None,
-            rename_internal: Renamer = underscore,
-            rename_external: Renamer = camelcase,
+            serializer_configs: DictSerializerConfig = DEFAULT_SERIALIZER_CONFIG,
+            arg_serializer_config: SerializerConfig = DEFAULT_JSON_SERIALIZER_CONFIG,
             arg_deserializer_factory: ArgDeserializerFactory = DEFAULT_ARG_DESERIALIZER_FACTORY
     ) -> None:
         """Initialise the REST router
@@ -122,8 +125,8 @@ class RestHttpRouter(BasicHttpRouter):
         self.accepts: Dict[str, Dict[PathDefinition, bytes]] = {}
         self.collection_formats: Dict[str, Dict[PathDefinition, str]] = {}
 
-        self.rename_internal = rename_internal
-        self.rename_external = rename_external
+        self.serializer_configs = serializer_configs
+        self.arg_serializer_config = arg_serializer_config
         self.arg_deserializer_factory = arg_deserializer_factory
 
         self.swagger_repo = SwaggerRepository(
@@ -151,14 +154,14 @@ class RestHttpRouter(BasicHttpRouter):
             path: str,
             callback: RestCallback,
             *,
-            accept: bytes = b'application/json',
-            content_type: bytes = b'application/json',
+            consumes: List[bytes] = [b'application/json'],
+            produces: List[bytes] = [b'application/json'],
             collection_format: str = DEFAULT_COLLECTION_FORMAT,
             tags: Optional[List[str]] = None,
             status_code: int = 200,
             status_description: str = 'OK',
-            rename_internal: Optional[Renamer] = None,
-            rename_external: Optional[Renamer] = None,
+            serializer_config: Optional[DictSerializerConfig] = None,
+            arg_serializer_config: Optional[SerializerConfig] = None,
             arg_deserializer_factory: Optional[ArgDeserializerFactory] = None
     ) -> None:
         """Register a callback to a method and path
@@ -167,9 +170,9 @@ class RestHttpRouter(BasicHttpRouter):
             methods (AbstractSet[str]): The set of methods
             path (str): The path
             callback (RestCallback): The callback
-            accept (bytes, optional): The accept media type. Defaults to
+            produces (List[bytes], optional): The accept media type. Defaults to
                 b'application/json'.
-            content_type (bytes, optional): The content media type. Defaults
+            consumes (List[bytes], optional): The content media type. Defaults
                 to b'application/json'.
             collection_format (str, optional): The format of repeated values.
                 Defaults to DEFAULT_COLLECTION_FORMAT.
@@ -186,21 +189,21 @@ class RestHttpRouter(BasicHttpRouter):
                 method,
                 path,
                 callback,
-                content_type,
+                produces,
                 status_code,
-                rename_internal,
-                rename_external,
+                serializer_config,
+                arg_serializer_config,
                 arg_deserializer_factory
             )
             self.swagger_repo.add(
                 method,
                 _rename_path_definition(
                     PathDefinition(path),
-                    self.rename_external
+                    DEFAULT_JSON_SERIALIZER_CONFIG
                 ),
                 callback,
-                accept,
-                content_type,
+                consumes,
+                produces,
                 collection_format,
                 tags,
                 status_code,
@@ -212,23 +215,22 @@ class RestHttpRouter(BasicHttpRouter):
             method: str,
             path: str,
             callback: RestCallback,
-            content_type: bytes,
+            produces: List[bytes],
             status_code: int,
-            rename_internal: Optional[Renamer],
-            rename_external: Optional[Renamer],
+            serializer_configs: Optional[DictSerializerConfig],
+            arg_serializer_config: Optional[SerializerConfig],
             arg_deserializer_factory: Optional[ArgDeserializerFactory]
     ) -> None:
         signature = inspect.signature(callback)
         path_definition = _rename_path_definition(
             PathDefinition(self.base_path + path),
-            self.rename_external
+            DEFAULT_JSON_SERIALIZER_CONFIG
         )
 
         arg_deserializer = (
             arg_deserializer_factory or self.arg_deserializer_factory
         )(
-            rename_internal or self.rename_internal,
-            rename_external or self.rename_external
+            arg_serializer_config or self.arg_serializer_config
         )
 
         async def rest_callback(
@@ -239,12 +241,12 @@ class RestHttpRouter(BasicHttpRouter):
         ) -> HttpResponse:
 
             route_args: Dict[str, str] = {
-                self.rename_internal(name): value
+                self.arg_serializer_config.deserialize_key(name): value
                 for name, value in matches.items()
             }
             query_string = scope['query_string'].decode()
             query_args: Dict[str, List[str]] = {
-                self.rename_internal(name): values
+                self.arg_serializer_config.deserialize_key(name): values
                 for name, values in parse_qs(query_string).items()
             }
             body_reader = self._get_body_reader(scope, content)
@@ -272,8 +274,18 @@ class RestHttpRouter(BasicHttpRouter):
             writer = self._make_writer(
                 body,
                 accept,
-                signature.return_annotation
+                signature.return_annotation,
+                serializer_configs or self.serializer_configs
             )
+            if not accept:
+                content_type = produces[0]
+            else:
+                for content_type in produces:
+                    if content_type in accept:
+                        break
+                else:
+                    raise HTTPError(
+                        None, 500, 'Unhandled content type', None, None)
             headers = [
                 (b'content-type', content_type)
             ]
@@ -285,7 +297,8 @@ class RestHttpRouter(BasicHttpRouter):
             self,
             data: Optional[Any],
             accept: Optional[Mapping[bytes, float]],
-            return_annotation: Any
+            return_annotation: Any,
+            serializer_configs: DictSerializerConfig
     ) -> Optional[AsyncIterator[bytes]]:
         if data is None:
             # No need for a writer if there is no data.
@@ -301,12 +314,12 @@ class RestHttpRouter(BasicHttpRouter):
             media_type = b'application/json'
 
         serializer = self.produces[media_type]
+        serializer_config = serializer_configs[media_type]
 
         text = serializer(
             media_type,
             {},
-            self.rename_internal,
-            self.rename_external,
+            serializer_config,
             data,
             return_annotation
         )
@@ -319,11 +332,13 @@ class RestHttpRouter(BasicHttpRouter):
     ) -> Callable[[Any], Awaitable[Any]]:
         if scope['method'] in {'GET'}:
             deserializer: Optional[Deserializer] = None
+            serializer_config: SerializerConfig = DEFAULT_JSON_SERIALIZER_CONFIG
         else:
             media_type, params = header.content_type(
                 scope['headers']
             ) or (b'application/json', cast(Dict[bytes, Any], {}))
-            deserializer = self.consumes.get(media_type)
+            deserializer = self.consumes[media_type]
+            serializer_config = self.serializer_configs[media_type]
 
         async def body_reader(annotation: Any) -> Any:
             if deserializer is None:
@@ -332,8 +347,7 @@ class RestHttpRouter(BasicHttpRouter):
             return deserializer(
                 media_type,
                 params,
-                self.rename_internal,
-                self.rename_external,
+                serializer_config,
                 text,
                 annotation
             )

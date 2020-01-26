@@ -9,12 +9,15 @@ try:
     from typing import TypedDict  # type:ignore
 except:  # pylint: disable=bare-except
     from typing_extensions import TypedDict
+from typing_extensions import Annotated  # type: ignore
 from urllib.error import HTTPError
 
 from bareasgi import Application
 import uvicorn
 
 from bareasgi_rest import RestHttpRouter, add_swagger_ui, Body
+from bareasgi_rest.protocol.json import JSONValue
+from bareasgi_rest.protocol.xml import XMLEntity
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -48,14 +51,16 @@ class BookController:
             '/books',
             self.get_books,
             tags=tags,
-            status_code=200
+            status_code=200,
+            produces=[b'application/json', b'application/xml']
         )
         router.add_rest(
             {'GET'},
             '/books/{book_id:int}',
             self.get_book,
             tags=tags,
-            status_code=200
+            status_code=200,
+            produces=[b'application/json', b'application/xml']
         )
         router.add_rest(
             {'POST'},
@@ -69,10 +74,13 @@ class BookController:
             '/books/{book_id:int}',
             self.update_book,
             tags=tags,
-            status_code=204
+            status_code=204,
+            consumes=[b'application/json', b'application/xml']
         )
 
-    async def get_books(self) -> List[Book]:
+    async def get_books(
+            self
+    ) -> Annotated[List[Book], JSONValue(), XMLEntity('Book')]:
         """Get all the books.
 
         This method gets all the books in the shop.
@@ -85,7 +93,7 @@ class BookController:
     async def get_book(
             self,
             book_id: int
-    ) -> Book:
+    ) -> Annotated[Book, JSONValue(), XMLEntity('Book')]:
         """Get a book for a given id
 
         Args:
@@ -133,7 +141,7 @@ class BookController:
     async def update_book(
             self,
             book_id: int,
-            book: Body[Book]
+            book: Annotated[Book, JSONValue(), XMLEntity('Book')]
     ) -> None:
         """Update a book
 
@@ -146,7 +154,7 @@ class BookController:
         """
         if book_id not in self.books:
             raise HTTPError(None, 404, None, None, None)
-        self.books[book_id] = book.value
+        self.books[book_id] = book
 
 
 if __name__ == "__main__":

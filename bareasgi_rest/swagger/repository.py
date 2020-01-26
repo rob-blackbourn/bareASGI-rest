@@ -50,8 +50,8 @@ class SwaggerRepository:
             method: str,
             path_definition: PathDefinition,
             callback: RestCallback,
-            accept: bytes,
-            content_type: bytes,
+            consumes: List[bytes],
+            produces: List[bytes],
             collection_format: str,
             tags: Optional[List[str]],
             status_code: int,
@@ -63,8 +63,8 @@ class SwaggerRepository:
             method (str): The HTTP method
             path_definition (PathDefinition): The router path
             callback (RestCallback): The callback
-            accept (bytes): The accept header
-            content_type (bytes): The content type
+            consumes (List[bytes]): The accept header
+            produces (List[bytes]): The content type
             collection_format (str): The collection format
             tags (Optional[List[str]]): Optional tags
             status_code (int): The ok status code
@@ -75,8 +75,8 @@ class SwaggerRepository:
             method,
             path_definition,
             callback,
-            accept,
-            content_type,
+            consumes,
+            produces,
             collection_format,
             tags,
             status_code,

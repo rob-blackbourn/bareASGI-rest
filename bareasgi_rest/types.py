@@ -5,11 +5,11 @@ from typing import (
     Awaitable,
     Callable,
     Dict,
-    Generic,
-    TypeVar
+    NewType
 )
 
-Renamer = Callable[[str], str]
+from .protocol.config import SerializerConfig
+
 Annotation = Any
 MediaType = bytes
 MediaTypeParams = Dict[bytes, bytes]
@@ -18,8 +18,7 @@ Deserializer = Callable[
     [
         MediaType,
         MediaTypeParams,
-        Renamer,
-        Renamer,
+        SerializerConfig,
         str,
         Annotation
     ],
@@ -31,8 +30,7 @@ Serializer = Callable[
     [
         MediaType,
         MediaTypeParams,
-        Renamer,
-        Renamer,
+        SerializerConfig,
         Any,
         Annotation
     ],
@@ -40,28 +38,15 @@ Serializer = Callable[
 ]
 DictProduces = Dict[bytes, Serializer]
 
+DictSerializerConfig = Dict[bytes, SerializerConfig]
+
 RestCallback = Callable[..., Awaitable[Any]]
 
 ArgDeserializer = Callable[[str, Annotation], Any]
 
 ArgDeserializerFactory = Callable[
-    [Renamer, Renamer],
+    [SerializerConfig],
     Callable[[str, Annotation], Any]
 ]
 
-T = TypeVar('T')
-
-
-class Body(Generic[T]):
-    """A wrapper for the body"""
-
-    def __init__(self, value: T) -> None:
-        """A wrapper for the body
-
-        Args:
-            value (T): The body value
-        """
-        self.value = value
-
-    def __eq__(self, other: Any) -> bool:
-        return isinstance(other, type(self)) and self.value == other.value
+Body = NewType('Body', None)  # type: ignore
