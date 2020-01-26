@@ -212,15 +212,25 @@ def _from_json_value(
 
 
 def from_json_value(
+    config: SerializerConfig,
     json_value: Any,
     annotation: Annotation,
-    config: SerializerConfig
 ) -> Any:
-    type_annotation, json_annotation = get_json_annotation(annotation)
-    if not isinstance(json_annotation, JSONValue):
-        raise TypeError(
-            "Expected the root value to have a JSONValue annotation"
-        )
+    if typing_inspect.is_annotated_type(annotation):
+        type_annotation, json_annotation = get_json_annotation(annotation)
+        if not isinstance(json_annotation, JSONValue):
+            raise TypeError(
+                "Expected the root value to have a JSONValue annotation"
+            )
+    else:
+        type_annotation, json_annotation = annotation, JSONValue()
+
+    return _from_json_value(
+        json_value,
+        type_annotation,
+        json_annotation,
+        config
+    )
 
 
 def deserialize(
@@ -238,4 +248,4 @@ def deserialize(
         Any: The deserialized object.
     """
     json_value = json.loads(text)
-    return from_json_value(json_value, annotation, config)
+    return from_json_value(config, json_value, annotation)

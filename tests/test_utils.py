@@ -15,11 +15,12 @@ import pytest
 from stringcase import snakecase, camelcase
 
 from bareasgi_rest.types import Body
+from bareasgi_rest.protocol.config import SerializerConfig
 from bareasgi_rest.protocol.utils import (
     is_simple_type,
     is_container_type,
 )
-from bareasgi_rest.protocol.json.coercion import (
+from bareasgi_rest.protocol.json.typed_deserializer import (
     from_json_value
 )
 from bareasgi_rest.arg_builder import make_args
@@ -79,7 +80,7 @@ async def test_make_args():
         foo_matches,
         foo_query,
         foo_body_reader,
-        partial(from_json_value, snakecase, camelcase)
+        partial(from_json_value, SerializerConfig(snakecase, camelcase))
     )
     assert foo_args == ('hello',)
     assert foo_kwargs == {
@@ -118,7 +119,7 @@ async def test_make_args():
         bar_matches,
         bar_query,
         bar_body_reader,
-        partial(from_json_value, snakecase, camelcase)
+        partial(from_json_value, SerializerConfig(snakecase, camelcase))
     )
     assert len(bar_args) == 3
     assert len(bar_kwargs) == 0

@@ -21,6 +21,7 @@ from ..iso_8601 import (
     iso_8601_to_timedelta
 )
 from ...types import Annotation
+from ..config import SerializerConfig
 from ..utils import is_simple_type
 
 from .annotations import (
@@ -42,71 +43,80 @@ def _is_element_empty(element: Element, xml_annotation: XMLAnnotation) -> bool:
         )
 
 
-def _from_xml_element_to_builtin(text: str, builtin_type: Type) -> Any:
-    if builtin_type is str:
+def _to_builtin(text: str, type_annotation: Type) -> Any:
+    if type_annotation is str:
         return text
-    elif builtin_type is int:
+    elif type_annotation is int:
         return int(text)
-    elif builtin_type is bool:
+    elif type_annotation is bool:
         return text.lower() == 'true'
-    elif builtin_type is float:
+    elif type_annotation is float:
         return float(text)
-    elif builtin_type is Decimal:
+    elif type_annotation is Decimal:
         return Decimal(text)
-    elif builtin_type is datetime:
+    elif type_annotation is datetime:
         timestamp = iso_8601_to_datetime(text)
         if timestamp is None:
             raise ValueError(f"Unable co convert '{text}' to datetime")
         return timestamp
-    elif builtin_type is timedelta:
+    elif type_annotation is timedelta:
         duration = iso_8601_to_timedelta(text)
         if duration is None:
             raise ValueError(f"Unable co convert '{text}' to timedelta")
         return duration
     else:
-        raise TypeError(f'Unhandled type {builtin_type}')
+        raise TypeError(f'Unhandled type {type_annotation}')
 
 
-def _from_xml_element_to_union(
+def _to_union(
         element: Element,
-        annotation: Annotation,
-        xml_annotation: XMLAnnotation
+        type_annotation: Annotation,
+        xml_annotation: XMLAnnotation,
+        config: SerializerConfig
 ) -> Any:
-    for element_type in typing_inspect.get_args(annotation):
+    for union_type_annotation in typing_inspect.get_args(type_annotation):
         try:
-            return _from_xml_element(
+            return _to_obj(
                 element,
-                element_type,
-                xml_annotation
+                union_type_annotation,
+                xml_annotation,
+                config
             )
         except:  # pylint: disable=bare-except
             pass
 
 
-def _from_xml_to_optional_type(
+def _to_optional(
         element: Element,
-        element_type: Annotation,
-        xml_annotation: XMLAnnotation
+        type_annotation: Annotation,
+        xml_annotation: XMLAnnotation,
+        config: SerializerConfig
 ) -> Any:
     if _is_element_empty(element, xml_annotation):
         return None
 
     # An optional is a union where the last element is the None type.
-    union_types = typing_inspect.get_args(element_type)[:-1]
+    union_types = typing_inspect.get_args(type_annotation)[:-1]
     if len(union_types) == 1:
         # This was Optional[T]
-        return _from_xml_element(element, union_types[0], xml_annotation)
+        return _to_obj(
+            element,
+            union_types[0],
+            xml_annotation,
+            config
+        )
     else:
-        return _from_xml_element_to_union(
+        return _to_union(
             element,
             Union[tuple(union_types)],
-            xml_annotation
+            xml_annotation,
+            config
         )
 
 
-def _from_xml_to_simple_type(
+def _to_simple(
         element: Element,
-        element_type: Annotation,
+        type_annotation: Annotation,
         xml_annotation: XMLAnnotation
 ) -> Any:
     if not isinstance(xml_annotation, XMLAttribute):
@@ -115,15 +125,16 @@ def _from_xml_to_simple_type(
         text = element.attrib[xml_annotation.tag]
     if text is None:
         raise ValueError(f'Expected "{xml_annotation.tag}" to be non-null')
-    return _from_xml_element_to_builtin(text, element_type)
+    return _to_builtin(text, type_annotation)
 
 
-def _from_xml_element_to_list(
+def _to_list(
         element: Element,
-        annotation: Annotation,
-        xml_annotation: XMLAnnotation
+        type_annotation: Annotation,
+        xml_annotation: XMLAnnotation,
+        config: SerializerConfig
 ) -> List[Any]:
-    element_annotation, *_rest = typing_inspect.get_args(annotation)
+    element_annotation, *_rest = typing_inspect.get_args(type_annotation)
     element_type, element_xml_annotation = get_xml_annotation(
         element_annotation
     )
@@ -137,25 +148,27 @@ def _from_xml_element_to_list(
         elements = element.iter(element_xml_annotation.tag)
 
     return [
-        _from_xml_element(
+        _to_obj(
             child,
             element_type,
-            element_xml_annotation
+            element_xml_annotation,
+            config
         )
         for child in elements
     ]
 
 
-def _from_xml_element_to_typed_dict(
+def _to_typed_dict(
         element: Optional[Element],
-        annotation: Annotation,
+        type_annotation: Annotation,
+        config: SerializerConfig
 ) -> Optional[Dict[str, Any]]:
     if element is None:
         return None
 
     coerced_values: Dict[str, Any] = {}
 
-    member_annotations = typing_inspect.typed_dict_annotation(annotation)
+    member_annotations = typing_inspect.typed_dict_annotation(type_annotation)
     for name, member in member_annotations.items():
         member_type, xml_annotation = get_xml_annotation(member.annotation)
         if not isinstance(xml_annotation, XMLAttribute):
@@ -163,47 +176,69 @@ def _from_xml_element_to_typed_dict(
         else:
             member_element = element
         if member_element is not None:
-            coerced_values[name] = _from_xml_element(
+            coerced_values[name] = _to_obj(
                 member_element,
                 member_type,
-                xml_annotation
+                xml_annotation,
+                config
             )
         elif member.default is typing_inspect.TypedDictMember.empty:
             raise KeyError(
                 f'Required key "{xml_annotation.tag}" is missing'
             )
         else:
-            coerced_values[name] = _from_xml_element(
+            coerced_values[name] = _to_obj(
                 member.default,
                 member_type,
-                xml_annotation
+                xml_annotation,
+                config
             )
 
     return coerced_values
 
 
-def _from_xml_element(
+def _to_obj(
         element: Element,
-        element_type: Annotation,
-        xml_annotation: XMLAnnotation
+        type_annotation: Annotation,
+        xml_annotation: XMLAnnotation,
+        config: SerializerConfig
 ) -> Any:
 
-    if is_simple_type(element_type):
-        return _from_xml_to_simple_type(element, element_type, xml_annotation)
-    if typing_inspect.is_optional_type(element_type):
-        return _from_xml_to_optional_type(element, element_type, xml_annotation)
-    elif typing_inspect.is_list(element_type):
-        return _from_xml_element_to_list(element, element_type, xml_annotation)
-    elif typing_inspect.is_typed_dict(element_type):
-        return _from_xml_element_to_typed_dict(element, element_type)
-    elif typing_inspect.is_union_type(element_type):
-        return _from_xml_element_to_union(element, element_type, xml_annotation)
+    if is_simple_type(type_annotation):
+        return _to_simple(element, type_annotation, xml_annotation)
+    if typing_inspect.is_optional_type(type_annotation):
+        return _to_optional(
+            element,
+            type_annotation,
+            xml_annotation,
+            config
+        )
+    elif typing_inspect.is_list(type_annotation):
+        return _to_list(
+            element,
+            type_annotation,
+            xml_annotation,
+            config
+        )
+    elif typing_inspect.is_typed_dict(type_annotation):
+        return _to_typed_dict(
+            element,
+            type_annotation,
+            config)
+    elif typing_inspect.is_union_type(type_annotation):
+        return _to_union(
+            element,
+            type_annotation,
+            xml_annotation,
+            config
+        )
     raise TypeError
 
 
-def deserialise_xml(
+def deserialize(
         text: str,
-        annotation: Annotation
+        annotation: Annotation,
+        config: SerializerConfig
 ) -> Any:
     """Convert XML to an object
 
@@ -220,4 +255,4 @@ def deserialise_xml(
             "Expected the root value to have an XMLEntity annotation")
 
     element = etree.fromstring(text)  # pylint: disable=c-extension-no-member
-    return _from_xml_element(element, element_type, xml_annotation)
+    return _to_obj(element, element_type, xml_annotation, config)

@@ -3,13 +3,17 @@
 from datetime import datetime
 from typing import List, Optional, Union
 
+from stringcase import capitalcase, snakecase
 from typing_extensions import TypedDict, Annotated  # type: ignore
 
-from bareasgi_rest.protocol.xml.deserializer import deserialise_xml
+from bareasgi_rest.protocol.config import SerializerConfig
+from bareasgi_rest.protocol.xml.deserializer import deserialize
 from bareasgi_rest.protocol.xml.annotations import (
     XMLEntity,
     XMLAttribute
 )
+
+CONFIG = SerializerConfig(capitalcase, snakecase)
 
 
 class Book(TypedDict, total=False):
@@ -46,9 +50,10 @@ def test_from_xml_element():
     <Age>24</Age>
 </Book>
 """
-    dct = deserialise_xml(
+    dct = deserialize(
         text,
-        Annotated[Book, XMLEntity("Book")]
+        Annotated[Book, XMLEntity("Book")],
+        CONFIG
     )
     assert dct == {
         'author': 'Chairman Mao',

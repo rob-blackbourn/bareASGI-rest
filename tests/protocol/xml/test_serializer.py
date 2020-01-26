@@ -3,13 +3,17 @@
 from datetime import datetime
 from typing import List, Optional, Union
 
+from stringcase import capitalcase, snakecase
 from typing_extensions import TypedDict, Annotated  # type: ignore
 
+from bareasgi_rest.protocol.config import SerializerConfig
 from bareasgi_rest.protocol.xml.serializer import serialize
 from bareasgi_rest.protocol.xml.annotations import (
     XMLEntity,
     XMLAttribute
 )
+
+CONFIG = SerializerConfig(capitalcase, snakecase)
 
 
 class Book(TypedDict, total=False):
@@ -43,5 +47,5 @@ def test_serialize():
         'age': 24,
         'pages': None
     }
-    text = serialize(book, Annotated[Book, XMLEntity("Book")])
+    text = serialize(book, Annotated[Book, XMLEntity("Book")], CONFIG)
     assert text == b'<Book bookId="42"><Title>Little Red Book</Title><Author>Chairman Mao</Author><PublicationDate>1973-01-01T21:52:13.00Z</PublicationDate><Keywords><Keyword>Revolution</Keyword><Keyword>Communism</Keyword></Keywords><Phrase>Revolutionary wars are inevitable in class society</Phrase><Phrase>War is the continuation of politics</Phrase><Age>24</Age></Book>'
