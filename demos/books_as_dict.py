@@ -128,7 +128,7 @@ class BookController:
         """
         if book_id not in self.books:
             raise HTTPError(None, 404, None, None, None)
-        self.books[book_id] = book.value
+        self.books[book_id] = book
 
 
 if __name__ == "__main__":
