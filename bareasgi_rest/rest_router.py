@@ -34,7 +34,6 @@ from baretypes import (
     HttpResponse
 )
 import bareutils.header as header
-from stringcase import snakecase, camelcase
 
 from .arg_builder import make_args
 from .swagger import SwaggerRepository, SwaggerConfig, SwaggerController
@@ -46,12 +45,14 @@ from .constants import (
     DEFAULT_COLLECTION_FORMAT,
     DEFAULT_NOT_FOUND_RESPONSE,
     DEFAULT_SERIALIZER_CONFIG,
+    DEFAULT_JSON_SERIALIZER_CONFIG,
     DEFAULT_ARG_DESERIALIZER_FACTORY
 )
 from .types import (
     Deserializer,
     DictConsumes,
     DictProduces,
+    DictSerializerConfig,
     RestCallback,
     ArgDeserializerFactory
 )
@@ -89,7 +90,8 @@ class RestHttpRouter(BasicHttpRouter):
             swagger_base_url: str = DEFAULT_SWAGGER_BASE_URL,
             typeface_url: str = DEFAULT_TYPEFACE_URL,
             config: Optional[SwaggerConfig] = None,
-            serializer_config: SerializerConfig = DEFAULT_SERIALIZER_CONFIG,
+            serializer_config: DictSerializerConfig = DEFAULT_SERIALIZER_CONFIG,
+            arg_serializer_config: SerializerConfig = DEFAULT_JSON_SERIALIZER_CONFIG,
             arg_deserializer_factory: ArgDeserializerFactory = DEFAULT_ARG_DESERIALIZER_FACTORY
     ) -> None:
         """Initialise the REST router
@@ -124,6 +126,7 @@ class RestHttpRouter(BasicHttpRouter):
         self.collection_formats: Dict[str, Dict[PathDefinition, str]] = {}
 
         self.serializer_config = serializer_config
+        self.arg_serializer_config = arg_serializer_config
         self.arg_deserializer_factory = arg_deserializer_factory
 
         self.swagger_repo = SwaggerRepository(
@@ -157,7 +160,8 @@ class RestHttpRouter(BasicHttpRouter):
             tags: Optional[List[str]] = None,
             status_code: int = 200,
             status_description: str = 'OK',
-            serializer_config: Optional[SerializerConfig] = None,
+            serializer_config: Optional[DictSerializerConfig] = None,
+            arg_serializer_config: Optional[SerializerConfig] = None,
             arg_deserializer_factory: Optional[ArgDeserializerFactory] = None
     ) -> None:
         """Register a callback to a method and path
@@ -188,13 +192,14 @@ class RestHttpRouter(BasicHttpRouter):
                 content_type,
                 status_code,
                 serializer_config,
+                arg_serializer_config,
                 arg_deserializer_factory
             )
             self.swagger_repo.add(
                 method,
                 _rename_path_definition(
                     PathDefinition(path),
-                    self.serializer_config
+                    DEFAULT_JSON_SERIALIZER_CONFIG
                 ),
                 callback,
                 accept,
@@ -212,19 +217,20 @@ class RestHttpRouter(BasicHttpRouter):
             callback: RestCallback,
             content_type: bytes,
             status_code: int,
-            serializer_config: Optional[SerializerConfig],
+            serializer_config: Optional[DictSerializerConfig],
+            arg_serializer_config: Optional[SerializerConfig],
             arg_deserializer_factory: Optional[ArgDeserializerFactory]
     ) -> None:
         signature = inspect.signature(callback)
         path_definition = _rename_path_definition(
             PathDefinition(self.base_path + path),
-            self.serializer_config
+            DEFAULT_JSON_SERIALIZER_CONFIG
         )
 
         arg_deserializer = (
             arg_deserializer_factory or self.arg_deserializer_factory
         )(
-            serializer_config or self.serializer_config
+            arg_serializer_config or self.arg_serializer_config
         )
 
         async def rest_callback(
@@ -235,12 +241,12 @@ class RestHttpRouter(BasicHttpRouter):
         ) -> HttpResponse:
 
             route_args: Dict[str, str] = {
-                self.serializer_config.deserialize_key(name): value
+                self.arg_serializer_config.deserialize_key(name): value
                 for name, value in matches.items()
             }
             query_string = scope['query_string'].decode()
             query_args: Dict[str, List[str]] = {
-                self.serializer_config.deserialize_key(name): values
+                self.arg_serializer_config.deserialize_key(name): values
                 for name, values in parse_qs(query_string).items()
             }
             body_reader = self._get_body_reader(scope, content)
@@ -268,7 +274,8 @@ class RestHttpRouter(BasicHttpRouter):
             writer = self._make_writer(
                 body,
                 accept,
-                signature.return_annotation
+                signature.return_annotation,
+                serializer_config or self.serializer_config
             )
             headers = [
                 (b'content-type', content_type)
@@ -281,7 +288,8 @@ class RestHttpRouter(BasicHttpRouter):
             self,
             data: Optional[Any],
             accept: Optional[Mapping[bytes, float]],
-            return_annotation: Any
+            return_annotation: Any,
+            serializer_configs: DictSerializerConfig
     ) -> Optional[AsyncIterator[bytes]]:
         if data is None:
             # No need for a writer if there is no data.
@@ -297,11 +305,12 @@ class RestHttpRouter(BasicHttpRouter):
             media_type = b'application/json'
 
         serializer = self.produces[media_type]
+        serializer_config = serializer_configs[media_type]
 
         text = serializer(
             media_type,
             {},
-            self.serializer_config,
+            serializer_config,
             data,
             return_annotation
         )
@@ -314,11 +323,13 @@ class RestHttpRouter(BasicHttpRouter):
     ) -> Callable[[Any], Awaitable[Any]]:
         if scope['method'] in {'GET'}:
             deserializer: Optional[Deserializer] = None
+            serializer_config: SerializerConfig = DEFAULT_JSON_SERIALIZER_CONFIG
         else:
             media_type, params = header.content_type(
                 scope['headers']
             ) or (b'application/json', cast(Dict[bytes, Any], {}))
-            deserializer = self.consumes.get(media_type)
+            deserializer = self.consumes[media_type]
+            serializer_config = self.serializer_config[media_type]
 
         async def body_reader(annotation: Any) -> Any:
             if deserializer is None:
@@ -327,7 +338,7 @@ class RestHttpRouter(BasicHttpRouter):
             return deserializer(
                 media_type,
                 params,
-                self.serializer_config,
+                serializer_config,
                 text,
                 annotation
             )

@@ -38,6 +38,8 @@ Serializer = Callable[
 ]
 DictProduces = Dict[bytes, Serializer]
 
+DictSerializerConfig = Dict[bytes, SerializerConfig]
+
 RestCallback = Callable[..., Awaitable[Any]]
 
 ArgDeserializer = Callable[[str, Annotation], Any]
