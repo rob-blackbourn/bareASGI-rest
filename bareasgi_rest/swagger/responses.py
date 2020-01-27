@@ -1,5 +1,6 @@
 """Utility functions"""
 
+import inspect
 from typing import (
     Any,
     Dict,
@@ -8,8 +9,6 @@ from typing import (
 )
 
 from docstring_parser import DocstringReturns, DocstringRaises
-
-import bareasgi_rest.typing_inspect as typing_inspect
 
 from .errors import gather_error_responses
 from .properties import get_property
@@ -32,7 +31,7 @@ def make_swagger_responses(
             return_annotation,
             None,
             docstring_returns.description if docstring_returns else None,
-            typing_inspect.TypedDictMember.empty,
+            inspect.Parameter.empty,
             collection_format
         )
 

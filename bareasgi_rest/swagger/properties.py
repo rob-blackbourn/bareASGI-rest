@@ -13,7 +13,8 @@ import docstring_parser
 from docstring_parser import Docstring
 from stringcase import camelcase
 
-import bareasgi_rest.typing_inspect as typing_inspect
+from jetblack_serialization.types import Annotation
+import jetblack_serialization.typing_inspect_ex as typing_inspect
 
 from .utils import find_docstring_param
 
@@ -50,7 +51,7 @@ def get_property(
         )
 
     if typing_inspect.is_optional_type(annotation):
-        optional_type = typing_inspect.get_optional(annotation)
+        optional_type = typing_inspect.get_optional_type(annotation)
         return get_property(
             optional_type,
             name,
@@ -66,9 +67,6 @@ def get_property(
 
     if description:
         prop['description'] = description
-
-    if default != typing_inspect.TypedDictMember.empty:
-        prop['default'] = default
 
     if annotation is str:
         prop['type'] = 'string'
@@ -87,7 +85,7 @@ def get_property(
         # Note: Swagger has no support for durations. I made up the format.
         prop['type'] = 'string'
         prop['format'] = 'duration'
-    elif typing_inspect.is_list(annotation):
+    elif typing_inspect.is_list_type(annotation):
         contained_type, *_rest = typing_inspect.get_args(annotation)
         prop['type'] = 'array'
         prop['collectionFormat'] = collection_format
@@ -98,12 +96,12 @@ def get_property(
             default,
             collection_format
         )
-    elif typing_inspect.is_dict(annotation):
+    elif typing_inspect.is_dict_type(annotation):
         prop['type'] = 'object'
-    elif typing_inspect.is_typed_dict(annotation):
+    elif typing_inspect.is_typed_dict_type(annotation):
         prop['type'] = 'object'
         prop['properties'] = get_properties(
-            typing_inspect.typed_dict_annotation(annotation),
+            typing_inspect.typed_dict_keys(annotation),
             docstring_parser.parse(inspect.getdoc(annotation)),
             collection_format
         )
@@ -114,14 +112,14 @@ def get_property(
 
 
 def get_properties(
-        annotations: Dict[str, typing_inspect.TypedDictMember],
+        annotations: Dict[str, Annotation],
         docstring: Docstring,
         collection_format: str
 ) -> Dict[str, Any]:
     """Get the properties of a TypedDict
 
     Args:
-        annotations (Dict[str, typing_inspect.TypedDictMember]): The member
+        annotations (Dict[str, Annotation]): The member
             annotations
         docstring (Docstring): The docstring
         collection_format (str): The collection format
@@ -130,16 +128,16 @@ def get_properties(
         Dict[str, Any]: The swagger properties.
     """
     properties: Dict[str, Any] = {}
-    for name, member in annotations.items():
+    for name, member_annotation in annotations.items():
         camelcase_name = camelcase(name)
         docstring_param = find_docstring_param(name, docstring)
         description = docstring_param.description if docstring_param else None
 
         properties[camelcase_name] = get_property(
-            member.annotation,
+            member_annotation,
             camelcase_name,
             description,
-            member.default,
+            inspect.Parameter.default,
             collection_format
         )
 

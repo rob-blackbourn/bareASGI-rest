@@ -5,9 +5,6 @@ from typing import (
     TypeVar
 )
 
-import bareasgi_rest.typing_inspect as typing_inspect
-from .types import Body, Annotation
-
 T = TypeVar('T')
 
 

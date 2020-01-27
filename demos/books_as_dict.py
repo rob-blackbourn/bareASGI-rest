@@ -8,10 +8,11 @@ from typing import Any, Dict, List
 from urllib.error import HTTPError
 
 from bareasgi import Application
+from jetblack_serialization.json import JSONValue
 from typing_extensions import Annotated  # type: ignore
 import uvicorn
 
-from bareasgi_rest import RestHttpRouter, add_swagger_ui, Body
+from bareasgi_rest import RestHttpRouter, add_swagger_ui
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -115,7 +116,7 @@ class BookController:
     async def update_book(
             self,
             book_id: int,
-            book: Annotated[Dict[str, Any], Body]
+            book: Annotated[Dict[str, Any], JSONValue()]
     ) -> None:
         """Update a book
 

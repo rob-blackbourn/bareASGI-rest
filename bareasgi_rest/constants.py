@@ -4,21 +4,22 @@ from baretypes import HttpResponse
 from bareutils import text_writer
 from stringcase import camelcase, snakecase, pascalcase
 
+from jetblack_serialization.config import SerializerConfig
+
 from .types import (
     DictConsumes,
     DictProduces,
     DictSerializerConfig
 )
 
-from .protocol.config import SerializerConfig
-from .protocol.json import (
+from .serialization.json import (
     to_json,
     from_json,
     from_form_data,
     from_query_string,
     json_arg_deserializer_factory
 )
-from .protocol.xml import (
+from .serialization.xml import (
     from_xml,
     to_xml
 )

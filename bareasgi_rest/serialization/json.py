@@ -7,35 +7,14 @@ from typing import Any, Callable
 
 from urllib.parse import parse_qs
 
-import bareasgi_rest.typing_inspect as typing_inspect
+from jetblack_serialization.config import SerializerConfig
+from jetblack_serialization.types import Annotation
+from jetblack_serialization.json import serialize, deserialize, from_json_value
 
-from ...types import (
-    Annotation,
+from ..types import (
     MediaType,
     MediaTypeParams
 )
-from ..config import SerializerConfig
-from .typed_deserializer import from_json_value
-
-
-from .typed_serializer import serialize as typed_serialize
-from .typed_deserializer import deserialize as typed_deserialize
-from .untyped_serializer import serialize as untyped_serialize
-from .untyped_deserializer import deserialize as untyped_deserialize
-
-
-def _is_typed(annotation: Annotation) -> bool:
-    return (
-        typing_inspect.is_typed_dict(annotation) or
-        (
-            typing_inspect.is_list(annotation) and
-            _is_typed(typing_inspect.get_args(annotation)[0])
-        ) or
-        (
-            typing_inspect.is_annotated_type(annotation) and
-            _is_typed(typing_inspect.get_origin(annotation))
-        )
-    )
 
 
 def to_json(
@@ -53,10 +32,7 @@ def to_json(
     Returns:
         str: The stringified object
     """
-    if _is_typed(annotation):
-        return typed_serialize(obj, annotation, config)
-    else:
-        return untyped_serialize(obj, config)
+    return serialize(obj, annotation, config)
 
 
 def from_json(
@@ -78,10 +54,7 @@ def from_json(
     Returns:
         Any: The deserialized object.
     """
-    if _is_typed(annotation):
-        return typed_deserialize(text, annotation, config)
-    else:
-        return untyped_deserialize(text, config)
+    return deserialize(text, annotation, config)
 
 
 def from_query_string(

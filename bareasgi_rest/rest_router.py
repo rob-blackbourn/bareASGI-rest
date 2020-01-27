@@ -34,6 +34,7 @@ from baretypes import (
     HttpResponse
 )
 import bareutils.header as header
+from jetblack_serialization.config import SerializerConfig
 
 from .arg_builder import make_args
 from .swagger import SwaggerRepository, SwaggerConfig, SwaggerController
@@ -56,7 +57,6 @@ from .types import (
     RestCallback,
     ArgDeserializerFactory
 )
-from .protocol.config import SerializerConfig
 
 LOGGER = logging.getLogger(__name__)
 
