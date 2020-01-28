@@ -68,6 +68,9 @@ def get_property(
     if description:
         prop['description'] = description
 
+    if default != inspect.Parameter.empty:
+        prop['default'] = default
+
     if annotation is str:
         prop['type'] = 'string'
     elif annotation is bool:
@@ -101,7 +104,7 @@ def get_property(
     elif typing_inspect.is_typed_dict_type(annotation):
         prop['type'] = 'object'
         prop['properties'] = get_properties(
-            typing_inspect.typed_dict_keys(annotation),
+            annotation,
             docstring_parser.parse(inspect.getdoc(annotation)),
             collection_format
         )
@@ -112,7 +115,7 @@ def get_property(
 
 
 def get_properties(
-        annotations: Dict[str, Annotation],
+        annotation,
         docstring: Docstring,
         collection_format: str
 ) -> Dict[str, Any]:
@@ -127,17 +130,21 @@ def get_properties(
     Returns:
         Dict[str, Any]: The swagger properties.
     """
+    annotations: Dict[str, Annotation] = typing_inspect.typed_dict_keys(
+        annotation
+    )
     properties: Dict[str, Any] = {}
     for name, member_annotation in annotations.items():
         camelcase_name = camelcase(name)
         docstring_param = find_docstring_param(name, docstring)
         description = docstring_param.description if docstring_param else None
+        default = getattr(annotation, name, inspect.Parameter.empty)
 
         properties[camelcase_name] = get_property(
             member_annotation,
             camelcase_name,
             description,
-            inspect.Parameter.default,
+            default,
             collection_format
         )
 

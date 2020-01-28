@@ -147,7 +147,7 @@ class BookController:
 
         Args:
             book_id (int): The id of the book to update
-            book (Body[Book]): The book as the body
+            book (Annotated[Book, T]): The book as the body
 
         Raises:
             HTTPError: 404, when a book is not found

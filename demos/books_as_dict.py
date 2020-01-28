@@ -122,7 +122,7 @@ class BookController:
 
         Args:
             book_id (int): The id of the book to update
-            book (Annotated[Dict[str, Any], Body]): The book as the body
+            book (Annotated[Dict[str, Any], JSONValue()]): The book as the body
 
         Raises:
             HTTPError: 404, when a book is not found

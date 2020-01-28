@@ -48,5 +48,3 @@ ArgDeserializerFactory = Callable[
     [SerializerConfig],
     Callable[[str, Annotation], Any]
 ]
-
-Body = NewType('Body', None)  # type: ignore
