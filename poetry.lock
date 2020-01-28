@@ -220,7 +220,7 @@ description = "Serialization for JSON and XML using typing"
 name = "jetblack-serialization"
 optional = false
 python-versions = ">=3.7,<4.0"
-version = "0.2.0"
+version = "0.3.0"
 
 [package.dependencies]
 lxml = ">=4.4.2,<5.0.0"
@@ -574,7 +574,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools"]
 
 [metadata]
-content-hash = "12e934a3d1302a1dd3ea18a4b6c668ff84797bc71d78a936677905c6b39122f5"
+content-hash = "2f89363411e9aba3c7e3dfff27f2c1ed9e5e93ecf80e53086f28419074ce6f4f"
 python-versions = "^3.7"
 
 [metadata.files]
@@ -652,8 +652,8 @@ isort = [
     {file = "isort-4.3.21.tar.gz", hash = "sha256:54da7e92468955c4fceacd0c86bd0ec997b0e1ee80d97f67c35a78b719dccab1"},
 ]
 jetblack-serialization = [
-    {file = "jetblack-serialization-0.2.0.tar.gz", hash = "sha256:0e62ad4121e0318a3ad3fea23b60dc88083315ffd51096576df44ea61a4c20db"},
-    {file = "jetblack_serialization-0.2.0-py3-none-any.whl", hash = "sha256:208d65c995b37a6a40d0618ebd064ff36f1ec408c6cbd4ecec3aae96a70306d6"},
+    {file = "jetblack-serialization-0.3.0.tar.gz", hash = "sha256:ad0a5a15587e00f52176ae08bc8ff18b077f885a174f173a8060684ac7929fb7"},
+    {file = "jetblack_serialization-0.3.0-py3-none-any.whl", hash = "sha256:e94c51c52feb2fd3f7526aee1de3cfe58d6e26a1ef46ae61bbcd9c6c9850c480"},
 ]
 jinja2 = [
     {file = "Jinja2-2.11.0-py2.py3-none-any.whl", hash = "sha256:6e7a3c2934694d59ad334c93dd1b6c96699cf24c53fdb8ec848ac6b23e685734"},
