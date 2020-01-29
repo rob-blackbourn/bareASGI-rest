@@ -8,6 +8,15 @@ try:
 except:  # pylint: disable=bare-except
     from typing_extensions import TypedDict
 
+from stringcase import camelcase, snakecase
+
+from bareasgi_rest.swagger.config import SwaggerConfig
+
+MOCK_SWAGGER_CONFIG = SwaggerConfig(
+    serialize_key=camelcase,
+    deserialize_key=snakecase
+)
+
 
 class MockDict(TypedDict):
     """A mock typed dict

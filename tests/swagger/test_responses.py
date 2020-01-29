@@ -7,7 +7,7 @@ from typing import List
 from docstring_parser import parse
 from bareasgi_rest.swagger.properties import get_property
 
-from .mocks import MockDict
+from .mocks import MockDict, MOCK_SWAGGER_CONFIG
 
 
 def test_get_property():
@@ -28,7 +28,8 @@ def test_get_property():
         None,
         description,
         inspect.Parameter.empty,
-        'multi'
+        'multi',
+        MOCK_SWAGGER_CONFIG
     )
     assert response == {
         'type': 'string',
@@ -46,7 +47,8 @@ def test_get_property():
         None,
         description,
         inspect.Parameter.empty,
-        'multi'
+        'multi',
+        MOCK_SWAGGER_CONFIG
     )
     assert response == {
         'type': 'object',
@@ -97,6 +99,7 @@ def test_get_property():
         None,
         description,
         inspect.Parameter.empty,
-        'multi'
+        'multi',
+        MOCK_SWAGGER_CONFIG
     )
     assert response['type'] == 'array'

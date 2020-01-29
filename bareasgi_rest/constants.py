@@ -23,6 +23,7 @@ from .serialization.xml import (
     from_xml,
     to_xml
 )
+from .swagger import SwaggerConfig
 
 DEFAULT_SWAGGER_BASE_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/3.4.0"
 DEFAULT_TYPEFACE_URL = "https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
@@ -59,3 +60,8 @@ DEFAULT_SERIALIZER_CONFIG: DictSerializerConfig = {
 }
 
 DEFAULT_ARG_DESERIALIZER_FACTORY = json_arg_deserializer_factory
+
+DEFAULT_SWAGGER_CONFIG = SwaggerConfig(
+    serialize_key=camelcase,
+    deserialize_key=snakecase
+)

@@ -11,7 +11,7 @@ from bareasgi_rest.swagger.parameters import (
     make_swagger_parameters,
 )
 
-from .mocks import mock_func
+from .mocks import mock_func, MOCK_SWAGGER_CONFIG
 
 
 def test_make_swagger_parameter():
@@ -22,7 +22,8 @@ def test_make_swagger_parameter():
         'path',
         sig.parameters['arg_num1'],
         'multi',
-        docstring.params[0]
+        docstring.params[0],
+        MOCK_SWAGGER_CONFIG
     )
     assert param == {
         'in': 'path',
@@ -35,7 +36,8 @@ def test_make_swagger_parameter():
         'query',
         sig.parameters['arg_num2'],
         'multi',
-        docstring.params[1]
+        docstring.params[1],
+        MOCK_SWAGGER_CONFIG
     )
     assert param == {
         'in': 'query',
@@ -52,7 +54,8 @@ def test_make_swagger_parameter():
         'query',
         sig.parameters['arg_num3'],
         'multi',
-        docstring.params[2]
+        docstring.params[2],
+        MOCK_SWAGGER_CONFIG
     )
     assert param == {
         'in': 'query',
@@ -66,7 +69,8 @@ def test_make_swagger_parameter():
         'query',
         sig.parameters['arg_num4'],
         'multi',
-        docstring.params[3]
+        docstring.params[3],
+        MOCK_SWAGGER_CONFIG
     )
     assert param == {
         'in': 'query',
@@ -80,7 +84,8 @@ def test_make_swagger_parameter():
         'query',
         sig.parameters['arg_num5'],
         'multi',
-        docstring.params[4]
+        docstring.params[4],
+        MOCK_SWAGGER_CONFIG
     )
     assert param == {
         'in': 'query',
@@ -105,7 +110,8 @@ def test_swagger_params_get():
         path_definition,
         sig.parameters,
         docstring,
-        collection_format
+        collection_format,
+        MOCK_SWAGGER_CONFIG
     )
     assert get_params == [
         {
@@ -166,7 +172,8 @@ def test_swagger_params_form():
         path_definition,
         sig.parameters,
         docstring,
-        collection_format
+        collection_format,
+        MOCK_SWAGGER_CONFIG
     )
     assert get_params == [
         {
@@ -227,7 +234,8 @@ def test_swagger_params_body():
         path_definition,
         sig.parameters,
         docstring,
-        collection_format
+        collection_format,
+        MOCK_SWAGGER_CONFIG
     )
     assert get_params == [
         {

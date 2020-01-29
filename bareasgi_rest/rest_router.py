@@ -47,7 +47,8 @@ from .constants import (
     DEFAULT_NOT_FOUND_RESPONSE,
     DEFAULT_SERIALIZER_CONFIG,
     DEFAULT_JSON_SERIALIZER_CONFIG,
-    DEFAULT_ARG_DESERIALIZER_FACTORY
+    DEFAULT_ARG_DESERIALIZER_FACTORY,
+    DEFAULT_SWAGGER_CONFIG
 )
 from .types import (
     Deserializer,
@@ -89,7 +90,7 @@ class RestHttpRouter(BasicHttpRouter):
             tags: Optional[List[Mapping[str, Any]]] = None,
             swagger_base_url: str = DEFAULT_SWAGGER_BASE_URL,
             typeface_url: str = DEFAULT_TYPEFACE_URL,
-            config: Optional[SwaggerConfig] = None,
+            config: SwaggerConfig = DEFAULT_SWAGGER_CONFIG,
             serializer_configs: DictSerializerConfig = DEFAULT_SERIALIZER_CONFIG,
             arg_serializer_config: SerializerConfig = DEFAULT_JSON_SERIALIZER_CONFIG,
             arg_deserializer_factory: ArgDeserializerFactory = DEFAULT_ARG_DESERIALIZER_FACTORY
@@ -136,7 +137,8 @@ class RestHttpRouter(BasicHttpRouter):
             base_path,
             [name.decode() for name in self.consumes.keys()],
             [name.decode() for name in self.produces.keys()],
-            tags
+            tags,
+            config
         )
         self.swagger_controller = SwaggerController(
             title,

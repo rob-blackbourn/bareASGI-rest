@@ -13,12 +13,12 @@ from typing import (
 
 from bareasgi.basic_router.path_definition import PathDefinition
 from docstring_parser import Docstring, DocstringParam
-from stringcase import snakecase, camelcase
 import jetblack_serialization.typing_inspect_ex as typing_inspect
 from jetblack_serialization.annotations import (
     is_any_serialization_annotation
 )
 
+from .config import SwaggerConfig
 from .properties import get_property
 from .utils import find_docstring_param
 
@@ -27,16 +27,18 @@ def _make_swagger_parameter(
         source: str,
         param: Parameter,
         collection_format: str,
-        docstring_param: Optional[DocstringParam]
+        docstring_param: Optional[DocstringParam],
+        config: SwaggerConfig
 ) -> Dict[str, Any]:
     is_required = param.default is Parameter.empty
 
     prop = get_property(
         param.annotation,
-        camelcase(param.name),
+        config.serialize_key(param.name),
         docstring_param.description if docstring_param else None,
         param.default,
-        collection_format
+        collection_format,
+        config
     )
 
     if source != 'body':
@@ -51,7 +53,8 @@ def _make_swagger_parameters_inline(
         parameters: Mapping[str, Parameter],
         path_variables: AbstractSet[str],
         docstring: Docstring,
-        collection_format: str
+        collection_format: str,
+        config: SwaggerConfig
 ) -> List[Dict[str, Any]]:
     """Make inline paramters for query or form"""
     props: List[Dict[str, Any]] = []
@@ -64,7 +67,8 @@ def _make_swagger_parameters_inline(
                 source,
                 parameter,
                 collection_format,
-                docstring_param
+                docstring_param,
+                config
             )
         )
     return props
@@ -76,7 +80,8 @@ def make_swagger_parameters(
         path_definition: PathDefinition,
         parameters: Mapping[str, Parameter],
         docstring: Docstring,
-        collection_format: str
+        collection_format: str,
+        config: SwaggerConfig
 ) -> List[Dict[str, Any]]:
     """Make the swagger parameters"""
 
@@ -90,7 +95,7 @@ def make_swagger_parameters(
     path_variables: Set[str] = set()
     for segment in path_definition.segments:
         if segment.is_variable:
-            path_variable = snakecase(segment.name)
+            path_variable = config.deserialize_key(segment.name)
             path_variables.add(path_variable)
             parameter = available_parameters.pop(path_variable)
             docstring_param = find_docstring_param(parameter.name, docstring)
@@ -98,7 +103,8 @@ def make_swagger_parameters(
                 'path',
                 parameter,
                 collection_format,
-                docstring_param
+                docstring_param,
+                config
             )
             props.append(prop)
 
@@ -110,7 +116,8 @@ def make_swagger_parameters(
                 available_parameters,
                 path_variables,
                 docstring,
-                collection_format
+                collection_format,
+                config
             )
         )
     elif (
@@ -124,7 +131,8 @@ def make_swagger_parameters(
                 available_parameters,
                 path_variables,
                 docstring,
-                collection_format
+                collection_format,
+                config
             )
         )
     else:
@@ -135,10 +143,11 @@ def make_swagger_parameters(
                 body_type = typing_inspect.get_origin(parameter.annotation)
                 schema = get_property(
                     body_type,
-                    camelcase(parameter.name),
+                    config.serialize_key(parameter.name),
                     None,
                     Parameter.empty,
-                    collection_format
+                    collection_format,
+                    config
                 )
                 props.append({
                     'in': 'body',
@@ -152,7 +161,8 @@ def make_swagger_parameters(
                         'query',
                         parameter,
                         collection_format,
-                        docstring_param
+                        docstring_param,
+                        config
                     )
                 )
 

@@ -12,6 +12,8 @@ from bareasgi.basic_router.path_definition import PathDefinition
 import docstring_parser
 
 from ..types import RestCallback
+
+from .config import SwaggerConfig
 from .parameters import make_swagger_parameters
 from .responses import make_swagger_responses
 
@@ -25,7 +27,8 @@ def make_swagger_entry(
         collection_format: str,
         tags: Optional[List[str]],
         ok_status_code: int,
-        ok_status_description: str
+        ok_status_description: str,
+        config: SwaggerConfig
 ) -> Dict[str, Any]:
     signature = inspect.signature(callback)
     docstring = docstring_parser.parse(inspect.getdoc(callback))
@@ -35,7 +38,8 @@ def make_swagger_entry(
         path_definition,
         signature.parameters,
         docstring,
-        collection_format
+        collection_format,
+        config
     )
 
     responses = make_swagger_responses(
@@ -44,7 +48,8 @@ def make_swagger_entry(
         docstring.raises if docstring else None,
         ok_status_code,
         ok_status_description,
-        collection_format
+        collection_format,
+        config
     )
 
     entry = {

@@ -13,6 +13,8 @@ from jetblack_serialization.json import JSONValue
 
 from bareasgi_rest.swagger.entry import make_swagger_entry
 
+from .mocks import MOCK_SWAGGER_CONFIG
+
 
 class Book(TypedDict):
     """A Book
@@ -54,7 +56,8 @@ def test_get():
         'multi',
         ['Books'],
         200,
-        'OK'
+        'OK',
+        MOCK_SWAGGER_CONFIG
     )
     assert get_books_swagger_entry == {
         'parameters': [],
@@ -131,7 +134,8 @@ def test_get():
         'multi',
         ['Books'],
         200,
-        'OK'
+        'OK',
+        MOCK_SWAGGER_CONFIG
     )
     assert find_books_swagger_entry == {
         'parameters': [
@@ -246,7 +250,8 @@ def test_post():
         'multi',
         ['Books'],
         200,
-        'OK'
+        'OK',
+        MOCK_SWAGGER_CONFIG
     )
     assert update_if_withdrawn_swagger_entry == {
         'parameters': [

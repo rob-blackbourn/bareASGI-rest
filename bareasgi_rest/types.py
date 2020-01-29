@@ -4,8 +4,7 @@ from typing import (
     Any,
     Awaitable,
     Callable,
-    Dict,
-    NewType
+    Dict
 )
 
 from jetblack_serialization.config import SerializerConfig

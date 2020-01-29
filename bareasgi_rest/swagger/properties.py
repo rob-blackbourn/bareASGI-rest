@@ -11,11 +11,11 @@ from typing import (
 
 import docstring_parser
 from docstring_parser import Docstring
-from stringcase import camelcase
 
 from jetblack_serialization.types import Annotation
 import jetblack_serialization.typing_inspect_ex as typing_inspect
 
+from .config import SwaggerConfig
 from .utils import find_docstring_param
 
 
@@ -24,7 +24,8 @@ def get_property(
         name: Optional[str],
         description: Optional[str],
         default: Any,
-        collection_format: str
+        collection_format: str,
+        config: SwaggerConfig
 ) -> Dict[str, Any]:
     """Get a swagger property
 
@@ -47,7 +48,8 @@ def get_property(
             name,
             description,
             default,
-            collection_format
+            collection_format,
+            config
         )
 
     if typing_inspect.is_optional_type(annotation):
@@ -57,7 +59,8 @@ def get_property(
             name,
             description,
             default,
-            collection_format
+            collection_format,
+            config
         )
 
     prop: Dict[str, Any] = {}
@@ -97,7 +100,8 @@ def get_property(
             None,
             None,
             default,
-            collection_format
+            collection_format,
+            config
         )
     elif typing_inspect.is_dict_type(annotation):
         prop['type'] = 'object'
@@ -106,7 +110,8 @@ def get_property(
         prop['properties'] = get_properties(
             annotation,
             docstring_parser.parse(inspect.getdoc(annotation)),
-            collection_format
+            collection_format,
+            config
         )
     else:
         raise TypeError('Unhandled type annotation')
@@ -117,7 +122,8 @@ def get_property(
 def get_properties(
         annotation,
         docstring: Docstring,
-        collection_format: str
+        collection_format: str,
+        config: SwaggerConfig
 ) -> Dict[str, Any]:
     """Get the properties of a TypedDict
 
@@ -135,7 +141,7 @@ def get_properties(
     )
     properties: Dict[str, Any] = {}
     for name, member_annotation in annotations.items():
-        camelcase_name = camelcase(name)
+        camelcase_name = config.serialize_key(name)
         docstring_param = find_docstring_param(name, docstring)
         description = docstring_param.description if docstring_param else None
         default = getattr(annotation, name, inspect.Parameter.empty)
@@ -145,7 +151,8 @@ def get_properties(
             camelcase_name,
             description,
             default,
-            collection_format
+            collection_format,
+            config
         )
 
     return properties

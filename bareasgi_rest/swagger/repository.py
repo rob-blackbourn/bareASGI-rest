@@ -12,6 +12,8 @@ from typing import (
 from bareasgi.basic_router.http_router import PathDefinition
 
 from ..types import RestCallback
+
+from .config import SwaggerConfig
 from .entry import make_swagger_entry
 from .paths import make_swagger_path
 
@@ -27,8 +29,10 @@ class SwaggerRepository:
             base_path: str,
             consumes: Optional[List[str]],
             produces: Optional[List[str]],
-            tags: Optional[List[Mapping[str, Any]]]
+            tags: Optional[List[Mapping[str, Any]]],
+            config: SwaggerConfig
     ) -> None:
+        self.config = config
 
         self.definition: Dict[str, Any] = {
             'swagger': '2.0',
@@ -80,7 +84,8 @@ class SwaggerRepository:
             collection_format,
             tags,
             status_code,
-            status_description
+            status_description,
+            self.config
         )
 
         swagger_path = make_swagger_path(path_definition)

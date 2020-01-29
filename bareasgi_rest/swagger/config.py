@@ -1,6 +1,10 @@
 """Swagger Configuration"""
 
-from typing import List, NamedTuple, Optional
+from typing import Callable, List, NamedTuple, Optional
+
+
+def _same_name(text: str) -> str:
+    return text
 
 
 class SwaggerOauth2Config(NamedTuple):
@@ -35,6 +39,8 @@ class SwaggerConfig(NamedTuple):
             defaults to "list"
         oauth2 (Optional[SwaggerOauth2Config], optional): Optional oauth2
             config, defaults to None
+        serialize_key (Callable[[str], str]): The function to serialize keys
+        deserialize_key (Callable[[str], str]): The function to deserialize keys
 
     """
     title: str = "The REST API"
@@ -44,3 +50,5 @@ class SwaggerConfig(NamedTuple):
     display_request_duration: bool = False
     doc_expansion: str = "list"
     oauth2: Optional[SwaggerOauth2Config] = None
+    serialize_key: Callable[[str], str] = _same_name
+    deserialize_key: Callable[[str], str] = _same_name

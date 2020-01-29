@@ -10,6 +10,7 @@ from typing import (
 
 from docstring_parser import DocstringReturns, DocstringRaises
 
+from .config import SwaggerConfig
 from .errors import gather_error_responses
 from .properties import get_property
 
@@ -20,7 +21,8 @@ def make_swagger_responses(
         docstring_raises: Optional[List[DocstringRaises]],
         ok_status_code: int,
         ok_status_description: str,
-        collection_format: str
+        collection_format: str,
+        config: SwaggerConfig
 ) -> Dict[int, Dict[str, Any]]:
     ok_response: Dict[str, Any] = {
         'description': ok_status_description
@@ -32,7 +34,8 @@ def make_swagger_responses(
             None,
             docstring_returns.description if docstring_returns else None,
             inspect.Parameter.empty,
-            collection_format
+            collection_format,
+            config
         )
 
     responses: Dict[int, Dict[str, Any]] = {
