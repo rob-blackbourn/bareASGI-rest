@@ -2,14 +2,15 @@
 
 from typing import Any
 
-from ...types import (
-    Annotation,
+from jetblack_serialization.config import SerializerConfig
+from jetblack_serialization.types import Annotation
+from jetblack_serialization.xml.deserializer import deserialize
+from jetblack_serialization.xml.serializer import serialize
+
+from ..types import (
     MediaType,
     MediaTypeParams
 )
-from ..config import SerializerConfig
-from .deserializer import deserialize
-from .serializer import serialize
 
 
 def from_xml(

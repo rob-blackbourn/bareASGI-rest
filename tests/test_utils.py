@@ -14,14 +14,14 @@ from typing_extensions import Annotated  # type: ignore
 import pytest
 from stringcase import snakecase, camelcase
 
-from bareasgi_rest.types import Body
-from bareasgi_rest.protocol.config import SerializerConfig
-from bareasgi_rest.protocol.utils import (
+from jetblack_serialization.config import SerializerConfig
+from jetblack_serialization.utils import (
     is_simple_type,
     is_container_type,
 )
-from bareasgi_rest.protocol.json.typed_deserializer import (
-    from_json_value
+from jetblack_serialization.json import (
+    from_json_value,
+    JSONValue
 )
 from bareasgi_rest.arg_builder import make_args
 
@@ -93,7 +93,7 @@ async def test_make_args():
     async def bar(
             arg_id: int,
             arg_query: str,
-            arg_body: Annotated[MockDict, Body]
+            arg_body: Annotated[MockDict, JSONValue()]
     ) -> Optional[MockDict]:
         return None
 

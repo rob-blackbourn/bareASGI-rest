@@ -8,9 +8,9 @@ from typing import (
     NewType
 )
 
-from .protocol.config import SerializerConfig
+from jetblack_serialization.config import SerializerConfig
+from jetblack_serialization.types import Annotation
 
-Annotation = Any
 MediaType = bytes
 MediaTypeParams = Dict[bytes, bytes]
 
@@ -48,5 +48,3 @@ ArgDeserializerFactory = Callable[
     [SerializerConfig],
     Callable[[str, Annotation], Any]
 ]
-
-Body = NewType('Body', None)  # type: ignore

@@ -15,9 +15,9 @@ from urllib.error import HTTPError
 from bareasgi import Application
 import uvicorn
 
-from bareasgi_rest import RestHttpRouter, add_swagger_ui, Body
-from bareasgi_rest.protocol.json import JSONValue
-from bareasgi_rest.protocol.xml import XMLEntity
+from bareasgi_rest import RestHttpRouter, add_swagger_ui
+from jetblack_serialization.json import JSONValue
+from jetblack_serialization.xml import XMLEntity
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -147,7 +147,7 @@ class BookController:
 
         Args:
             book_id (int): The id of the book to update
-            book (Body[Book]): The book as the body
+            book (Annotated[Book, T]): The book as the body
 
         Raises:
             HTTPError: 404, when a book is not found

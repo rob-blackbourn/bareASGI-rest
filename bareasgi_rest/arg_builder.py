@@ -3,10 +3,11 @@
 from inspect import Parameter, Signature
 from typing import Any, Awaitable, Callable, Dict, List, Tuple
 
-import bareasgi_rest.typing_inspect as typing_inspect
+from jetblack_serialization.annotations import is_any_serialization_annotation
+
+import jetblack_serialization.typing_inspect_ex as typing_inspect
 
 from .types import ArgDeserializer
-from .protocol.annotations import is_any_serialization_annotation
 
 
 async def make_args(
@@ -46,7 +47,7 @@ async def make_args(
                     parameter.annotation
                 )
             elif parameter.name in query:
-                if typing_inspect.is_list(parameter.annotation):
+                if typing_inspect.is_list_type(parameter.annotation):
                     element_type, *_rest = typing_inspect.get_args(
                         parameter.annotation
                     )

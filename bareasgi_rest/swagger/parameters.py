@@ -14,10 +14,9 @@ from typing import (
 from bareasgi.basic_router.path_definition import PathDefinition
 from docstring_parser import Docstring, DocstringParam
 from stringcase import snakecase, camelcase
-import bareasgi_rest.typing_inspect as typing_inspect
-from ..protocol.annotations import (
-    is_any_serialization_annotation,
-    get_all_serialization_annotations
+import jetblack_serialization.typing_inspect_ex as typing_inspect
+from jetblack_serialization.annotations import (
+    is_any_serialization_annotation
 )
 
 from .properties import get_property

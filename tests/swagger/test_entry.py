@@ -1,18 +1,16 @@
 """Tests for entry.py"""
 
 from datetime import datetime
-import logging
 from typing import Dict, List, Optional
 try:
     from typing import TypedDict  # type:ignore
 except:  # pylint: disable=bare-except
     from typing_extensions import TypedDict
 from typing_extensions import Annotated  # type: ignore
-from urllib.error import HTTPError
 
 from bareasgi.basic_router.path_definition import PathDefinition
+from jetblack_serialization.json import JSONValue
 
-from bareasgi_rest.types import Body
 from bareasgi_rest.swagger.entry import make_swagger_entry
 
 
@@ -51,8 +49,8 @@ def test_get():
         'GET',
         PathDefinition('/books'),
         get_books,
-        b'application/json',
-        b'application/json',
+        [b'application/json'],
+        [b'application/json'],
         'multi',
         ['Books'],
         200,
@@ -128,8 +126,8 @@ def test_get():
         'GET',
         PathDefinition('/books/{library:str}'),
         find_books,
-        b'application/json',
-        b'application/json',
+        [b'application/json'],
+        [b'application/json'],
         'multi',
         ['Books'],
         200,
@@ -228,14 +226,14 @@ def test_post():
     async def update_if_withdrawn(
             library: str,
             is_withdrawn: bool,
-            book: Annotated[Book, Body]
+            book: Annotated[Book, JSONValue()]
     ) -> None:
         """Update the book if not withdrawn
 
         Args:
             library (str): The library
             is_withdrawn (bool): True if the book has been withdrawn
-            book (Annotated[Book, Body]): The book details to update
+            book (Annotated[Book, Annotated[Book, JSONValue()]]): The book details to update
         """
         return list(BOOKS.values())
 
@@ -243,8 +241,8 @@ def test_post():
         'POST',
         PathDefinition('/books/{library:str}'),
         update_if_withdrawn,
-        b'application/json',
-        b'application/json',
+        [b'application/json'],
+        [b'application/json'],
         'multi',
         ['Books'],
         200,
