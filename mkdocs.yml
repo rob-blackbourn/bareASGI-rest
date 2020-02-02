@@ -1,0 +1,26 @@
+site_name: bareASGI-rest
+
+docs_dir: documentation
+site_dir: docs
+
+nav:
+  - index.md
+  - User Guide:
+    - user-guide/installation.md
+    - user-guide/usage.md
+  - API:
+    - bareasgi_rest: api/bareasgi_rest.md
+  
+markdown_extensions:
+  - admonition
+  - codehilite
+  - jetblack_markdown.autodoc:
+      class_from_init: true
+      ignore_dunder: true
+      ignore_private: true
+      ignore_all: false
+      ignore_inherited: false
+      prefer_docstring: true
+
+extra_css:
+    - css/custom.css
