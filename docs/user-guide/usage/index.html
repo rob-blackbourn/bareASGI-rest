@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../../img/favicon.ico">
+        <title>Usage - bareASGI-rest</title>
+        <link href="../../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../../css/font-awesome.min.css" rel="stylesheet">
+        <link href="../../css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+        <link href="../../css/custom.css" rel="stylesheet">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+        <script src="../../js/jquery-1.10.2.min.js" defer></script>
+        <script src="../../js/bootstrap-3.0.3.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script> 
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+            <div class="container">
+
+                <!-- Collapsed navigation -->
+                <div class="navbar-header">
+                    <!-- Expander button -->
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="../..">bareASGI-rest</a>
+                </div>
+
+                <!-- Expanded navigation -->
+                <div class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li >
+                                <a href="../..">Welcome</a>
+                            </li>
+                            <li class="dropdown active">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">User Guide <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../installation/">Installation</a>
+</li>
+                                    
+<li class="active">
+    <a href="./">Usage</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">API <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../../api/bareasgi_rest/">bareasgi_rest</a>
+</li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li >
+                                <a rel="next" href="../installation/">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li >
+                                <a rel="prev" href="../../api/bareasgi_rest/">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+        <li class="main active"><a href="#usage">Usage</a></li>
+            <li><a href="#creating-typed-dictionaries">Creating typed dictionaries</a></li>
+            <li><a href="#creating-the-api">Creating the API</a></li>
+            <li><a href="#adding-support-for-the-rest-router">Adding support for the REST router</a></li>
+            <li><a href="#creating-the-routes">Creating the routes</a></li>
+            <li><a href="#serving-the-api">Serving the API</a></li>
+    </ul>
+</div></div>
+                <div class="col-md-9" role="main">
+
+<h1 id="usage">Usage</h1>
+<p>The router provided by this package maps the arguments and
+types of request handlers.</p>
+<p>We will create a mock book repository.</p>
+<h2 id="creating-typed-dictionaries">Creating typed dictionaries</h2>
+<p>Here is the type of a book. We use <code>TypedDict</code> to allow automatic type discovery</p>
+<pre class="codehilite"><code class="language-python">from datetime import datetime
+try:
+    # Available in 3.8
+    from typing import TypedDict  # type:ignore
+except:
+    # Available in 3.7
+    from typing_extensions import TypedDict
+
+class Book(TypedDict):
+    &quot;&quot;&quot;A Book
+
+    Args:
+        book_id (int): The book id
+        title (str): The title
+        author (str): The author
+        published (datetime): The publication date
+    &quot;&quot;&quot;
+    book_id: int
+    title: str
+    author: str
+    published: datetime</code></pre>
+
+
+<p>Note: the docstring will be used to provide documentation for swagger.</p>
+<h2 id="creating-the-api">Creating the API</h2>
+<p>Now we can build the API.</p>
+<pre class="codehilite"><code class="language-python">from typing import Dict, List
+from urllib.error import HTTPError
+
+
+BOOKS: Dict[int, Book] = {}
+NEXT_ID: int = 0
+
+async def get_books() -&gt; List[Book]:
+    &quot;&quot;&quot;Get all the books.
+
+    This method gets all the books in the shop.
+
+    Returns:
+        List[Book]: All the books
+    &quot;&quot;&quot;
+    return list(BOOKS.values())
+
+
+async def get_book(book_id: int) -&gt; Book:
+    &quot;&quot;&quot;Get a book for a given id
+
+    Args:
+        book_id (int): The id of the book
+
+    Raises:
+        HTTPError: 404, when a book is not found
+
+    Returns:
+        Book: The book
+    &quot;&quot;&quot;
+
+    if book_id not in BOOKS:
+        raise HTTPError(None, 404, None, None, None)
+
+    return BOOKS[book_id]
+
+
+async def create_book(
+        author: str,
+        title: str,
+        published: datetime
+) -&gt; int:
+    &quot;&quot;&quot;Add a book
+
+    Args:
+        author (str): The author
+        title (str): The title
+        published (datetime): The publication date
+
+    Returns:
+        int: The id of the new book
+    &quot;&quot;&quot;
+    NEXT_ID += 1
+    BOOKS[NEXT_ID] = Book(
+        book_id=NEXT_ID,
+        title=title,
+        author=author,
+        published=published
+    )
+    return NEXT_ID
+
+
+async def update_book(
+        book_id: int,
+        author: str,
+        title: str,
+        published: datetime
+) -&gt; None:
+    &quot;&quot;&quot;Update a book
+
+    Args:
+        book_id (int): The id of the book to update
+        author (str): The new author
+        title (str): The title
+        published (datetime): The publication date
+
+    Raises:
+        HTTPError: 404, when a book is not found
+    &quot;&quot;&quot;
+    if book_id not in BOOKS:
+        raise HTTPError(None, 404, None, None, None)
+    BOOKS[book_id]['title'] = title
+    BOOKS[book_id]['author'] = author
+    BOOKS[book_id]['published'] = published</code></pre>
+
+
+<p>We can see that errors are handler by raising HTTPError
+from the <code>urllib.errors</code> standard library package. A convention has been applied such that the status code MUST
+appear before the message, separated by a comma.</p>
+<h2 id="adding-support-for-the-rest-router">Adding support for the REST router</h2>
+<p>Now we must create our application and add support for the router.</p>
+<pre class="codehilite"><code class="language-python">from bareasgi import Application
+from bareasgi_rest import RestHttpRouter, add_swagger_ui
+
+
+router = RestHttpRouter(
+    None,
+    title=&quot;Books&quot;,
+    version=&quot;1&quot;,
+    description=&quot;A book api&quot;,
+    base_path='/api/1',
+    tags=[
+        {
+            'name': 'Books',
+            'description': 'The book store API'
+        }
+    ]
+)
+app = Application(http_router=router)
+add_swagger_ui(app)</code></pre>
+
+
+<p>Note the <code>base_path</code> argument can be used to prefix all
+paths.</p>
+<p>The <code>RestHttpRouter</code> is a subclass of the basic router, so
+all those methods are also available.</p>
+<h2 id="creating-the-routes">Creating the routes</h2>
+<p>Now we can create the routes:</p>
+<pre class="codehilite"><code class="language-python">tags = ['Books']
+router.add_rest({'GET'}, '/books', get_books,tags=tags)
+router.add_rest({'GET'}, '/books/{bookId:int}', get_book, tags=tags)
+router.add_rest({'POST'}, '/books', create_book, tags=tags, status_code=201)
+router.add_rest({'PUT'}, '/books/{bookId:int}', update_book, tags=tags, status_code=204)</code></pre>
+
+
+<p>First we should note that the paths will be prefixed with the
+<code>base_path</code> provided to the router.</p>
+<p>Referring back to the implementation of <code>get_book</code> we can
+see  that the camel-case path variable <code>bookId</code> has been
+mapped to the snake-case <code>book_id</code> parameter. The JSON object provided in the body of the <code>create_book</code> will
+similarly map camel-cased properties to the snake-cased
+function parameters.</p>
+<p>We can also see how the status codes have been overridden
+for the <code>POST</code> and <code>PUT</code> endpoints, and all the routes
+have the "Books" tag for grouping in the UI.</p>
+<h2 id="serving-the-api">Serving the API</h2>
+<p>Finally we can serve the API:</p>
+<pre class="codehilite"><code class="language-python">import uvicorn
+
+uvicorn.run(app, port=9009)</code></pre>
+
+
+<p>Browsing to http://localhost/api/1/swagger we should see:</p>
+<p><img alt="Top Level" src="../screenshot1.png" /></p>
+<p>When we expand <code>GET /books/{bookId}</code> we can see all the
+information provided in the docstring and typing has been
+passed through to the swagger UI.</p>
+<p><img alt="GET /books/{bookId}" src="../screenshot2.png" /></p></div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>
+            var base_url = "../..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../../js/base.js" defer></script>
+        <script src="../../search/main.js" defer></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Search</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    From here you can search these documents. Enter
+                    your search terms below.
+                </p>
+                <form role="form">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="Keyboard Shortcuts Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Keyboard Shortcuts</h4>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>
