@@ -1,7 +1,15 @@
 site_name: bareASGI-rest
+site_description: REST support for bareASGI
+site_dir: docs
 
 docs_dir: documentation
-site_dir: docs
+
+repo_name: rob-blackbourn/bareASGI-rest
+repo_url: https://github.com/rob-blackbourn/bareASGI-rest
+edit_uri: ""
+
+theme:
+    name: 'material'
 
 nav:
   - index.md
@@ -21,6 +29,7 @@ markdown_extensions:
       ignore_all: false
       ignore_inherited: false
       prefer_docstring: true
+      template_folder: templates
 
 extra_css:
     - css/custom.css

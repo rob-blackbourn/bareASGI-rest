@@ -97,6 +97,30 @@ class RestHttpRouter(BasicHttpRouter):
     ) -> None:
         """Initialise the REST router
 
+        Here is an example of how to use the router.
+
+        ```python
+        from bareasgi import Application
+        from bareasgi_rest import RestHttpRouter, add_swagger_ui
+
+
+        router = RestHttpRouter(
+            None,
+            title="Books",
+            version="1",
+            description="A book api",
+            base_path='/api/1',
+            tags=[
+                {
+                    'name': 'Books',
+                    'description': 'The book store API'
+                }
+            ]
+        )
+        app = Application(http_router=router)
+        add_swagger_ui(app)
+        ```        
+
         Args:
             not_found_response (HttpResponse): The response sent when a route is
                 not found
