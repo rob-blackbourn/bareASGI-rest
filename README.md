@@ -1,7 +1,8 @@
 # bareASGI-rest
 
 This package provides enhanced support for writing REST
-APIs with [bareASGI](https://bareasgi.com).
+APIs with [bareASGI](https://bareasgi.com),
+(read the [docs](https://rob-blackbourn.github.io/bareASGI-rest/)).
 
 It includes:
 
@@ -9,8 +10,6 @@ It includes:
 * A swagger API endpoint
 
 This is a Python 3.7+ package, and is currently pre-release.
-
-The documentation is [here](https://rob-blackbourn.github.io/bareASGI-rest/).
 
 ## Installation
 

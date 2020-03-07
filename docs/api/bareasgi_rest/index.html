@@ -34,7 +34,7 @@
         <meta name="lang:search.tokenizer" content="[\s\-]+">
       
       <link rel="shortcut icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.0.4, mkdocs-material-4.6.0">
+      <meta name="generator" content="mkdocs-1.1, mkdocs-material-4.6.3">
     
     
       
@@ -42,12 +42,12 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/application.1b62728e.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/application.adb8469c.css">
       
       
     
     
-      <script src="../../assets/javascripts/modernizr.268332fc.js"></script>
+      <script src="../../assets/javascripts/modernizr.86422ebf.js"></script>
     
     
       
@@ -81,7 +81,7 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
     
-      <a href="#bareasgi_rest" tabindex="1" class="md-skip">
+      <a href="#bareasgi_rest" tabindex="0" class="md-skip">
         Skip to content
       </a>
     
@@ -90,7 +90,7 @@
   <nav class="md-header-nav md-grid">
     <div class="md-flex">
       <div class="md-flex__cell md-flex__cell--shrink">
-        <a href="../.." title="bareASGI-rest" class="md-header-nav__button md-logo">
+        <a href="../.." title="bareASGI-rest" aria-label="bareASGI-rest" class="md-header-nav__button md-logo">
           
             <i class="md-icon"></i>
           
@@ -121,7 +121,7 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="query" data-md-state="active">
+      <input type="text" class="md-search__input" aria-label="search" name="query" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="query" data-md-state="active">
       <label class="md-icon md-search__icon" for="__search"></label>
       <button type="reset" class="md-icon md-search__icon" data-md-component="reset" tabindex="-1">
         &#xE5CD;
@@ -340,13 +340,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#description" class="md-nav__link">
-    Description
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -404,6 +397,13 @@
           <li class="md-nav__item">
   <a href="#parameters_1" class="md-nav__link">
     Parameters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#description" class="md-nav__link">
+    Description
   </a>
   
 </li>
@@ -674,13 +674,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#description" class="md-nav__link">
-    Description
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -738,6 +731,13 @@
           <li class="md-nav__item">
   <a href="#parameters_1" class="md-nav__link">
     Parameters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#description" class="md-nav__link">
+    Description
   </a>
   
 </li>
@@ -978,22 +978,15 @@
 <p>
 <div class="autodoc-module">
 <h3 class="autodoc-title" id="module-bareasgi_rest">
-  <span class="autodoc-title-type">module </span><span class="autodoc-title-name">bareasgi_rest</span>
-</h3>
-<div class="autodoc-metadata">
-  <br />
-<strong class="autodoc-metadata-header">Package: </strong><span class="autodoc-metadata-value">bareasgi_rest</span>
-  <br />
-<strong class="autodoc-metadata-header">File: </strong><span class="autodoc-metadata-value">bareasgi_rest/<strong>init</strong>.py</span>
-</div>
+        <span class="autodoc-title-type">module </span><span class="autodoc-title-name">bareasgi_rest</span>
+    </h3>
 <h4 class="autodoc-title" id="summary">Summary</h4>
 <p>bareASGI-rest</p>
 <div class="autodoc-attributes">
 
 </div>
 <div class="autodoc-description">
-<h4 class="autodoc-title" id="description">Description</h4>
-<p>bareASGI-rest</p>
+
 </div>
 <div class="autodoc-examples">
 
@@ -1002,19 +995,12 @@
 <h3 class="autodoc-title" id="function-bareasgi_restadd_swagger_ui">
   <span class="autodoc-title-type">function </span><span class="autodoc-qualifier">bareasgi_rest</span><span class="autodoc-punctuation">.</span><span class="autodoc-title-name">add_swagger_ui</span>
 </h3>
-<div class="autodoc-metadata">
-  <strong class="autodoc-metadata-header">Module: </strong><span class="autodoc-metadata-value">bareasgi_rest.helpers</span>
-  <br />
-<strong class="autodoc-metadata-header">Package: </strong><span class="autodoc-metadata-value">bareasgi_rest</span>
-  <br />
-<strong class="autodoc-metadata-header">File: </strong><span class="autodoc-metadata-value">bareasgi_rest/helpers.py</span>
-</div>
 <h4 class="autodoc-title" id="summary_1">Summary</h4>
 <p>Add the Swagger UI</p>
 <code class="autodoc-signature"><span class="autodoc-qualifier">bareasgi_rest</span><span class="autodoc-punctuation">.</span><var class="autodoc-varname">add_swagger_ui</var><span class="autodoc-punctuation">(</span><var class="autodoc-varname">app</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Application</span><span class="autodoc-punctuation">)</span></code>
   <div class="autodoc-parameters">
 <h4 class="autodoc-title" id="parameters">Parameters</h4>
-<var class="autodoc-varname">app</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Application</span><span class="autodoc-punctuation"> (optional)</span><p>The bareASGI application</p>
+<var class="autodoc-varname">app</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Application</span><p>The bareASGI application</p>
 </div>
 <div class="autodoc-returns">
 <h4 class="autodoc-title" id="returns">Returns</h4>
@@ -1036,42 +1022,60 @@
 <h3 class="autodoc-title" id="class-resthttprouterbasichttprouter">
   <span class="autodoc-title-type">class </span><span class="autodoc-title-name">RestHttpRouter</span><span class="autodoc-punctuation">(</span><span class="autodoc-type">BasicHttpRouter</span><span class="autodoc-punctuation">)</span>
 </h3>
-<div class="autodoc-metadata">
-  <strong class="autodoc-metadata-header">Module: </strong><span class="autodoc-metadata-value">bareasgi_rest</span>
-  <br />
-<strong class="autodoc-metadata-header">Package: </strong><span class="autodoc-metadata-value">bareasgi_rest</span>
-  <br />
-<strong class="autodoc-metadata-header">File: </strong><span class="autodoc-metadata-value">bareasgi_rest/rest_router.py</span>
-</div>
 <h4 class="autodoc-title" id="summary_2">Summary</h4>
 <p>Initialise the REST router</p>
-<code class="autodoc-signature"><span class="autodoc-qualifier">bareasgi_rest</span><span class="autodoc-punctuation">.</span><var class="autodoc-varname">RestHttpRouter</var><span class="autodoc-punctuation">(</span><var class="autodoc-varname">*</var><span class="autodoc-punctuation">, </span><var class="autodoc-varname">title</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">version</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">description</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[str]</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">base_path</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">consumes</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">DictConsumes</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">produces</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">DictProduces</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">tags</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[List[Mapping[str</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">swagger_base_url</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[str]</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">typeface_url</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[str]</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">config</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[SwaggerConfig]</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">serializer_configs</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Dict[bytes, jetblack_serialization.config.SerializerConfig]</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">arg_serializer_config</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">SerializerConfig</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">arg_deserializer_factory</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Callable[[jetblack_serialization.config.SerializerConfigCallable[[strAnyAny]]</span><span class="autodoc-punctuation">)</span></code>
+<code class="autodoc-signature"><span class="autodoc-qualifier">bareasgi_rest</span><span class="autodoc-punctuation">.</span><var class="autodoc-varname">RestHttpRouter</var><span class="autodoc-punctuation">(</span><var class="autodoc-varname">not_found_response</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">HttpResponse</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">*</var><span class="autodoc-punctuation">, </span><var class="autodoc-varname">title</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">version</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">description</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[str]</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">base_path</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">consumes</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">DictConsumes</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">produces</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">DictProduces</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">tags</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[List[Mapping[str, Any]]]</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">swagger_base_url</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[str]</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">typeface_url</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[str]</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">config</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[SwaggerConfig]</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">serializer_configs</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Dict[bytes, jetblack_serialization.config.SerializerConfig]</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">arg_serializer_config</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">SerializerConfig</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">arg_deserializer_factory</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Callable[[jetblack_serialization.config.SerializerConfigCallable[[strAnyAny]]</span><span class="autodoc-punctuation">)</span></code>
   <div class="autodoc-parameters">
 <h4 class="autodoc-title" id="parameters_1">Parameters</h4>
-<var class="autodoc-varname">*</var><span class="autodoc-punctuation"> (optional)</span><p></p>
-<var class="autodoc-varname">title</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation"> (optional)</span><p>The title of the swagger documentation</p>
-<var class="autodoc-varname">version</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation"> (optional)</span><p>The version of the exposed API</p>
-<var class="autodoc-varname">description</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[str]</span><p>The API description. Defaults
+<var class="autodoc-varname">not_found_response</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">HttpResponse</span><p>The response sent when a route is
+not found</p>
+<var class="autodoc-varname">*</var><p></p>
+<var class="autodoc-varname">title</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><p>The title of the swagger documentation</p>
+<var class="autodoc-varname">version</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><p>The version of the exposed API</p>
+<var class="autodoc-varname">description</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[str]</span><span class="autodoc-punctuation"> (optional)</span><p>The API description. Defaults
 to None.</p>
-<var class="autodoc-varname">base_path</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><p>The base path of the API. Defaults to ''.</p>
-<var class="autodoc-varname">consumes</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">DictConsumes</span><p>A map of media types and
+<var class="autodoc-varname">base_path</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation"> (optional)</span><p>The base path of the API. Defaults to ''.</p>
+<var class="autodoc-varname">consumes</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">DictConsumes</span><span class="autodoc-punctuation"> (optional)</span><p>A map of media types and
 deserializers. Defaults to DEFAULT_CONSUMES.</p>
-<var class="autodoc-varname">produces</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">DictProduces</span><p>A map of media types and
+<var class="autodoc-varname">produces</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">DictProduces</span><span class="autodoc-punctuation"> (optional)</span><p>A map of media types and
 serializers. Defaults to DEFAULT_PRODUCES.</p>
-<var class="autodoc-varname">tags</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[List[Mapping[str</span><p>The available
+<var class="autodoc-varname">tags</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[List[Mapping[str, Any]]]</span><span class="autodoc-punctuation"> (optional)</span><p>The available
 tags. Defaults to None.</p>
-<var class="autodoc-varname">swagger_base_url</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[str]</span><p>The base url for the
+<var class="autodoc-varname">swagger_base_url</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[str]</span><span class="autodoc-punctuation"> (optional)</span><p>The base url for the
 swagger CDN. Defaults to DEFAULT_SWAGGER_BASE_URL.</p>
-<var class="autodoc-varname">typeface_url</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[str]</span><p>The base url for the
+<var class="autodoc-varname">typeface_url</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[str]</span><span class="autodoc-punctuation"> (optional)</span><p>The base url for the
 typeface. Defaults to DEFAULT_TYPEFACE_URL.</p>
-<var class="autodoc-varname">config</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[SwaggerConfig]</span><p>The swagger
+<var class="autodoc-varname">config</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[SwaggerConfig]</span><span class="autodoc-punctuation"> (optional)</span><p>The swagger
 configuration. Defaults to None.</p>
-<var class="autodoc-varname">serializer_configs</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Dict[bytes, jetblack_serialization.config.SerializerConfig]</span><p></p>
-<var class="autodoc-varname">arg_serializer_config</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">SerializerConfig</span><p></p>
-<var class="autodoc-varname">arg_deserializer_factory</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Callable[[jetblack_serialization.config.SerializerConfigCallable[[strAnyAny]]</span><p></p>
+<var class="autodoc-varname">serializer_configs</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Dict[bytes, jetblack_serialization.config.SerializerConfig]</span><span class="autodoc-punctuation"> (optional)</span><p></p>
+<var class="autodoc-varname">arg_serializer_config</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">SerializerConfig</span><span class="autodoc-punctuation"> (optional)</span><p></p>
+<var class="autodoc-varname">arg_deserializer_factory</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Callable[[jetblack_serialization.config.SerializerConfigCallable[[strAnyAny]]</span><span class="autodoc-punctuation"> (optional)</span><p></p>
 </div>
 <div class="autodoc-description">
+<h4 class="autodoc-title" id="description">Description</h4>
+<p>Here is an example of how to use the router.</p>
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span> <span class="nn">bareasgi</span> <span class="kn">import</span> <span class="n">Application</span>
+<span class="kn">from</span> <span class="nn">bareasgi_rest</span> <span class="kn">import</span> <span class="n">RestHttpRouter</span><span class="p">,</span> <span class="n">add_swagger_ui</span>
 
+
+<span class="n">router</span> <span class="o">=</span> <span class="n">RestHttpRouter</span><span class="p">(</span>
+    <span class="kc">None</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="s2">"Books"</span><span class="p">,</span>
+    <span class="n">version</span><span class="o">=</span><span class="s2">"1"</span><span class="p">,</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">"A book api"</span><span class="p">,</span>
+    <span class="n">base_path</span><span class="o">=</span><span class="s1">'/api/1'</span><span class="p">,</span>
+    <span class="n">tags</span><span class="o">=</span><span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s1">'name'</span><span class="p">:</span> <span class="s1">'Books'</span><span class="p">,</span>
+            <span class="s1">'description'</span><span class="p">:</span> <span class="s1">'The book store API'</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+<span class="n">app</span> <span class="o">=</span> <span class="n">Application</span><span class="p">(</span><span class="n">http_router</span><span class="o">=</span><span class="n">router</span><span class="p">)</span>
+<span class="n">add_swagger_ui</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+</code></pre>
+</div>
 </div>
 <div class="autodoc-attributes">
 
@@ -1083,9 +1087,9 @@ configuration. Defaults to None.</p>
 </h3>
 <h4 class="autodoc-title" id="summary_3">Summary</h4>
 <p>The response when a handler could not be found for a method/path</p>
-<code><var class="autodoc-varname">not_found_response</var><span class="autodoc-punctuation"> -&gt; </span><span class="autodoc-vartype">Union[intTuple[intUnionListTuple[bytes, bytes]], NoneTypeTuple[intUnionListTuple[bytes, bytes]], NoneTypeUnionAsyncIterable[bytes], NoneTypeTuple[intUnionListTuple[bytes, bytes]], NoneTypeUnionAsyncIterable[bytes], NoneTypeUnionIterableTuple[strListTuple[bytes, bytes]]]], NoneType]]]</span></code>
+<code><var class="autodoc-varname">not_found_response</var><span class="autodoc-punctuation"> -&gt; </span><span class="autodoc-vartype">HttpResponse</span></code>
     <br />
-<code><var class="autodoc-varname">not_found_response</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Union[intTuple[intUnionListTuple[bytes, bytes]], NoneTypeTuple[intUnionListTuple[bytes, bytes]], NoneTypeUnionAsyncIterable[bytes], NoneTypeTuple[intUnionListTuple[bytes, bytes]], NoneTypeUnionAsyncIterable[bytes], NoneTypeUnionIterableTuple[strListTuple[bytes, bytes]]]], NoneType]]]</span><span class="autodoc-punctuation"> = ...</span></code><div class="autodoc-raises">
+<code><var class="autodoc-varname">not_found_response</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">HttpResponse</span><span class="autodoc-punctuation"> = ...</span></code><div class="autodoc-raises">
 
 </div>
 <div class="autodoc-description">
@@ -1102,21 +1106,14 @@ configuration. Defaults to None.</p>
 <h3 class="autodoc-title" id="method-resthttprouteradd">
   <span class="autodoc-title-type">method </span><span class="autodoc-qualifier">RestHttpRouter</span><span class="autodoc-punctuation">.</span><span class="autodoc-title-name">add</span>
 </h3>
-<div class="autodoc-metadata">
-  <strong class="autodoc-metadata-header">Module: </strong><span class="autodoc-metadata-value">bareasgi.basic_router.http_router</span>
-  <br />
-<strong class="autodoc-metadata-header">Package: </strong><span class="autodoc-metadata-value">bareasgi.basic_router</span>
-  <br />
-<strong class="autodoc-metadata-header">File: </strong><span class="autodoc-metadata-value">bareasgi/basic_router/http_router.py</span>
-</div>
 <h4 class="autodoc-title" id="summary_4">Summary</h4>
-<p>Add a handler</p>
-<code class="autodoc-signature"><span class="autodoc-qualifier">RestHttpRouter</span><span class="autodoc-punctuation">.</span><var class="autodoc-varname">add</var><span class="autodoc-punctuation">(</span><var class="autodoc-varname">methods</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">AbstractSet[str]</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">path</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">callback</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">CallableMapping[strAnyUnionMutableMapping[strAny], NoneTypeMapping[strAnyAsyncIterable[bytesAwaitableUnion[intTuple[intUnionListTuple[bytes, bytes]], NoneTypeTuple[intUnionListTuple[bytes, bytes]], NoneTypeUnionAsyncIterable[bytes], NoneTypeTuple[intUnionListTuple[bytes, bytes]], NoneTypeUnionAsyncIterable[bytes], NoneTypeUnionIterableTuple[strListTuple[bytes, bytes]]]], NoneType]]]]]</span><span class="autodoc-punctuation">)</span></code>
+<p>Add an HTTP request handler</p>
+<code class="autodoc-signature"><span class="autodoc-qualifier">RestHttpRouter</span><span class="autodoc-punctuation">.</span><var class="autodoc-varname">add</var><span class="autodoc-punctuation">(</span><var class="autodoc-varname">methods</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">AbstractSet[str]</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">path</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">callback</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">HttpRequestCallback</span><span class="autodoc-punctuation">)</span></code>
   <div class="autodoc-parameters">
 <h4 class="autodoc-title" id="parameters_2">Parameters</h4>
-<var class="autodoc-varname">methods</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">AbstractSet[str]</span><span class="autodoc-punctuation"> (optional)</span><p>The supported HTTP methods</p>
-<var class="autodoc-varname">path</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation"> (optional)</span><p>The path</p>
-<var class="autodoc-varname">callback</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">CallableMapping[strAnyUnionMutableMapping[strAny], NoneTypeMapping[strAnyAsyncIterable[bytesAwaitableUnion[intTuple[intUnionListTuple[bytes, bytes]], NoneTypeTuple[intUnionListTuple[bytes, bytes]], NoneTypeUnionAsyncIterable[bytes], NoneTypeTuple[intUnionListTuple[bytes, bytes]], NoneTypeUnionAsyncIterable[bytes], NoneTypeUnionIterableTuple[strListTuple[bytes, bytes]]]], NoneType]]]]]</span><span class="autodoc-punctuation"> (optional)</span><p>The request handler</p>
+<var class="autodoc-varname">methods</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">AbstractSet[str]</span><p>The supported HTTP methods.</p>
+<var class="autodoc-varname">path</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><p>The path.</p>
+<var class="autodoc-varname">callback</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">HttpRequestCallback</span><p>The request handler.</p>
 </div>
 <div class="autodoc-returns">
 <h4 class="autodoc-title" id="returns_1">Returns</h4>
@@ -1137,36 +1134,29 @@ configuration. Defaults to None.</p>
 <h3 class="autodoc-title" id="method-resthttprouteradd_rest">
   <span class="autodoc-title-type">method </span><span class="autodoc-qualifier">RestHttpRouter</span><span class="autodoc-punctuation">.</span><span class="autodoc-title-name">add_rest</span>
 </h3>
-<div class="autodoc-metadata">
-  <strong class="autodoc-metadata-header">Module: </strong><span class="autodoc-metadata-value">bareasgi_rest.rest_router</span>
-  <br />
-<strong class="autodoc-metadata-header">Package: </strong><span class="autodoc-metadata-value">bareasgi_rest</span>
-  <br />
-<strong class="autodoc-metadata-header">File: </strong><span class="autodoc-metadata-value">bareasgi_rest/rest_router.py</span>
-</div>
 <h4 class="autodoc-title" id="summary_5">Summary</h4>
 <p>Register a callback to a method and path</p>
 <code class="autodoc-signature"><span class="autodoc-qualifier">RestHttpRouter</span><span class="autodoc-punctuation">.</span><var class="autodoc-varname">add_rest</var><span class="autodoc-punctuation">(</span><var class="autodoc-varname">methods</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">AbstractSet[str]</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">path</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">callback</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">RestCallback</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">*</var><span class="autodoc-punctuation">, </span><var class="autodoc-varname">consumes</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">List[bytes]</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">produces</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">List[bytes]</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">collection_format</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">tags</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[List[str]]</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">status_code</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">int</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">status_description</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">serializer_config</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">UnionDict[bytes, jetblack_serialization.config.SerializerConfig], NoneType]</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">arg_serializer_config</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Union[jetblack_serialization.config.SerializerConfig, NoneType]</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">arg_deserializer_factory</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">UnionCallable[[jetblack_serialization.config.SerializerConfigCallable[[strAnyAny]], NoneType]</span><span class="autodoc-punctuation">)</span></code>
   <div class="autodoc-parameters">
 <h4 class="autodoc-title" id="parameters_3">Parameters</h4>
-<var class="autodoc-varname">methods</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">AbstractSet[str]</span><span class="autodoc-punctuation"> (optional)</span><p>The set of methods</p>
-<var class="autodoc-varname">path</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation"> (optional)</span><p>The path</p>
-<var class="autodoc-varname">callback</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">RestCallback</span><span class="autodoc-punctuation"> (optional)</span><p>The callback</p>
-<var class="autodoc-varname">*</var><span class="autodoc-punctuation"> (optional)</span><p></p>
-<var class="autodoc-varname">consumes</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">List[bytes]</span><p>The content media type. Defaults
+<var class="autodoc-varname">methods</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">AbstractSet[str]</span><p>The set of methods</p>
+<var class="autodoc-varname">path</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><p>The path</p>
+<var class="autodoc-varname">callback</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">RestCallback</span><p>The callback</p>
+<var class="autodoc-varname">*</var><p></p>
+<var class="autodoc-varname">consumes</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">List[bytes]</span><span class="autodoc-punctuation"> (optional)</span><p>The content media type. Defaults
 to b'application/json'.</p>
-<var class="autodoc-varname">produces</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">List[bytes]</span><p>The accept media type. Defaults to
+<var class="autodoc-varname">produces</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">List[bytes]</span><span class="autodoc-punctuation"> (optional)</span><p>The accept media type. Defaults to
 b'application/json'.</p>
-<var class="autodoc-varname">collection_format</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><p>The format of repeated values.
+<var class="autodoc-varname">collection_format</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation"> (optional)</span><p>The format of repeated values.
 Defaults to DEFAULT_COLLECTION_FORMAT.</p>
-<var class="autodoc-varname">tags</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[List[str]]</span><p>A list of tags. Defaults to
+<var class="autodoc-varname">tags</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[List[str]]</span><span class="autodoc-punctuation"> (optional)</span><p>A list of tags. Defaults to
 None.</p>
-<var class="autodoc-varname">status_code</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">int</span><p>The ok status code. Defaults to 200.</p>
-<var class="autodoc-varname">status_description</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><p>The ok status message. Defaults
+<var class="autodoc-varname">status_code</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">int</span><span class="autodoc-punctuation"> (optional)</span><p>The ok status code. Defaults to 200.</p>
+<var class="autodoc-varname">status_description</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation"> (optional)</span><p>The ok status message. Defaults
 to 'OK'.</p>
-<var class="autodoc-varname">serializer_config</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">UnionDict[bytes, jetblack_serialization.config.SerializerConfig], NoneType]</span><p></p>
-<var class="autodoc-varname">arg_serializer_config</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Union[jetblack_serialization.config.SerializerConfig, NoneType]</span><p></p>
-<var class="autodoc-varname">arg_deserializer_factory</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">UnionCallable[[jetblack_serialization.config.SerializerConfigCallable[[strAnyAny]], NoneType]</span><p></p>
+<var class="autodoc-varname">serializer_config</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">UnionDict[bytes, jetblack_serialization.config.SerializerConfig], NoneType]</span><span class="autodoc-punctuation"> (optional)</span><p></p>
+<var class="autodoc-varname">arg_serializer_config</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Union[jetblack_serialization.config.SerializerConfig, NoneType]</span><span class="autodoc-punctuation"> (optional)</span><p></p>
+<var class="autodoc-varname">arg_deserializer_factory</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">UnionCallable[[jetblack_serialization.config.SerializerConfigCallable[[strAnyAny]], NoneType]</span><span class="autodoc-punctuation"> (optional)</span><p></p>
 </div>
 <div class="autodoc-returns">
 <h4 class="autodoc-title" id="returns_2">Returns</h4>
@@ -1187,21 +1177,14 @@ to 'OK'.</p>
 <h3 class="autodoc-title" id="method-resthttprouteradd_route">
   <span class="autodoc-title-type">method </span><span class="autodoc-qualifier">RestHttpRouter</span><span class="autodoc-punctuation">.</span><span class="autodoc-title-name">add_route</span>
 </h3>
-<div class="autodoc-metadata">
-  <strong class="autodoc-metadata-header">Module: </strong><span class="autodoc-metadata-value">bareasgi.basic_router.http_router</span>
-  <br />
-<strong class="autodoc-metadata-header">Package: </strong><span class="autodoc-metadata-value">bareasgi.basic_router</span>
-  <br />
-<strong class="autodoc-metadata-header">File: </strong><span class="autodoc-metadata-value">bareasgi/basic_router/http_router.py</span>
-</div>
 <h4 class="autodoc-title" id="summary_6">Summary</h4>
 <p>Add a route to a callback for a method and path definition</p>
 <code class="autodoc-signature"><span class="autodoc-qualifier">RestHttpRouter</span><span class="autodoc-punctuation">.</span><var class="autodoc-varname">add_route</var><span class="autodoc-punctuation">(</span><var class="autodoc-varname">method</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">path_definition</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">PathDefinition</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">callback</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">CallableMapping[strAnyUnionMutableMapping[strAny], NoneTypeMapping[strAnyAsyncIterable[bytesAwaitableUnion[intTuple[intUnionListTuple[bytes, bytes]], NoneTypeTuple[intUnionListTuple[bytes, bytes]], NoneTypeUnionAsyncIterable[bytes], NoneTypeTuple[intUnionListTuple[bytes, bytes]], NoneTypeUnionAsyncIterable[bytes], NoneTypeUnionIterableTuple[strListTuple[bytes, bytes]]]], NoneType]]]]]</span><span class="autodoc-punctuation">)</span></code>
   <div class="autodoc-parameters">
 <h4 class="autodoc-title" id="parameters_4">Parameters</h4>
-<var class="autodoc-varname">method</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation"> (optional)</span><p>The method</p>
-<var class="autodoc-varname">path_definition</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">PathDefinition</span><span class="autodoc-punctuation"> (optional)</span><p>The path definition</p>
-<var class="autodoc-varname">callback</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">CallableMapping[strAnyUnionMutableMapping[strAny], NoneTypeMapping[strAnyAsyncIterable[bytesAwaitableUnion[intTuple[intUnionListTuple[bytes, bytes]], NoneTypeTuple[intUnionListTuple[bytes, bytes]], NoneTypeUnionAsyncIterable[bytes], NoneTypeTuple[intUnionListTuple[bytes, bytes]], NoneTypeUnionAsyncIterable[bytes], NoneTypeUnionIterableTuple[strListTuple[bytes, bytes]]]], NoneType]]]]]</span><span class="autodoc-punctuation"> (optional)</span><p>The callback</p>
+<var class="autodoc-varname">method</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><p>The method</p>
+<var class="autodoc-varname">path_definition</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">PathDefinition</span><p>The path definition</p>
+<var class="autodoc-varname">callback</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">CallableMapping[strAnyUnionMutableMapping[strAny], NoneTypeMapping[strAnyAsyncIterable[bytesAwaitableUnion[intTuple[intUnionListTuple[bytes, bytes]], NoneTypeTuple[intUnionListTuple[bytes, bytes]], NoneTypeUnionAsyncIterable[bytes], NoneTypeTuple[intUnionListTuple[bytes, bytes]], NoneTypeUnionAsyncIterable[bytes], NoneTypeUnionIterableTuple[strListTuple[bytes, bytes]]]], NoneType]]]]]</span><p>The callback</p>
 </div>
 <div class="autodoc-returns">
 <h4 class="autodoc-title" id="returns_3">Returns</h4>
@@ -1222,25 +1205,19 @@ to 'OK'.</p>
 <h3 class="autodoc-title" id="method-resthttprouterresolve">
   <span class="autodoc-title-type">method </span><span class="autodoc-qualifier">RestHttpRouter</span><span class="autodoc-punctuation">.</span><span class="autodoc-title-name">resolve</span>
 </h3>
-<div class="autodoc-metadata">
-  <strong class="autodoc-metadata-header">Module: </strong><span class="autodoc-metadata-value">bareasgi.basic_router.http_router</span>
-  <br />
-<strong class="autodoc-metadata-header">Package: </strong><span class="autodoc-metadata-value">bareasgi.basic_router</span>
-  <br />
-<strong class="autodoc-metadata-header">File: </strong><span class="autodoc-metadata-value">bareasgi/basic_router/http_router.py</span>
-</div>
 <h4 class="autodoc-title" id="summary_7">Summary</h4>
 <p>Resolve a request to a handler with the route matches</p>
 <code class="autodoc-signature"><span class="autodoc-qualifier">RestHttpRouter</span><span class="autodoc-punctuation">.</span><var class="autodoc-varname">resolve</var><span class="autodoc-punctuation">(</span><var class="autodoc-varname">method</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">path</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">)</span></code>
   <div class="autodoc-parameters">
 <h4 class="autodoc-title" id="parameters_5">Parameters</h4>
-<var class="autodoc-varname">method</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation"> (optional)</span><p>The HTTP method.</p>
-<var class="autodoc-varname">path</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation"> (optional)</span><p>The path</p>
+<var class="autodoc-varname">method</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><p>The HTTP method.</p>
+<var class="autodoc-varname">path</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><p>The path.</p>
 </div>
 <div class="autodoc-returns">
 <h4 class="autodoc-title" id="returns_4">Returns</h4>
-<span class="autodoc-vartype">TupleUnionCallableMapping[strAnyUnionMutableMapping[strAny], NoneTypeMapping[strAnyAsyncIterable[bytesAwaitableUnion[intTuple[intUnionListTuple[bytes, bytes]], NoneTypeTuple[intUnionListTuple[bytes, bytes]], NoneTypeUnionAsyncIterable[bytes], NoneTypeTuple[intUnionListTuple[bytes, bytes]], NoneTypeUnionAsyncIterable[bytes], NoneTypeUnionIterableTuple[strListTuple[bytes, bytes]]]], NoneType]]]]], NoneTypeUnionMapping[strAny], NoneType]]</span><span class="autodoc-punctuation">: </span>
-<span class="autodoc-summary">A handler and the optional route matches.</span>
+<span class="autodoc-vartype">Tuple[Optional[HttpRequestCallback], Optional[RouteMatches]]</span><span class="autodoc-punctuation">: </span>
+<span class="autodoc-summary">A
+handler and the optional route matches.</span>
 </div>
 <div class="autodoc-raises">
 
@@ -1262,32 +1239,26 @@ to 'OK'.</p>
 <h3 class="autodoc-title" id="class-swaggerconfig">
   <span class="autodoc-title-type">class </span><span class="autodoc-title-name">SwaggerConfig</span>
 </h3>
-<div class="autodoc-metadata">
-  <strong class="autodoc-metadata-header">Module: </strong><span class="autodoc-metadata-value">bareasgi_rest</span>
-  <br />
-<strong class="autodoc-metadata-header">Package: </strong><span class="autodoc-metadata-value">bareasgi_rest.swagger</span>
-  <br />
-<strong class="autodoc-metadata-header">File: </strong><span class="autodoc-metadata-value">bareasgi_rest/swagger/config.py</span>
-</div>
 <h4 class="autodoc-title" id="summary_8">Summary</h4>
 <p>The Swagger UI Configuration</p>
-<code class="autodoc-signature"><span class="autodoc-qualifier">bareasgi_rest.swagger</span><span class="autodoc-punctuation">.</span><var class="autodoc-varname">SwaggerConfig</var><span class="autodoc-punctuation">(</span><var class="autodoc-varname">validator_url</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[str]</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">supported_submit_methods</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[List[str]]</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">display_operation_id</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">bool</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">display_request_duration</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">bool</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">doc_expansion</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">oauth2</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[SwaggerOauth2Config]</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">serialize_key</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Callable[[str], str]</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">deserialize_key</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Callable[[str], str]</span><span class="autodoc-punctuation">)</span></code>
+<code class="autodoc-signature"><span class="autodoc-qualifier">bareasgi_rest.swagger</span><span class="autodoc-punctuation">.</span><var class="autodoc-varname">SwaggerConfig</var><span class="autodoc-punctuation">(</span><var class="autodoc-varname">title</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">validator_url</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[str]</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">supported_submit_methods</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[List[str]]</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">display_operation_id</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">bool</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">display_request_duration</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">bool</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">doc_expansion</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">oauth2</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[SwaggerOauth2Config]</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">serialize_key</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Callable[[str], str]</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">deserialize_key</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Callable[[str], str]</span><span class="autodoc-punctuation">)</span></code>
   <div class="autodoc-parameters">
 <h4 class="autodoc-title" id="parameters_6">Parameters</h4>
-<var class="autodoc-varname">validator_url</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[str]</span><p>The url of the validator,
+<var class="autodoc-varname">title</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation"> (optional)</span><p>The page title, defaults to "The REST API"</p>
+<var class="autodoc-varname">validator_url</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[str]</span><span class="autodoc-punctuation"> (optional)</span><p>The url of the validator,
 defaults to None</p>
-<var class="autodoc-varname">supported_submit_methods</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[List[str]]</span><p>The supported
+<var class="autodoc-varname">supported_submit_methods</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[List[str]]</span><span class="autodoc-punctuation"> (optional)</span><p>The supported
 submit methods, defaults to None</p>
-<var class="autodoc-varname">display_operation_id</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">bool</span><p>Whether operation ids should be
+<var class="autodoc-varname">display_operation_id</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">bool</span><span class="autodoc-punctuation"> (optional)</span><p>Whether operation ids should be
 displayed, defaults to False</p>
-<var class="autodoc-varname">display_request_duration</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">bool</span><p>Whether the duration of the
+<var class="autodoc-varname">display_request_duration</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">bool</span><span class="autodoc-punctuation"> (optional)</span><p>Whether the duration of the
 request should be displayed, defaults to False</p>
-<var class="autodoc-varname">doc_expansion</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><p>How the methods should be displayed,
+<var class="autodoc-varname">doc_expansion</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation"> (optional)</span><p>How the methods should be displayed,
 defaults to "list"</p>
-<var class="autodoc-varname">oauth2</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[SwaggerOauth2Config]</span><p>Optional oauth2
+<var class="autodoc-varname">oauth2</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[SwaggerOauth2Config]</span><span class="autodoc-punctuation"> (optional)</span><p>Optional oauth2
 config, defaults to None</p>
-<var class="autodoc-varname">serialize_key</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Callable[[str], str]</span><p>The function to serialize keys</p>
-<var class="autodoc-varname">deserialize_key</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Callable[[str], str]</span><p>The function to deserialize keys</p>
+<var class="autodoc-varname">serialize_key</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Callable[[str], str]</span><span class="autodoc-punctuation"> (optional)</span><p>The function to serialize keys</p>
+<var class="autodoc-varname">deserialize_key</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Callable[[str], str]</span><span class="autodoc-punctuation"> (optional)</span><p>The function to deserialize keys</p>
 </div>
 <div class="autodoc-description">
 
@@ -1309,21 +1280,15 @@ config, defaults to None</p>
 <h3 class="autodoc-title" id="class-swaggeroauth2config">
   <span class="autodoc-title-type">class </span><span class="autodoc-title-name">SwaggerOauth2Config</span>
 </h3>
-<div class="autodoc-metadata">
-  <strong class="autodoc-metadata-header">Module: </strong><span class="autodoc-metadata-value">bareasgi_rest</span>
-  <br />
-<strong class="autodoc-metadata-header">Package: </strong><span class="autodoc-metadata-value">bareasgi_rest.swagger</span>
-  <br />
-<strong class="autodoc-metadata-header">File: </strong><span class="autodoc-metadata-value">bareasgi_rest/swagger/config.py</span>
-</div>
 <h4 class="autodoc-title" id="summary_9">Summary</h4>
 <p>Swagger Oauth2 config</p>
-<code class="autodoc-signature"><span class="autodoc-qualifier">bareasgi_rest.swagger</span><span class="autodoc-punctuation">.</span><var class="autodoc-varname">SwaggerOauth2Config</var><span class="autodoc-punctuation">(</span><var class="autodoc-varname">realm</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">app_name</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">redirect_url</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">)</span></code>
+<code class="autodoc-signature"><span class="autodoc-qualifier">bareasgi_rest.swagger</span><span class="autodoc-punctuation">.</span><var class="autodoc-varname">SwaggerOauth2Config</var><span class="autodoc-punctuation">(</span><var class="autodoc-varname">client_id</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">realm</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">app_name</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">, </span><var class="autodoc-varname">redirect_url</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">)</span></code>
   <div class="autodoc-parameters">
 <h4 class="autodoc-title" id="parameters_7">Parameters</h4>
-<var class="autodoc-varname">realm</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation"> (optional)</span><p>The realm</p>
-<var class="autodoc-varname">app_name</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation"> (optional)</span><p>The application name</p>
-<var class="autodoc-varname">redirect_url</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation"> (optional)</span><p>The redirect url</p>
+<var class="autodoc-varname">client_id</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><p>The client id</p>
+<var class="autodoc-varname">realm</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><p>The realm</p>
+<var class="autodoc-varname">app_name</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><p>The application name</p>
+<var class="autodoc-varname">redirect_url</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><p>The redirect url</p>
 </div>
 <div class="autodoc-description">
 
@@ -1387,9 +1352,9 @@ config, defaults to None</p>
       <div class="md-footer-copyright">
         
         powered by
-        <a href="https://www.mkdocs.org">MkDocs</a>
+        <a href="https://www.mkdocs.org" target="_blank" rel="noopener">MkDocs</a>
         and
-        <a href="https://squidfunk.github.io/mkdocs-material/">
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
           Material for MkDocs</a>
       </div>
       
@@ -1399,9 +1364,9 @@ config, defaults to None</p>
       
     </div>
     
-      <script src="../../assets/javascripts/application.808e90bb.js"></script>
+      <script src="../../assets/javascripts/application.c33a9706.js"></script>
       
-      <script>app.initialize({version:"1.0.4",url:{base:"../.."}})</script>
+      <script>app.initialize({version:"1.1",url:{base:"../.."}})</script>
       
     
   </body>
