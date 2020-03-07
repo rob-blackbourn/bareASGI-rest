@@ -213,6 +213,12 @@ class RestHttpRouter(BasicHttpRouter):
             status_code (int, optional): The ok status code. Defaults to 200.
             status_description (str, optional): The ok status message. Defaults
                 to 'OK'.
+            serializer_config (Optional[DictSerializerConfig], optional): The
+                serializer configuration for content. Defaults to None.
+            arg_serializer_config (Optional[SerializerConfig], optional): The
+                serializer configuration for arguments. Defaults to None.
+            arg_deserializer_factory (Optional[ArgDeserializerFactory], optional): The
+                deserializer configuration for arguments. Defaults to None.
         """
         LOGGER.debug('Adding route for %s on "%s"', methods, path)
 

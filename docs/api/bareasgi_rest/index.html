@@ -1207,11 +1207,11 @@ DEFAULT_ARG_DESERIALIZER_FACTORY.</p>
 <div class="autodoc-argument">
         <var class="autodoc-varname">status_description</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">,</span></div>
 <div class="autodoc-argument">
-        <var class="autodoc-varname">serializer_config</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">UnionDict[bytes, jetblack_serialization.config.SerializerConfig], NoneType]</span><span class="autodoc-punctuation">,</span></div>
+        <var class="autodoc-varname">serializer_config</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[DictSerializerConfig]</span><span class="autodoc-punctuation">,</span></div>
 <div class="autodoc-argument">
-        <var class="autodoc-varname">arg_serializer_config</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Union[jetblack_serialization.config.SerializerConfig, NoneType]</span><span class="autodoc-punctuation">,</span></div>
+        <var class="autodoc-varname">arg_serializer_config</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[SerializerConfig]</span><span class="autodoc-punctuation">,</span></div>
 <div class="autodoc-argument">
-        <var class="autodoc-varname">arg_deserializer_factory</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">UnionCallable[[jetblack_serialization.config.SerializerConfigCallable[[strAnyAny]], NoneType]</span></div>
+        <var class="autodoc-varname">arg_deserializer_factory</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[ArgDeserializerFactory]</span></div>
 <span class="autodoc-punctuation">)</span><span class="autodoc-punctuation"> -&gt; </span><span class="autodoc-vartype">Any</span></div>
 <br />
 <div class="autodoc-parameters">
@@ -1230,9 +1230,12 @@ None.</p>
 <var class="autodoc-varname">status_code</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">int</span><span class="autodoc-punctuation"> (optional)</span><p>The ok status code. Defaults to 200.</p>
 <var class="autodoc-varname">status_description</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation"> (optional)</span><p>The ok status message. Defaults
 to 'OK'.</p>
-<var class="autodoc-varname">serializer_config</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">UnionDict[bytes, jetblack_serialization.config.SerializerConfig], NoneType]</span><span class="autodoc-punctuation"> (optional)</span><p></p>
-<var class="autodoc-varname">arg_serializer_config</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Union[jetblack_serialization.config.SerializerConfig, NoneType]</span><span class="autodoc-punctuation"> (optional)</span><p></p>
-<var class="autodoc-varname">arg_deserializer_factory</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">UnionCallable[[jetblack_serialization.config.SerializerConfigCallable[[strAnyAny]], NoneType]</span><span class="autodoc-punctuation"> (optional)</span><p></p>
+<var class="autodoc-varname">serializer_config</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[DictSerializerConfig]</span><span class="autodoc-punctuation"> (optional)</span><p>The
+serializer configuration for content. Defaults to None.</p>
+<var class="autodoc-varname">arg_serializer_config</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[SerializerConfig]</span><span class="autodoc-punctuation"> (optional)</span><p>The
+serializer configuration for arguments. Defaults to None.</p>
+<var class="autodoc-varname">arg_deserializer_factory</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[ArgDeserializerFactory]</span><span class="autodoc-punctuation"> (optional)</span><p>The
+deserializer configuration for arguments. Defaults to None.</p>
 </div>
 <div class="autodoc-returns">
 <h4 class="autodoc-title" id="returns_2">Returns<a class="headerlink" href="#returns_2" title="Permanent link">&para;</a></h4>
