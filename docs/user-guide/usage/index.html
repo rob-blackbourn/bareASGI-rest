@@ -448,11 +448,11 @@
               
                 
                 
-                <h1 id="usage">Usage</h1>
+                <h1 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h1>
 <p>The router provided by this package maps the arguments and
 types of request handlers.</p>
 <p>We will create a mock book repository.</p>
-<h2 id="creating-typed-dictionaries">Creating typed dictionaries</h2>
+<h2 id="creating-typed-dictionaries">Creating typed dictionaries<a class="headerlink" href="#creating-typed-dictionaries" title="Permanent link">&para;</a></h2>
 <p>Here is the type of a book. We use <code>TypedDict</code> to allow automatic type discovery</p>
 <div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
 <span class="k">try</span><span class="p">:</span>
@@ -479,7 +479,7 @@ types of request handlers.</p>
 
 
 <p>Note: the docstring will be used to provide documentation for swagger.</p>
-<h2 id="creating-the-api">Creating the API</h2>
+<h2 id="creating-the-api">Creating the API<a class="headerlink" href="#creating-the-api" title="Permanent link">&para;</a></h2>
 <p>Now we can build the API.</p>
 <div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span>
 <span class="kn">from</span> <span class="nn">urllib.error</span> <span class="kn">import</span> <span class="n">HTTPError</span>
@@ -571,7 +571,7 @@ types of request handlers.</p>
 <p>We can see that errors are handler by raising HTTPError
 from the <code>urllib.errors</code> standard library package. A convention has been applied such that the status code MUST
 appear before the message, separated by a comma.</p>
-<h2 id="adding-support-for-the-rest-router">Adding support for the REST router</h2>
+<h2 id="adding-support-for-the-rest-router">Adding support for the REST router<a class="headerlink" href="#adding-support-for-the-rest-router" title="Permanent link">&para;</a></h2>
 <p>Now we must create our application and add support for the router.</p>
 <div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">bareasgi</span> <span class="kn">import</span> <span class="n">Application</span>
 <span class="kn">from</span> <span class="nn">bareasgi_rest</span> <span class="kn">import</span> <span class="n">RestHttpRouter</span><span class="p">,</span> <span class="n">add_swagger_ui</span>
@@ -599,7 +599,7 @@ appear before the message, separated by a comma.</p>
 paths.</p>
 <p>The <code>RestHttpRouter</code> is a subclass of the basic router, so
 all those methods are also available.</p>
-<h2 id="creating-the-routes">Creating the routes</h2>
+<h2 id="creating-the-routes">Creating the routes<a class="headerlink" href="#creating-the-routes" title="Permanent link">&para;</a></h2>
 <p>Now we can create the routes:</p>
 <div class="codehilite"><pre><span></span><code><span class="n">tags</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Books&#39;</span><span class="p">]</span>
 <span class="n">router</span><span class="o">.</span><span class="n">add_rest</span><span class="p">({</span><span class="s1">&#39;GET&#39;</span><span class="p">},</span> <span class="s1">&#39;/books&#39;</span><span class="p">,</span> <span class="n">get_books</span><span class="p">,</span><span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">)</span>
@@ -619,7 +619,7 @@ function parameters.</p>
 <p>We can also see how the status codes have been overridden
 for the <code>POST</code> and <code>PUT</code> endpoints, and all the routes
 have the "Books" tag for grouping in the UI.</p>
-<h2 id="serving-the-api">Serving the API</h2>
+<h2 id="serving-the-api">Serving the API<a class="headerlink" href="#serving-the-api" title="Permanent link">&para;</a></h2>
 <p>Finally we can serve the API:</p>
 <div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">uvicorn</span>
 

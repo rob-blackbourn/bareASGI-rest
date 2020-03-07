@@ -21,15 +21,18 @@ nav:
   
 markdown_extensions:
   - admonition
-  - codehilite
+  - codehilite:
+      guess_lang: false
   - jetblack_markdown.autodoc:
       class_from_init: true
       ignore_dunder: true
       ignore_private: true
       ignore_all: false
       ignore_inherited: false
+      follow_module_tree: false
       prefer_docstring: true
-      template_folder: templates
-
+  - toc:
+      permalink: true
+    
 extra_css:
     - css/custom.css
