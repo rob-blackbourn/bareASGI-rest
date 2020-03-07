@@ -1,4 +1,4 @@
-# Usage
+# Getting Started
 
 The router provided by this package maps the arguments and
 types of request handlers.

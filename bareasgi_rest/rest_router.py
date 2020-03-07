@@ -4,7 +4,6 @@ Attributes:
     DEFAULT_SWAGGER_BASE_URL (str): The default swagger CDN url. The currently
         supported version is 3.4.0
     DEFAULT_TYPEFACE_URL (str): The typeface url to use.
-    DEFAULT_CONSUMES
 """
 
 import inspect
@@ -141,6 +140,13 @@ class RestHttpRouter(BasicHttpRouter):
                 typeface. Defaults to DEFAULT_TYPEFACE_URL.
             config (Optional[SwaggerConfig], optional): The swagger
                 configuration. Defaults to None.
+            serializer_configs (DictSerializerConfig, optional): The serializer
+                configuration for content. Defaults to DEFAULT_SERIALIZER_CONFIG.
+            arg_serializer_config (SerializerConfig, optional): The serializer
+                configuration for arguments. Defaults to DEFAULT_JSON_SERIALIZER_CONFIG.
+            arg_deserializer_factory (ArgDeserializerFactory, optional): The
+                deserializer configuration for arguments. Defaults to
+                DEFAULT_ARG_DESERIALIZER_FACTORY.
         """
         super().__init__(not_found_response or DEFAULT_NOT_FOUND_RESPONSE)
         self.consumes = consumes

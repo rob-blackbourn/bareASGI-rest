@@ -15,7 +15,7 @@ nav:
   - index.md
   - User Guide:
     - user-guide/installation.md
-    - user-guide/usage.md
+    - user-guide/getting-started.md
   - API:
     - bareasgi_rest: api/bareasgi_rest.md
   
