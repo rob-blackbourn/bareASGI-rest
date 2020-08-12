@@ -5,10 +5,7 @@ from decimal import Decimal
 from functools import partial
 import inspect
 from typing import Any, Dict, List, Optional
-try:
-    from typing import TypedDict  # type:ignore
-except:  # pylint: disable=bare-except
-    from typing_extensions import TypedDict
+from typing import TypedDict
 from typing_extensions import Annotated  # type: ignore
 
 import pytest
@@ -44,7 +41,7 @@ class MockDict(TypedDict):
 
 
 @pytest.mark.asyncio
-async def test_make_args():
+async def test_make_args1():
     """Test for make_args"""
     async def foo(
             arg_num1: str,
@@ -90,6 +87,10 @@ async def test_make_args():
         'arg_num5': None
     }
 
+
+@pytest.mark.asyncio
+async def test_make_args2():
+    """Test for make_args"""
     async def bar(
             arg_id: int,
             arg_query: str,
@@ -97,7 +98,7 @@ async def test_make_args():
     ) -> Optional[MockDict]:
         return None
 
-    bar_matches = {
+    bar_matches: Dict[str, Any] = {
         'arg_id': 42
     }
     bar_query = {

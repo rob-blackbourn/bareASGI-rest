@@ -33,6 +33,7 @@ from baretypes import (
     HttpResponse
 )
 import bareutils.header as header
+import bareutils.response_code as response_code
 from jetblack_serialization.config import SerializerConfig
 
 from .arg_builder import make_args
@@ -190,7 +191,7 @@ class RestHttpRouter(BasicHttpRouter):
             produces: List[bytes] = [b'application/json'],
             collection_format: str = DEFAULT_COLLECTION_FORMAT,
             tags: Optional[List[str]] = None,
-            status_code: int = 200,
+            status_code: int = response_code.OK,
             status_description: str = 'OK',
             serializer_config: Optional[DictSerializerConfig] = None,
             arg_serializer_config: Optional[SerializerConfig] = None,
@@ -289,23 +290,31 @@ class RestHttpRouter(BasicHttpRouter):
             }
             body_reader = self._get_body_reader(scope, content)
 
-            args, kwargs = await make_args(
-                signature,
-                route_args,
-                query_args,
-                body_reader,
-                arg_deserializer
-            )
-
+            try:
+                args, kwargs = await make_args(
+                    signature,
+                    route_args,
+                    query_args,
+                    body_reader,
+                    arg_deserializer
+                )
+            except BaseException as error:
+                raise HTTPError(
+                    scope['path'],
+                    response_code.BAD_REQUEST,
+                    ". ".join(error.args),
+                    scope['headers'],
+                    None  # type: ignore
+                )
             try:
                 body = await callback(*args, **kwargs)
             except HTTPError as error:
                 raise HTTPError(
                     scope['path'],
-                    error.code if error.code is not None else 500,
-                    error.reason,
+                    error.code if error.code is not None else response_code.INTERNAL_SERVER_ERROR,
+                    str(error.reason),
                     scope['headers'],
-                    None
+                    None  # type: ignore
                 )
 
             accept = header.accept(scope['headers'])
@@ -323,7 +332,12 @@ class RestHttpRouter(BasicHttpRouter):
                         break
                 else:
                     raise HTTPError(
-                        None, 500, 'Unhandled content type', None, None)
+                        scope['path'],
+                        response_code.INTERNAL_SERVER_ERROR,
+                        'Unhandled content type',
+                        scope['headers'],
+                        None  # type: ignore
+                    )
             headers = [
                 (b'content-type', content_type)
             ]

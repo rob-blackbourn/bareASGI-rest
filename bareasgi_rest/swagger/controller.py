@@ -75,7 +75,7 @@ class SwaggerController:
     ) -> Dict[str, Any]:
         return {
             "title": self.title,
-            "specs_url": "/api/1/swagger.json",
+            "specs_url": self.base_path + "/swagger.json",
             'swagger_base_url': self.swagger_base_url,
             'typeface_url': self.typeface_url,
             "config": self.config
