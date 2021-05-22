@@ -8,6 +8,7 @@ from typing import (
     List,
     Mapping,
     Optional,
+    Sequence,
     Set
 )
 
@@ -76,7 +77,7 @@ def _make_swagger_parameters_inline(
 
 def make_swagger_parameters(
         method: str,
-        consumes: List[bytes],
+        consumes: Sequence[bytes],
         path_definition: PathDefinition,
         parameters: Mapping[str, Parameter],
         docstring: Docstring,

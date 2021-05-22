@@ -6,6 +6,7 @@ from typing import (
     Dict,
     List,
     Optional,
+    Sequence
 )
 
 from bareasgi.basic_router.path_definition import PathDefinition
@@ -22,8 +23,8 @@ def make_swagger_entry(
         method: str,
         path_definition: PathDefinition,
         callback: RestCallback,
-        consumes: List[bytes],
-        produces: List[bytes],
+        consumes: Sequence[bytes],
+        produces: Sequence[bytes],
         collection_format: str,
         tags: Optional[List[str]],
         ok_status_code: int,

@@ -6,7 +6,8 @@ from typing import (
     Dict,
     List,
     Mapping,
-    Optional
+    Optional,
+    Sequence
 )
 
 from bareasgi.basic_router.http_router import PathDefinition
@@ -54,8 +55,8 @@ class SwaggerRepository:
             method: str,
             path_definition: PathDefinition,
             callback: RestCallback,
-            consumes: List[bytes],
-            produces: List[bytes],
+            consumes: Sequence[bytes],
+            produces: Sequence[bytes],
             collection_format: str,
             tags: Optional[List[str]],
             status_code: int,
@@ -67,8 +68,8 @@ class SwaggerRepository:
             method (str): The HTTP method
             path_definition (PathDefinition): The router path
             callback (RestCallback): The callback
-            consumes (List[bytes]): The accept header
-            produces (List[bytes]): The content type
+            consumes (Sequence[bytes]): The accept header
+            produces (Sequence[bytes]): The content type
             collection_format (str): The collection format
             tags (Optional[List[str]]): Optional tags
             status_code (int): The ok status code

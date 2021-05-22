@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bareASGI-rest"
-version = "3.0.0"
+version = "3.1.0"
 description = "REST support for bareASGI"
 repository = "https://github.com/rob-blackbourn/bareASGI-rest"
 authors = ["Rob Blackbourn <rob.blackbourn@gmail.com>"]
@@ -13,7 +13,7 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.8"
-bareasgi = "^3.5"
+bareasgi = "^3"
 bareasgi-jinja2 = "^3.1"
 docstring-parser = "^0.6"
 typing-extensions = "^3.7"
@@ -24,8 +24,8 @@ jetblack-serialization = "^1.0"
 [tool.poetry.dev-dependencies]
 autopep8 = "^1.4"
 hypercorn = "^0.9"
-mypy = "^0.740.0"
-pylint = "^2.4"
+mypy = "^0.812"
+pylint = "^2.8"
 pytest = "^5.3"
 pytest-asyncio = "^0.10.0"
 pytest-runner = "^5.2"
