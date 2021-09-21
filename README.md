@@ -6,10 +6,14 @@ APIs with [bareASGI](https://bareasgi.com),
 
 It includes:
 
-* A router to simplify the creation of REST APIs,
-* A swagger API endpoint
+- A router to simplify the creation of REST APIs,
+- A swagger API endpoint
 
 This is a Python 3.7+ package, and is currently pre-release.
+
+## Branch
+
+This is the v3 maintenance branch.
 
 ## Installation
 
@@ -208,7 +212,7 @@ First we should note that the paths will be prefixed with the
 `base_path` provided to the router.
 
 Referring back to the implementation of `get_book` we can
-see  that the camel-case path variable `bookId` has been
+see that the camel-case path variable `bookId` has been
 mapped to the snake-case `book_id` parameter. The JSON object provided in the body of the `create_book` will
 similarly map camel-cased properties to the snake-cased
 function parameters.
