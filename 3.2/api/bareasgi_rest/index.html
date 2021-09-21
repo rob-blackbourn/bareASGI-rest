@@ -1,0 +1,1463 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="REST support for bareASGI">
+      
+      
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.2.2, mkdocs-material-7.2.8">
+    
+    
+      
+        <title>bareasgi_rest - bareASGI-rest</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.92558b1b.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.3f5d1f46.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+      <link rel="stylesheet" href="../../css/custom.css">
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+  
+    
+    <script>function __prefix(e){return new URL("../..",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#module-bareasgi_rest" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="bareASGI-rest" class="md-header__button md-logo" aria-label="bareASGI-rest" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            bareASGI-rest
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              bareasgi_rest
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+    
+      <div class="md-header__source">
+        
+<a href="https://github.com/rob-blackbourn/bareASGI-rest" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    rob-blackbourn/bareASGI-rest
+  </div>
+</a>
+      </div>
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="bareASGI-rest" class="md-nav__button md-logo" aria-label="bareASGI-rest" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    bareASGI-rest
+  </label>
+  
+    <div class="md-nav__source">
+      
+<a href="https://github.com/rob-blackbourn/bareASGI-rest" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    rob-blackbourn/bareASGI-rest
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Welcome
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      <label class="md-nav__link" for="__nav_2">
+        User Guide
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="User Guide" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          User Guide
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/installation/" class="md-nav__link">
+        Installation
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/getting-started/" class="md-nav__link">
+        Getting Started
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+      
+      <label class="md-nav__link" for="__nav_3">
+        API
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="API" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          API
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          bareasgi_rest
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        bareasgi_rest
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#module-bareasgi_rest" class="md-nav__link">
+    module bareasgi_rest
+  </a>
+  
+    <nav class="md-nav" aria-label="module bareasgi_rest">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    Summary
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#function-bareasgi_restadd_swagger_ui" class="md-nav__link">
+    function bareasgi_rest.add_swagger_ui
+  </a>
+  
+    <nav class="md-nav" aria-label="function bareasgi_rest.add_swagger_ui">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#summary_1" class="md-nav__link">
+    Summary
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returns" class="md-nav__link">
+    Returns
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-resthttprouterbasichttprouter" class="md-nav__link">
+    class RestHttpRouter(BasicHttpRouter)
+  </a>
+  
+    <nav class="md-nav" aria-label="class RestHttpRouter(BasicHttpRouter)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#summary_2" class="md-nav__link">
+    Summary
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#description" class="md-nav__link">
+    Description
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters_1" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#property-resthttprouternot_found_response" class="md-nav__link">
+    property RestHttpRouter.not_found_response
+  </a>
+  
+    <nav class="md-nav" aria-label="property RestHttpRouter.not_found_response">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#summary_3" class="md-nav__link">
+    Summary
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#method-resthttprouteradd" class="md-nav__link">
+    method RestHttpRouter.add
+  </a>
+  
+    <nav class="md-nav" aria-label="method RestHttpRouter.add">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#summary_4" class="md-nav__link">
+    Summary
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters_2" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returns_1" class="md-nav__link">
+    Returns
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#method-resthttprouteradd_rest" class="md-nav__link">
+    method RestHttpRouter.add_rest
+  </a>
+  
+    <nav class="md-nav" aria-label="method RestHttpRouter.add_rest">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#summary_5" class="md-nav__link">
+    Summary
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters_3" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returns_2" class="md-nav__link">
+    Returns
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#method-resthttprouteradd_route" class="md-nav__link">
+    method RestHttpRouter.add_route
+  </a>
+  
+    <nav class="md-nav" aria-label="method RestHttpRouter.add_route">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#summary_6" class="md-nav__link">
+    Summary
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters_4" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returns_3" class="md-nav__link">
+    Returns
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#method-resthttprouterresolve" class="md-nav__link">
+    method RestHttpRouter.resolve
+  </a>
+  
+    <nav class="md-nav" aria-label="method RestHttpRouter.resolve">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#summary_7" class="md-nav__link">
+    Summary
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters_5" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returns_4" class="md-nav__link">
+    Returns
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-swaggerconfig" class="md-nav__link">
+    class SwaggerConfig
+  </a>
+  
+    <nav class="md-nav" aria-label="class SwaggerConfig">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#summary_8" class="md-nav__link">
+    Summary
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters_6" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-swaggeroauth2config" class="md-nav__link">
+    class SwaggerOauth2Config
+  </a>
+  
+    <nav class="md-nav" aria-label="class SwaggerOauth2Config">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#summary_9" class="md-nav__link">
+    Summary
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters_7" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#module-bareasgi_rest" class="md-nav__link">
+    module bareasgi_rest
+  </a>
+  
+    <nav class="md-nav" aria-label="module bareasgi_rest">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    Summary
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#function-bareasgi_restadd_swagger_ui" class="md-nav__link">
+    function bareasgi_rest.add_swagger_ui
+  </a>
+  
+    <nav class="md-nav" aria-label="function bareasgi_rest.add_swagger_ui">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#summary_1" class="md-nav__link">
+    Summary
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returns" class="md-nav__link">
+    Returns
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-resthttprouterbasichttprouter" class="md-nav__link">
+    class RestHttpRouter(BasicHttpRouter)
+  </a>
+  
+    <nav class="md-nav" aria-label="class RestHttpRouter(BasicHttpRouter)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#summary_2" class="md-nav__link">
+    Summary
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#description" class="md-nav__link">
+    Description
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters_1" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#property-resthttprouternot_found_response" class="md-nav__link">
+    property RestHttpRouter.not_found_response
+  </a>
+  
+    <nav class="md-nav" aria-label="property RestHttpRouter.not_found_response">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#summary_3" class="md-nav__link">
+    Summary
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#method-resthttprouteradd" class="md-nav__link">
+    method RestHttpRouter.add
+  </a>
+  
+    <nav class="md-nav" aria-label="method RestHttpRouter.add">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#summary_4" class="md-nav__link">
+    Summary
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters_2" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returns_1" class="md-nav__link">
+    Returns
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#method-resthttprouteradd_rest" class="md-nav__link">
+    method RestHttpRouter.add_rest
+  </a>
+  
+    <nav class="md-nav" aria-label="method RestHttpRouter.add_rest">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#summary_5" class="md-nav__link">
+    Summary
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters_3" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returns_2" class="md-nav__link">
+    Returns
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#method-resthttprouteradd_route" class="md-nav__link">
+    method RestHttpRouter.add_route
+  </a>
+  
+    <nav class="md-nav" aria-label="method RestHttpRouter.add_route">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#summary_6" class="md-nav__link">
+    Summary
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters_4" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returns_3" class="md-nav__link">
+    Returns
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#method-resthttprouterresolve" class="md-nav__link">
+    method RestHttpRouter.resolve
+  </a>
+  
+    <nav class="md-nav" aria-label="method RestHttpRouter.resolve">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#summary_7" class="md-nav__link">
+    Summary
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters_5" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returns_4" class="md-nav__link">
+    Returns
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-swaggerconfig" class="md-nav__link">
+    class SwaggerConfig
+  </a>
+  
+    <nav class="md-nav" aria-label="class SwaggerConfig">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#summary_8" class="md-nav__link">
+    Summary
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters_6" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-swaggeroauth2config" class="md-nav__link">
+    class SwaggerOauth2Config
+  </a>
+  
+    <nav class="md-nav" aria-label="class SwaggerOauth2Config">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#summary_9" class="md-nav__link">
+    Summary
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters_7" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                  <h1>bareasgi_rest</h1>
+                
+                <p>
+<div class="autodoc-module">
+<h3 class="autodoc-title" id="module-bareasgi_rest">
+      <span class="autodoc-title-type">module </span><span class="autodoc-title-name">bareasgi_rest</span>
+  <a class="headerlink" href="#module-bareasgi_rest" title="Permanent link">&para;</a></h3>
+<h4 class="autodoc-title" id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h4>
+<p>Enhanced REST support for bareASGI</p>
+<div class="autodoc-description">
+
+</div>
+<div class="autodoc-examples">
+
+</div>
+<div class="autodoc-attributes">
+
+</div>
+<div class="autodoc-callable">
+<h3 class="autodoc-title" id="function-bareasgi_restadd_swagger_ui">
+  <span class="autodoc-title-type">function </span><span class="autodoc-qualifier">bareasgi_rest</span><span class="autodoc-punctuation">.</span><span class="autodoc-title-name">add_swagger_ui</span>
+<a class="headerlink" href="#function-bareasgi_restadd_swagger_ui" title="Permanent link">&para;</a></h3>
+<h4 class="autodoc-title" id="summary_1">Summary<a class="headerlink" href="#summary_1" title="Permanent link">&para;</a></h4>
+<p>Add the Swagger UI</p>
+<div class="autodoc-description">
+
+</div>
+<div class="autodoc-signature"><span class="autodoc-qualifier">bareasgi_rest</span><span class="autodoc-punctuation">.</span><var class="autodoc-varname">add_swagger_ui</var><span class="autodoc-punctuation">(</span><br />
+<div class="autodoc-argument">
+        <var class="autodoc-varname">app</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Application</span></div>
+<span class="autodoc-punctuation">)</span><span class="autodoc-punctuation"> -&gt; </span><span class="autodoc-vartype">Any</span></div>
+<br />
+<div class="autodoc-parameters">
+<h4 class="autodoc-title" id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
+<var class="autodoc-varname">app</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Application</span><p>The bareASGI application</p>
+</div>
+<div class="autodoc-returns">
+<h4 class="autodoc-title" id="returns">Returns<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h4>
+<span class="autodoc-vartype">Any</span><span class="autodoc-punctuation">: </span>
+
+</div>
+<div class="autodoc-raises">
+
+</div>
+<div class="autodoc-examples">
+
+</div>
+</div>
+<hr />
+<div class="autodoc-class">
+<h3 class="autodoc-title" id="class-resthttprouterbasichttprouter">
+  <span class="autodoc-title-type">class </span><span class="autodoc-title-name">RestHttpRouter</span><span class="autodoc-punctuation">(</span><span class="autodoc-type">BasicHttpRouter</span><span class="autodoc-punctuation">)</span>
+<a class="headerlink" href="#class-resthttprouterbasichttprouter" title="Permanent link">&para;</a></h3>
+<h4 class="autodoc-title" id="summary_2">Summary<a class="headerlink" href="#summary_2" title="Permanent link">&para;</a></h4>
+<p>Initialise the REST router</p>
+<div class="autodoc-description">
+<h4 class="autodoc-title" id="description">Description<a class="headerlink" href="#description" title="Permanent link">&para;</a></h4>
+<p>Here is an example of how to use the router.</p>
+<div class="codehilite">
+<pre><span></span><code><span class="kn">from</span> <span class="nn">bareasgi</span> <span class="kn">import</span> <span class="n">Application</span>
+<span class="kn">from</span> <span class="nn">bareasgi_rest</span> <span class="kn">import</span> <span class="n">RestHttpRouter</span><span class="p">,</span> <span class="n">add_swagger_ui</span>
+
+
+<span class="n">router</span> <span class="o">=</span> <span class="n">RestHttpRouter</span><span class="p">(</span>
+    <span class="kc">None</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="s2">"Books"</span><span class="p">,</span>
+    <span class="n">version</span><span class="o">=</span><span class="s2">"1"</span><span class="p">,</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">"A book api"</span><span class="p">,</span>
+    <span class="n">base_path</span><span class="o">=</span><span class="s1">'/api/1'</span><span class="p">,</span>
+    <span class="n">tags</span><span class="o">=</span><span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s1">'name'</span><span class="p">:</span> <span class="s1">'Books'</span><span class="p">,</span>
+            <span class="s1">'description'</span><span class="p">:</span> <span class="s1">'The book store API'</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+<span class="n">app</span> <span class="o">=</span> <span class="n">Application</span><span class="p">(</span><span class="n">http_router</span><span class="o">=</span><span class="n">router</span><span class="p">)</span>
+<span class="n">add_swagger_ui</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+</code></pre>
+</div>
+</div>
+<div class="autodoc-signature"><span class="autodoc-qualifier">bareasgi_rest</span><span class="autodoc-punctuation">.</span><var class="autodoc-varname">RestHttpRouter</var><span class="autodoc-punctuation">(</span><br />
+<div class="autodoc-argument">
+        <var class="autodoc-varname">not_found_response</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">HttpResponse</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">*</var><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">title</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">version</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">description</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[str]</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">base_path</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">consumes</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[DictConsumes]</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">produces</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[DictProduces]</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">tags</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[List[Mapping[str, Any]]]</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">swagger_base_url</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[str]</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">typeface_url</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[str]</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">config</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[SwaggerConfig]</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">serializer_configs</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[DictSerializerConfig]</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">arg_serializer_config</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">SerializerConfig</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">arg_deserializer_factory</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">ArgDeserializerFactory</span></div>
+<span class="autodoc-punctuation">)</span><span class="autodoc-punctuation"> -&gt; </span><span class="autodoc-vartype">None</span></div>
+<br />
+<div class="autodoc-parameters">
+<h4 class="autodoc-title" id="parameters_1">Parameters<a class="headerlink" href="#parameters_1" title="Permanent link">&para;</a></h4>
+<var class="autodoc-varname">not_found_response</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">HttpResponse</span><p>The response sent when a route is
+not found</p>
+<var class="autodoc-varname">title</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><p>The title of the swagger documentation</p>
+<var class="autodoc-varname">version</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><p>The version of the exposed API</p>
+<var class="autodoc-varname">description</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[str]</span><span class="autodoc-punctuation"> (optional)</span><p>The API description. Defaults
+to None.</p>
+<var class="autodoc-varname">base_path</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation"> (optional)</span><p>The base path of the API. Defaults to ''.</p>
+<var class="autodoc-varname">consumes</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[DictConsumes]</span><span class="autodoc-punctuation"> (optional)</span><p>A map of media types
+and deserializers. Defaults to DEFAULT_CONSUMES.</p>
+<var class="autodoc-varname">produces</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[DictProduces]</span><span class="autodoc-punctuation"> (optional)</span><p>A map of media types
+and serializers. Defaults to DEFAULT_PRODUCES.</p>
+<var class="autodoc-varname">tags</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[List[Mapping[str, Any]]]</span><span class="autodoc-punctuation"> (optional)</span><p>The available
+tags. Defaults to None.</p>
+<var class="autodoc-varname">swagger_base_url</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[str]</span><span class="autodoc-punctuation"> (optional)</span><p>The base url for the
+swagger CDN. Defaults to DEFAULT_SWAGGER_BASE_URL.</p>
+<var class="autodoc-varname">typeface_url</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[str]</span><span class="autodoc-punctuation"> (optional)</span><p>The base url for the
+typeface. Defaults to DEFAULT_TYPEFACE_URL.</p>
+<var class="autodoc-varname">config</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[SwaggerConfig]</span><span class="autodoc-punctuation"> (optional)</span><p>The swagger
+configuration. Defaults to None.</p>
+<var class="autodoc-varname">serializer_configs</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[DictSerializerConfig]</span><span class="autodoc-punctuation"> (optional)</span><p>The
+serializer configuration for content. Defaults to
+DEFAULT_SERIALIZER_CONFIG.</p>
+<var class="autodoc-varname">arg_serializer_config</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">SerializerConfig</span><span class="autodoc-punctuation"> (optional)</span><p>The serializer
+configuration for arguments. Defaults to DEFAULT_JSON_SERIALIZER_CONFIG.</p>
+<var class="autodoc-varname">arg_deserializer_factory</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">ArgDeserializerFactory</span><span class="autodoc-punctuation"> (optional)</span><p>The
+deserializer configuration for arguments. Defaults to
+DEFAULT_ARG_DESERIALIZER_FACTORY.</p>
+</div>
+<div class="autodoc-attributes">
+
+</div>
+<div class="autodoc-properties">
+<div class="autodoc-property">
+<h3 class="autodoc-title" id="property-resthttprouternot_found_response">
+  <span class="autodoc-title-type">property </span><span class="autodoc-qualifier">RestHttpRouter</span><span class="autodoc-punctuation">.</span><span class="autodoc-title-name">not_found_response</span>
+<a class="headerlink" href="#property-resthttprouternot_found_response" title="Permanent link">&para;</a></h3>
+<h4 class="autodoc-title" id="summary_3">Summary<a class="headerlink" href="#summary_3" title="Permanent link">&para;</a></h4>
+<p>The response when a handler could not be found for a method/path</p>
+<div class="autodoc-description">
+
+</div>
+<div class="autodoc-property">
+      <var class="autodoc-varname">not_found_response</var><span class="autodoc-punctuation"> -&gt; </span><span class="autodoc-vartype">HttpResponse</span>
+    </div>
+<div class="autodoc-property">
+      <var class="autodoc-varname">not_found_response</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">HttpResponse</span><span class="autodoc-punctuation"> = ...</span>
+    </div>
+<div class="autodoc-raises">
+
+</div>
+<div class="autodoc-examples">
+
+</div>
+</div>
+</div>
+<div class="autodoc-classmethods"></div>
+<div class="autodoc-methods">
+<div class="autodoc-callable">
+<h3 class="autodoc-title" id="method-resthttprouteradd">
+  <span class="autodoc-title-type">method </span><span class="autodoc-qualifier">RestHttpRouter</span><span class="autodoc-punctuation">.</span><span class="autodoc-title-name">add</span>
+<a class="headerlink" href="#method-resthttprouteradd" title="Permanent link">&para;</a></h3>
+<h4 class="autodoc-title" id="summary_4">Summary<a class="headerlink" href="#summary_4" title="Permanent link">&para;</a></h4>
+<p>Add an HTTP request handler</p>
+<div class="autodoc-description">
+
+</div>
+<div class="autodoc-signature"><span class="autodoc-qualifier">RestHttpRouter</span><span class="autodoc-punctuation">.</span><var class="autodoc-varname">add</var><span class="autodoc-punctuation">(</span><br />
+<div class="autodoc-argument">
+        <var class="autodoc-varname">methods</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">AbstractSet[str]</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">path</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">callback</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">HttpRequestCallback</span></div>
+<span class="autodoc-punctuation">)</span><span class="autodoc-punctuation"> -&gt; </span><span class="autodoc-vartype">Any</span></div>
+<br />
+<div class="autodoc-parameters">
+<h4 class="autodoc-title" id="parameters_2">Parameters<a class="headerlink" href="#parameters_2" title="Permanent link">&para;</a></h4>
+<var class="autodoc-varname">methods</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">AbstractSet[str]</span><p>The supported HTTP methods.</p>
+<var class="autodoc-varname">path</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><p>The path.</p>
+<var class="autodoc-varname">callback</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">HttpRequestCallback</span><p>The request handler.</p>
+</div>
+<div class="autodoc-returns">
+<h4 class="autodoc-title" id="returns_1">Returns<a class="headerlink" href="#returns_1" title="Permanent link">&para;</a></h4>
+<span class="autodoc-vartype">Any</span><span class="autodoc-punctuation">: </span>
+
+</div>
+<div class="autodoc-raises">
+
+</div>
+<div class="autodoc-examples">
+
+</div>
+</div>
+<div class="autodoc-callable">
+<h3 class="autodoc-title" id="method-resthttprouteradd_rest">
+  <span class="autodoc-title-type">method </span><span class="autodoc-qualifier">RestHttpRouter</span><span class="autodoc-punctuation">.</span><span class="autodoc-title-name">add_rest</span>
+<a class="headerlink" href="#method-resthttprouteradd_rest" title="Permanent link">&para;</a></h3>
+<h4 class="autodoc-title" id="summary_5">Summary<a class="headerlink" href="#summary_5" title="Permanent link">&para;</a></h4>
+<p>Register a callback to a method and path</p>
+<div class="autodoc-description">
+
+</div>
+<div class="autodoc-signature"><span class="autodoc-qualifier">RestHttpRouter</span><span class="autodoc-punctuation">.</span><var class="autodoc-varname">add_rest</var><span class="autodoc-punctuation">(</span><br />
+<div class="autodoc-argument">
+        <var class="autodoc-varname">methods</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">AbstractSet[str]</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">path</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">callback</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">RestCallback</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">*</var><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">consumes</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">List[bytes]</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">produces</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">List[bytes]</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">collection_format</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">tags</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[List[str]]</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">status_code</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">int</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">status_description</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">serializer_config</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[DictSerializerConfig]</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">arg_serializer_config</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[SerializerConfig]</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">arg_deserializer_factory</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[ArgDeserializerFactory]</span></div>
+<span class="autodoc-punctuation">)</span><span class="autodoc-punctuation"> -&gt; </span><span class="autodoc-vartype">Any</span></div>
+<br />
+<div class="autodoc-parameters">
+<h4 class="autodoc-title" id="parameters_3">Parameters<a class="headerlink" href="#parameters_3" title="Permanent link">&para;</a></h4>
+<var class="autodoc-varname">methods</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">AbstractSet[str]</span><p>The set of methods</p>
+<var class="autodoc-varname">path</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><p>The path</p>
+<var class="autodoc-varname">callback</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">RestCallback</span><p>The callback</p>
+<var class="autodoc-varname">consumes</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">List[bytes]</span><span class="autodoc-punctuation"> (optional)</span><p>The content media type. Defaults
+to b'application/json'.</p>
+<var class="autodoc-varname">produces</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">List[bytes]</span><span class="autodoc-punctuation"> (optional)</span><p>The accept media type. Defaults to
+b'application/json'.</p>
+<var class="autodoc-varname">collection_format</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation"> (optional)</span><p>The format of repeated values.
+Defaults to DEFAULT_COLLECTION_FORMAT.</p>
+<var class="autodoc-varname">tags</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[List[str]]</span><span class="autodoc-punctuation"> (optional)</span><p>A list of tags. Defaults to
+None.</p>
+<var class="autodoc-varname">status_code</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">int</span><span class="autodoc-punctuation"> (optional)</span><p>The ok status code. Defaults to 200.</p>
+<var class="autodoc-varname">status_description</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation"> (optional)</span><p>The ok status message. Defaults
+to 'OK'.</p>
+<var class="autodoc-varname">serializer_config</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[DictSerializerConfig]</span><span class="autodoc-punctuation"> (optional)</span><p>The
+serializer configuration for content. Defaults to None.</p>
+<var class="autodoc-varname">arg_serializer_config</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[SerializerConfig]</span><span class="autodoc-punctuation"> (optional)</span><p>The
+serializer configuration for arguments. Defaults to None.</p>
+<var class="autodoc-varname">arg_deserializer_factory</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[ArgDeserializerFactory]</span><span class="autodoc-punctuation"> (optional)</span><p>The
+deserializer configuration for arguments. Defaults to None.</p>
+</div>
+<div class="autodoc-returns">
+<h4 class="autodoc-title" id="returns_2">Returns<a class="headerlink" href="#returns_2" title="Permanent link">&para;</a></h4>
+<span class="autodoc-vartype">Any</span><span class="autodoc-punctuation">: </span>
+
+</div>
+<div class="autodoc-raises">
+
+</div>
+<div class="autodoc-examples">
+
+</div>
+</div>
+<div class="autodoc-callable">
+<h3 class="autodoc-title" id="method-resthttprouteradd_route">
+  <span class="autodoc-title-type">method </span><span class="autodoc-qualifier">RestHttpRouter</span><span class="autodoc-punctuation">.</span><span class="autodoc-title-name">add_route</span>
+<a class="headerlink" href="#method-resthttprouteradd_route" title="Permanent link">&para;</a></h3>
+<h4 class="autodoc-title" id="summary_6">Summary<a class="headerlink" href="#summary_6" title="Permanent link">&para;</a></h4>
+<p>Add a route to a callback for a method and path definition</p>
+<div class="autodoc-description">
+
+</div>
+<div class="autodoc-signature"><span class="autodoc-qualifier">RestHttpRouter</span><span class="autodoc-punctuation">.</span><var class="autodoc-varname">add_route</var><span class="autodoc-punctuation">(</span><br />
+<div class="autodoc-argument">
+        <var class="autodoc-varname">method</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">path_definition</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">PathDefinition</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">callback</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">HttpRequestCallback</span></div>
+<span class="autodoc-punctuation">)</span><span class="autodoc-punctuation"> -&gt; </span><span class="autodoc-vartype">Any</span></div>
+<br />
+<div class="autodoc-parameters">
+<h4 class="autodoc-title" id="parameters_4">Parameters<a class="headerlink" href="#parameters_4" title="Permanent link">&para;</a></h4>
+<var class="autodoc-varname">method</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><p>The method.</p>
+<var class="autodoc-varname">path_definition</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">PathDefinition</span><p>The path definition</p>
+<var class="autodoc-varname">callback</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">HttpRequestCallback</span><p>The callback</p>
+</div>
+<div class="autodoc-returns">
+<h4 class="autodoc-title" id="returns_3">Returns<a class="headerlink" href="#returns_3" title="Permanent link">&para;</a></h4>
+<span class="autodoc-vartype">Any</span><span class="autodoc-punctuation">: </span>
+
+</div>
+<div class="autodoc-raises">
+
+</div>
+<div class="autodoc-examples">
+
+</div>
+</div>
+<div class="autodoc-callable">
+<h3 class="autodoc-title" id="method-resthttprouterresolve">
+  <span class="autodoc-title-type">method </span><span class="autodoc-qualifier">RestHttpRouter</span><span class="autodoc-punctuation">.</span><span class="autodoc-title-name">resolve</span>
+<a class="headerlink" href="#method-resthttprouterresolve" title="Permanent link">&para;</a></h3>
+<h4 class="autodoc-title" id="summary_7">Summary<a class="headerlink" href="#summary_7" title="Permanent link">&para;</a></h4>
+<p>Resolve a request to a handler with the route matches</p>
+<div class="autodoc-description">
+
+</div>
+<div class="autodoc-signature"><span class="autodoc-qualifier">RestHttpRouter</span><span class="autodoc-punctuation">.</span><var class="autodoc-varname">resolve</var><span class="autodoc-punctuation">(</span><br />
+<div class="autodoc-argument">
+        <var class="autodoc-varname">method</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">path</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span></div>
+<span class="autodoc-punctuation">)</span><span class="autodoc-punctuation"> -&gt; </span><span class="autodoc-vartype">Tuple[HttpRequestCallback, RouteMatches]</span></div>
+<br />
+<div class="autodoc-parameters">
+<h4 class="autodoc-title" id="parameters_5">Parameters<a class="headerlink" href="#parameters_5" title="Permanent link">&para;</a></h4>
+<var class="autodoc-varname">method</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><p>The HTTP method.</p>
+<var class="autodoc-varname">path</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><p>The path.</p>
+</div>
+<div class="autodoc-returns">
+<h4 class="autodoc-title" id="returns_4">Returns<a class="headerlink" href="#returns_4" title="Permanent link">&para;</a></h4>
+<span class="autodoc-vartype">Tuple[HttpRequestCallback, RouteMatches]</span><span class="autodoc-punctuation">: </span>
+<span class="autodoc-summary">A handler and the route
+matches.</span>
+</div>
+<div class="autodoc-raises">
+
+</div>
+<div class="autodoc-examples">
+
+</div>
+</div>
+</div>
+<div class="autodoc-examples">
+
+</div>
+</div>
+<hr />
+<div class="autodoc-class">
+<h3 class="autodoc-title" id="class-swaggerconfig">
+  <span class="autodoc-title-type">class </span><span class="autodoc-title-name">SwaggerConfig</span>
+<a class="headerlink" href="#class-swaggerconfig" title="Permanent link">&para;</a></h3>
+<h4 class="autodoc-title" id="summary_8">Summary<a class="headerlink" href="#summary_8" title="Permanent link">&para;</a></h4>
+<p>The Swagger UI Configuration</p>
+<div class="autodoc-description">
+
+</div>
+<div class="autodoc-signature"><span class="autodoc-qualifier">bareasgi_rest.swagger</span><span class="autodoc-punctuation">.</span><var class="autodoc-varname">SwaggerConfig</var><span class="autodoc-punctuation">(</span><br />
+<div class="autodoc-argument">
+        <var class="autodoc-varname">title</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">validator_url</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[str]</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">supported_submit_methods</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[List[str]]</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">display_operation_id</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">bool</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">display_request_duration</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">bool</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">doc_expansion</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">oauth2</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[SwaggerOauth2Config]</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">serialize_key</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Callable[[str], str]</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">deserialize_key</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Callable[[str], str]</span></div>
+<span class="autodoc-punctuation">)</span><span class="autodoc-punctuation"> -&gt; </span><span class="autodoc-vartype">None</span></div>
+<br />
+<div class="autodoc-parameters">
+<h4 class="autodoc-title" id="parameters_6">Parameters<a class="headerlink" href="#parameters_6" title="Permanent link">&para;</a></h4>
+<var class="autodoc-varname">title</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation"> (optional)</span><p>The page title, defaults to "The REST API"</p>
+<var class="autodoc-varname">validator_url</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[str]</span><span class="autodoc-punctuation"> (optional)</span><p>The url of the validator,
+defaults to None</p>
+<var class="autodoc-varname">supported_submit_methods</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[List[str]]</span><span class="autodoc-punctuation"> (optional)</span><p>The supported
+submit methods, defaults to None</p>
+<var class="autodoc-varname">display_operation_id</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">bool</span><span class="autodoc-punctuation"> (optional)</span><p>Whether operation ids should be
+displayed, defaults to False</p>
+<var class="autodoc-varname">display_request_duration</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">bool</span><span class="autodoc-punctuation"> (optional)</span><p>Whether the duration of the
+request should be displayed, defaults to False</p>
+<var class="autodoc-varname">doc_expansion</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation"> (optional)</span><p>How the methods should be displayed,
+defaults to "list"</p>
+<var class="autodoc-varname">oauth2</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Optional[SwaggerOauth2Config]</span><span class="autodoc-punctuation"> (optional)</span><p>Optional oauth2
+config, defaults to None</p>
+<var class="autodoc-varname">serialize_key</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Callable[[str], str]</span><span class="autodoc-punctuation"> (optional)</span><p>The function to serialize keys</p>
+<var class="autodoc-varname">deserialize_key</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">Callable[[str], str]</span><span class="autodoc-punctuation"> (optional)</span><p>The function to deserialize keys</p>
+</div>
+<div class="autodoc-attributes">
+
+</div>
+<div class="autodoc-properties">
+
+</div>
+<div class="autodoc-classmethods"></div>
+<div class="autodoc-methods"></div>
+<div class="autodoc-examples">
+
+</div>
+</div>
+<hr />
+<div class="autodoc-class">
+<h3 class="autodoc-title" id="class-swaggeroauth2config">
+  <span class="autodoc-title-type">class </span><span class="autodoc-title-name">SwaggerOauth2Config</span>
+<a class="headerlink" href="#class-swaggeroauth2config" title="Permanent link">&para;</a></h3>
+<h4 class="autodoc-title" id="summary_9">Summary<a class="headerlink" href="#summary_9" title="Permanent link">&para;</a></h4>
+<p>Swagger Oauth2 config</p>
+<div class="autodoc-description">
+
+</div>
+<div class="autodoc-signature"><span class="autodoc-qualifier">bareasgi_rest.swagger</span><span class="autodoc-punctuation">.</span><var class="autodoc-varname">SwaggerOauth2Config</var><span class="autodoc-punctuation">(</span><br />
+<div class="autodoc-argument">
+        <var class="autodoc-varname">client_id</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">realm</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">app_name</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><span class="autodoc-punctuation">,</span></div>
+<div class="autodoc-argument">
+        <var class="autodoc-varname">redirect_url</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span></div>
+<span class="autodoc-punctuation">)</span><span class="autodoc-punctuation"> -&gt; </span><span class="autodoc-vartype">None</span></div>
+<br />
+<div class="autodoc-parameters">
+<h4 class="autodoc-title" id="parameters_7">Parameters<a class="headerlink" href="#parameters_7" title="Permanent link">&para;</a></h4>
+<var class="autodoc-varname">client_id</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><p>The client id</p>
+<var class="autodoc-varname">realm</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><p>The realm</p>
+<var class="autodoc-varname">app_name</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><p>The application name</p>
+<var class="autodoc-varname">redirect_url</var><span class="autodoc-punctuation">: </span><span class="autodoc-vartype">str</span><p>The redirect url</p>
+</div>
+<div class="autodoc-attributes">
+
+</div>
+<div class="autodoc-properties">
+
+</div>
+<div class="autodoc-classmethods"></div>
+<div class="autodoc-methods"></div>
+<div class="autodoc-examples">
+
+</div>
+</div>
+<hr />
+</div>
+</p>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../../user-guide/getting-started/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Getting Started" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Getting Started
+            </div>
+          </div>
+        </a>
+      
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.94ec81fe.min.js", "version": {"provider": "mike", "default": "stable"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.48dfec6c.min.js"></script>
+      
+    
+  </body>
+</html>

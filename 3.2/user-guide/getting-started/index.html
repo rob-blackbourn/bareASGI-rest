@@ -1,0 +1,677 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="REST support for bareASGI">
+      
+      
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.2.2, mkdocs-material-7.2.8">
+    
+    
+      
+        <title>Getting Started - bareASGI-rest</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.92558b1b.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.3f5d1f46.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+      <link rel="stylesheet" href="../../css/custom.css">
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+  
+    
+    <script>function __prefix(e){return new URL("../..",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#getting-started" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="bareASGI-rest" class="md-header__button md-logo" aria-label="bareASGI-rest" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            bareASGI-rest
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Getting Started
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+    
+      <div class="md-header__source">
+        
+<a href="https://github.com/rob-blackbourn/bareASGI-rest" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    rob-blackbourn/bareASGI-rest
+  </div>
+</a>
+      </div>
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="bareASGI-rest" class="md-nav__button md-logo" aria-label="bareASGI-rest" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    bareASGI-rest
+  </label>
+  
+    <div class="md-nav__source">
+      
+<a href="https://github.com/rob-blackbourn/bareASGI-rest" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    rob-blackbourn/bareASGI-rest
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Welcome
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+      
+      <label class="md-nav__link" for="__nav_2">
+        User Guide
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="User Guide" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          User Guide
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        Installation
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Getting Started
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Getting Started
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#creating-typed-dictionaries" class="md-nav__link">
+    Creating typed dictionaries
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#creating-the-api" class="md-nav__link">
+    Creating the API
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adding-support-for-the-rest-router" class="md-nav__link">
+    Adding support for the REST router
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#creating-the-routes" class="md-nav__link">
+    Creating the routes
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#serving-the-api" class="md-nav__link">
+    Serving the API
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      <label class="md-nav__link" for="__nav_3">
+        API
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="API" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          API
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/bareasgi_rest/" class="md-nav__link">
+        bareasgi_rest
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#creating-typed-dictionaries" class="md-nav__link">
+    Creating typed dictionaries
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#creating-the-api" class="md-nav__link">
+    Creating the API
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adding-support-for-the-rest-router" class="md-nav__link">
+    Adding support for the REST router
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#creating-the-routes" class="md-nav__link">
+    Creating the routes
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#serving-the-api" class="md-nav__link">
+    Serving the API
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                <h1 id="getting-started">Getting Started<a class="headerlink" href="#getting-started" title="Permanent link">&para;</a></h1>
+<p>The router provided by this package maps the arguments and
+types of request handlers.</p>
+<p>We will create a mock book repository.</p>
+<h2 id="creating-typed-dictionaries">Creating typed dictionaries<a class="headerlink" href="#creating-typed-dictionaries" title="Permanent link">&para;</a></h2>
+<p>Here is the type of a book. We use <code>TypedDict</code> to allow automatic type discovery</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="c1"># Available in 3.8</span>
+    <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TypedDict</span>  <span class="c1"># type:ignore</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="c1"># Available in 3.7</span>
+    <span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">TypedDict</span>
+
+<span class="k">class</span> <span class="nc">Book</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A Book</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        book_id (int): The book id</span>
+<span class="sd">        title (str): The title</span>
+<span class="sd">        author (str): The author</span>
+<span class="sd">        published (datetime): The publication date</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">book_id</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">author</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">published</span><span class="p">:</span> <span class="n">datetime</span>
+</code></pre></div>
+
+<p>Note: the docstring will be used to provide documentation for swagger.</p>
+<h2 id="creating-the-api">Creating the API<a class="headerlink" href="#creating-the-api" title="Permanent link">&para;</a></h2>
+<p>Now we can build the API.</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">urllib.error</span> <span class="kn">import</span> <span class="n">HTTPError</span>
+
+
+<span class="n">BOOKS</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Book</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">NEXT_ID</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">get_books</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Book</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Get all the books.</span>
+
+<span class="sd">    This method gets all the books in the shop.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        List[Book]: All the books</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">BOOKS</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">get_book</span><span class="p">(</span><span class="n">book_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Book</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Get a book for a given id</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        book_id (int): The id of the book</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        HTTPError: 404, when a book is not found</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Book: The book</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">book_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">BOOKS</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">HTTPError</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mi">404</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">BOOKS</span><span class="p">[</span><span class="n">book_id</span><span class="p">]</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">create_book</span><span class="p">(</span>
+        <span class="n">author</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">title</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">published</span><span class="p">:</span> <span class="n">datetime</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Add a book</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        author (str): The author</span>
+<span class="sd">        title (str): The title</span>
+<span class="sd">        published (datetime): The publication date</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        int: The id of the new book</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">NEXT_ID</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">BOOKS</span><span class="p">[</span><span class="n">NEXT_ID</span><span class="p">]</span> <span class="o">=</span> <span class="n">Book</span><span class="p">(</span>
+        <span class="n">book_id</span><span class="o">=</span><span class="n">NEXT_ID</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span>
+        <span class="n">author</span><span class="o">=</span><span class="n">author</span><span class="p">,</span>
+        <span class="n">published</span><span class="o">=</span><span class="n">published</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">NEXT_ID</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">update_book</span><span class="p">(</span>
+        <span class="n">book_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">author</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">title</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">published</span><span class="p">:</span> <span class="n">datetime</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Update a book</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        book_id (int): The id of the book to update</span>
+<span class="sd">        author (str): The new author</span>
+<span class="sd">        title (str): The title</span>
+<span class="sd">        published (datetime): The publication date</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        HTTPError: 404, when a book is not found</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">book_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">BOOKS</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">HTTPError</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mi">404</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">BOOKS</span><span class="p">[</span><span class="n">book_id</span><span class="p">][</span><span class="s1">&#39;title&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">title</span>
+    <span class="n">BOOKS</span><span class="p">[</span><span class="n">book_id</span><span class="p">][</span><span class="s1">&#39;author&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">author</span>
+    <span class="n">BOOKS</span><span class="p">[</span><span class="n">book_id</span><span class="p">][</span><span class="s1">&#39;published&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">published</span>
+</code></pre></div>
+
+<p>We can see that errors are handler by raising HTTPError
+from the <code>urllib.errors</code> standard library package. A convention has been applied such that the status code MUST
+appear before the message, separated by a comma.</p>
+<h2 id="adding-support-for-the-rest-router">Adding support for the REST router<a class="headerlink" href="#adding-support-for-the-rest-router" title="Permanent link">&para;</a></h2>
+<p>Now we must create our application and add support for the router.</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">bareasgi</span> <span class="kn">import</span> <span class="n">Application</span>
+<span class="kn">from</span> <span class="nn">bareasgi_rest</span> <span class="kn">import</span> <span class="n">RestHttpRouter</span><span class="p">,</span> <span class="n">add_swagger_ui</span>
+
+
+<span class="n">router</span> <span class="o">=</span> <span class="n">RestHttpRouter</span><span class="p">(</span>
+    <span class="kc">None</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Books&quot;</span><span class="p">,</span>
+    <span class="n">version</span><span class="o">=</span><span class="s2">&quot;1&quot;</span><span class="p">,</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;A book api&quot;</span><span class="p">,</span>
+    <span class="n">base_path</span><span class="o">=</span><span class="s1">&#39;/api/1&#39;</span><span class="p">,</span>
+    <span class="n">tags</span><span class="o">=</span><span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Books&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;The book store API&#39;</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+<span class="n">app</span> <span class="o">=</span> <span class="n">Application</span><span class="p">(</span><span class="n">http_router</span><span class="o">=</span><span class="n">router</span><span class="p">)</span>
+<span class="n">add_swagger_ui</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Note the <code>base_path</code> argument can be used to prefix all
+paths.</p>
+<p>The <code>RestHttpRouter</code> is a subclass of the basic router, so
+all those methods are also available.</p>
+<h2 id="creating-the-routes">Creating the routes<a class="headerlink" href="#creating-the-routes" title="Permanent link">&para;</a></h2>
+<p>Now we can create the routes:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">tags</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Books&#39;</span><span class="p">]</span>
+<span class="n">router</span><span class="o">.</span><span class="n">add_rest</span><span class="p">({</span><span class="s1">&#39;GET&#39;</span><span class="p">},</span> <span class="s1">&#39;/books&#39;</span><span class="p">,</span> <span class="n">get_books</span><span class="p">,</span><span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">)</span>
+<span class="n">router</span><span class="o">.</span><span class="n">add_rest</span><span class="p">({</span><span class="s1">&#39;GET&#39;</span><span class="p">},</span> <span class="s1">&#39;/books/{bookId:int}&#39;</span><span class="p">,</span> <span class="n">get_book</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">)</span>
+<span class="n">router</span><span class="o">.</span><span class="n">add_rest</span><span class="p">({</span><span class="s1">&#39;POST&#39;</span><span class="p">},</span> <span class="s1">&#39;/books&#39;</span><span class="p">,</span> <span class="n">create_book</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">,</span> <span class="n">status_code</span><span class="o">=</span><span class="mi">201</span><span class="p">)</span>
+<span class="n">router</span><span class="o">.</span><span class="n">add_rest</span><span class="p">({</span><span class="s1">&#39;PUT&#39;</span><span class="p">},</span> <span class="s1">&#39;/books/{bookId:int}&#39;</span><span class="p">,</span> <span class="n">update_book</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">,</span> <span class="n">status_code</span><span class="o">=</span><span class="mi">204</span><span class="p">)</span>
+</code></pre></div>
+
+<p>First we should note that the paths will be prefixed with the
+<code>base_path</code> provided to the router.</p>
+<p>Referring back to the implementation of <code>get_book</code> we can
+see  that the camel-case path variable <code>bookId</code> has been
+mapped to the snake-case <code>book_id</code> parameter. The JSON object provided in the body of the <code>create_book</code> will
+similarly map camel-cased properties to the snake-cased
+function parameters.</p>
+<p>We can also see how the status codes have been overridden
+for the <code>POST</code> and <code>PUT</code> endpoints, and all the routes
+have the "Books" tag for grouping in the UI.</p>
+<h2 id="serving-the-api">Serving the API<a class="headerlink" href="#serving-the-api" title="Permanent link">&para;</a></h2>
+<p>Finally we can serve the API:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">uvicorn</span>
+
+<span class="n">uvicorn</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">9009</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Browsing to http://localhost/api/1/swagger we should see:</p>
+<p><img alt="Top Level" src="../screenshot1.png" /></p>
+<p>When we expand <code>GET /books/{bookId}</code> we can see all the
+information provided in the docstring and typing has been
+passed through to the swagger UI.</p>
+<p><img alt="GET /books/{bookId}" src="../screenshot2.png" /></p>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../installation/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Installation" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Installation
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../../api/bareasgi_rest/" class="md-footer__link md-footer__link--next" aria-label="Next: bareasgi_rest" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              bareasgi_rest
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.94ec81fe.min.js", "version": {"provider": "mike", "default": "stable"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.48dfec6c.min.js"></script>
+      
+    
+  </body>
+</html>
