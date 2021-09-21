@@ -15,7 +15,7 @@ from typing import (
 from bareasgi.basic_router.path_definition import PathDefinition
 from docstring_parser import Docstring, DocstringParam
 import jetblack_serialization.typing_inspect_ex as typing_inspect
-from jetblack_serialization.annotations import (
+from jetblack_serialization.custom_annotations import (
     is_any_serialization_annotation
 )
 

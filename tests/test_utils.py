@@ -6,11 +6,15 @@ from functools import partial
 import inspect
 from typing import Any, Dict, List, Optional
 from typing import TypedDict
-from typing_extensions import Annotated  # type: ignore
+try:
+    from typing import Annotated  # type: ignore
+except:  # pylint: disable=bare-except
+    from typing_extensions import Annotated  # type: ignore
 
 import pytest
 from stringcase import snakecase, camelcase
 
+from jetblack_serialization import DefaultValue
 from jetblack_serialization.config import SerializerConfig
 from jetblack_serialization.utils import (
     is_simple_type,
@@ -36,8 +40,8 @@ class MockDict(TypedDict):
     arg_num1: str
     arg_num2: List[int]
     arg_num3: datetime
-    arg_num4: Optional[Decimal] = Decimal('1')
-    arg_num5: Optional[float] = None
+    arg_num4: Annotated[Optional[Decimal], DefaultValue(Decimal('1'))]
+    arg_num5: Annotated[Optional[float], DefaultValue(None)]
 
 
 @pytest.mark.asyncio

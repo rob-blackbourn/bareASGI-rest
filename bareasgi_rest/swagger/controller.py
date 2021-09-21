@@ -5,6 +5,7 @@ import json
 from typing import (
     Any,
     Dict,
+    Mapping,
     Optional
 )
 
@@ -51,9 +52,16 @@ class SwaggerController:
         Args:
             router (BasicHttpRouter): The router
         """
-        router.add({'GET'}, self.base_path +
-                   '/swagger.json', self._swagger_json)
-        router.add({'GET'}, self.base_path + '/swagger', self._swagger_ui)
+        router.add(
+            {'GET'},
+            self.base_path + '/swagger.json',
+            self._swagger_json
+        )
+        router.add(
+            {'GET'},
+            self.base_path + '/swagger',
+            self._swagger_ui
+        )
 
     async def _swagger_json(
             self,
@@ -72,7 +80,7 @@ class SwaggerController:
             _info: Info,
             _matches: RouteMatches,
             _content: Content
-    ) -> Dict[str, Any]:
+    ) -> Mapping[str, Any]:
         return {
             "title": self.title,
             "specs_url": self.base_path + "/swagger.json",
