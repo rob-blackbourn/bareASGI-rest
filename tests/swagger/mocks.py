@@ -7,7 +7,12 @@ try:
     from typing import TypedDict  # type:ignore
 except:  # pylint: disable=bare-except
     from typing_extensions import TypedDict
+try:
+    from typing import Annotated  # type: ignore
+except:  # pylint: disable=bare-except
+    from typing_extensions import Annotated
 
+from jetblack_serialization import DefaultValue
 from stringcase import camelcase, snakecase
 
 from bareasgi_rest.swagger.config import SwaggerConfig
@@ -31,8 +36,8 @@ class MockDict(TypedDict):
     arg_num1: str
     arg_num2: List[int]
     arg_num3: datetime
-    arg_num4: Optional[Decimal] = Decimal('1')
-    arg_num5: Optional[float] = None
+    arg_num4: Annotated[Optional[Decimal], DefaultValue(Decimal('1'))]
+    arg_num5: Annotated[Optional[float], DefaultValue(None)]
 
 
 async def mock_func(

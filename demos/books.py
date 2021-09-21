@@ -9,15 +9,19 @@ try:
     from typing import TypedDict  # type:ignore
 except:  # pylint: disable=bare-except
     from typing_extensions import TypedDict
-from typing_extensions import Annotated  # type: ignore
+try:
+    from typing import Annotated  # type: ignore
+except:  # pylint: disable=bare-except
+    from typing_extensions import Annotated  # type: ignore
 from urllib.error import HTTPError
 
 from bareasgi import Application
 import uvicorn
 
-from bareasgi_rest import RestHttpRouter, add_swagger_ui
 from jetblack_serialization.json import JSONValue
 from jetblack_serialization.xml import XMLEntity
+
+from bareasgi_rest import RestHttpRouter, add_swagger_ui
 
 logging.basicConfig(level=logging.DEBUG)
 

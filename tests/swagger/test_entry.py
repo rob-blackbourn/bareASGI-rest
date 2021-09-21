@@ -231,7 +231,7 @@ def test_post():
             library: str,
             is_withdrawn: bool,
             book: Annotated[Book, JSONValue()]
-    ) -> None:
+    ) -> List[Book]:
         """Update the book if not withdrawn
 
         Args:
@@ -306,7 +306,37 @@ def test_post():
         'consumes': ['application/json'],
         'responses': {
             200: {
-                'description': 'OK'
+                'description': 'OK',
+                'schema': {
+                    'type': 'array',
+                    'collectionFormat': 'multi',
+                    'items': {
+                        'type': 'object',
+                        'properties': {
+                            'bookId': {
+                                'name': 'bookId',
+                                'description': 'The book id',
+                                'type': 'integer'
+                            },
+                            'title': {
+                                'name': 'title',
+                                'description': 'The title',
+                                'type': 'string'
+                            },
+                            'author': {
+                                'name': 'author',
+                                'description': 'The author',
+                                'type': 'string'
+                            },
+                            'publicationDate': {
+                                'name': 'publicationDate',
+                                'description': 'The publication date',
+                                'type': 'string',
+                                'format': 'date-time'
+                            }
+                        }
+                    }
+                }
             }
         },
         'summary': 'Update the book if not withdrawn',

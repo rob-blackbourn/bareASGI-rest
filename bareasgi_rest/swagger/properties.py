@@ -12,6 +12,10 @@ from typing import (
 import docstring_parser
 from docstring_parser import Docstring
 
+from jetblack_serialization.custom_annotations import (
+    get_default_annotation,
+    is_any_default_annotation
+)
 from jetblack_serialization.types import Annotation
 import jetblack_serialization.typing_inspect_ex as typing_inspect
 
@@ -119,6 +123,14 @@ def get_property(
     return prop
 
 
+def _get_default(annotation, member_annotation, name) -> Any:
+    if is_any_default_annotation(member_annotation):
+        _, default_value = get_default_annotation(member_annotation)
+        return default_value.value
+
+    return getattr(annotation, name, inspect.Parameter.empty)
+
+
 def get_properties(
         annotation,
         docstring: Docstring,
@@ -144,7 +156,7 @@ def get_properties(
         camelcase_name = config.serialize_key(name)
         docstring_param = find_docstring_param(name, docstring)
         description = docstring_param.description if docstring_param else None
-        default = getattr(annotation, name, inspect.Parameter.empty)
+        default = _get_default(annotation, member_annotation, name)
 
         properties[camelcase_name] = get_property(
             member_annotation,

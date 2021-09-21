@@ -3,7 +3,9 @@
 from inspect import Parameter, Signature
 from typing import Any, Awaitable, Callable, Dict, List, Tuple
 
-from jetblack_serialization.annotations import is_any_serialization_annotation
+from jetblack_serialization.custom_annotations import (
+    is_any_serialization_annotation
+)
 
 import jetblack_serialization.typing_inspect_ex as typing_inspect
 
