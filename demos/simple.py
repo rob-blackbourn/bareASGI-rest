@@ -1,5 +1,10 @@
 """
 A simple request handler.
+
+Try the following endpoints:
+
+- http://localhost:9009/named?name=hello&count=1
+- http://localhost:9009/bar/hello/1
 """
 
 from datetime import datetime
@@ -32,7 +37,11 @@ if __name__ == "__main__":
 
     http_router = RestHttpRouter("Simple", "1")
     app = Application(http_router=http_router)
+    # A non-rest endpoint.
     http_router.add({'GET'}, '/foo', http_request_callback)
+    # For http://localhost:9009/bar/hello/1
     http_router.add_rest({'GET'}, '/bar/{name:str}/{count:int}', rest_callback)
+    # For http://localhost:9009/named?name=hello&count=1
+    http_router.add_rest({'GET'}, '/named', rest_callback)
 
     uvicorn.run(app, port=9009)
