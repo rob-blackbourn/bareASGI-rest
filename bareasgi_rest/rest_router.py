@@ -22,20 +22,11 @@ from typing import (
     Tuple,
     cast
 )
-from urllib.error import HTTPError
 from urllib.parse import parse_qs
 
-from bareasgi import text_reader, text_writer
+from bareasgi import HttpRequest, HttpResponse, text_reader, text_writer
 from bareasgi.basic_router.http_router import BasicHttpRouter, PathDefinition
-from baretypes import (
-    RouteMatches,
-    Scope,
-    Info,
-    Content,
-    HttpResponse
-)
-import bareutils.header as header
-import bareutils.response_code as response_code
+from bareutils import header, response_code
 from jetblack_serialization.config import SerializerConfig
 
 from .arg_builder import make_args
@@ -105,7 +96,6 @@ class RestHttpRouter(BasicHttpRouter):
         from bareasgi import Application
         from bareasgi_rest import RestHttpRouter, add_swagger_ui
 
-
         router = RestHttpRouter(
             None,
             title="Books",
@@ -121,13 +111,13 @@ class RestHttpRouter(BasicHttpRouter):
         )
         app = Application(http_router=router)
         add_swagger_ui(app)
-        ```        
+        ```
 
         Args:
             not_found_response (HttpResponse): The response sent when a route is
-                not found
-            title (str): The title of the swagger documentation
-            version (str): The version of the exposed API
+                not found.
+            title (str): The title of the swagger documentation.
+            version (str): The version of the exposed API.
             description (Optional[str], optional): The API description. Defaults
                 to None.
             base_path (str, optional): The base path of the API. Defaults to ''.
@@ -275,23 +265,18 @@ class RestHttpRouter(BasicHttpRouter):
             arg_serializer_config or self.arg_serializer_config
         )
 
-        async def rest_callback(
-                scope: Scope,
-                _info: Info,
-                matches: RouteMatches,
-                content: Content
-        ) -> HttpResponse:
+        async def rest_callback(request: HttpRequest) -> HttpResponse:
 
             route_args: Dict[str, str] = {
                 self.arg_serializer_config.deserialize_key(name): value
-                for name, value in matches.items()
+                for name, value in request.matches.items()
             }
-            query_string = scope['query_string'].decode()
+            query_string = request.scope['query_string'].decode()
             query_args: Dict[str, List[str]] = {
                 self.arg_serializer_config.deserialize_key(name): values
                 for name, values in parse_qs(query_string).items()
             }
-            body_reader = self._get_body_reader(scope, content)
+            body_reader = self._get_body_reader(request)
 
             try:
                 args, kwargs = await make_args(
@@ -301,26 +286,16 @@ class RestHttpRouter(BasicHttpRouter):
                     body_reader,
                     arg_deserializer
                 )
-            except BaseException as error:
-                raise HTTPError(
-                    scope['path'],
+            except BaseException as error:  # pylint: disable=broad-except
+                return HttpResponse(
                     response_code.BAD_REQUEST,
-                    ". ".join(error.args),
-                    scope['headers'],
-                    None  # type: ignore
-                ) from error
-            try:
-                body = await callback(*args, **kwargs)
-            except HTTPError as error:
-                raise HTTPError(
-                    scope['path'],
-                    error.code if error.code is not None else response_code.INTERNAL_SERVER_ERROR,
-                    str(error.reason),
-                    scope['headers'],
-                    None  # type: ignore
-                ) from error
+                    [(b'content-type', b'text/plain')],
+                    text_writer("Failed to make args:" + ". ".join(error.args))
+                )
 
-            accept = header.accept(scope['headers'])
+            body = await callback(*args, **kwargs)
+
+            accept = header.accept(request.scope['headers'])
             writer = self._make_writer(
                 body,
                 accept,
@@ -334,17 +309,17 @@ class RestHttpRouter(BasicHttpRouter):
                     if content_type in accept:
                         break
                 else:
-                    raise HTTPError(
-                        scope['path'],
-                        response_code.INTERNAL_SERVER_ERROR,
-                        'Unhandled content type',
-                        scope['headers'],
-                        None  # type: ignore
+                    return HttpResponse(
+                        response_code.UNSUPPORTED_MEDIA_TYPE,
+                        [(b'content-type', b'text/plain')],
+                        text_writer('Unsupported media type')
                     )
+
             headers = [
                 (b'content-type', content_type)
             ]
-            return status_code, headers, writer
+
+            return HttpResponse(status_code, headers, writer)
 
         self.add_route(method, path_definition, rest_callback)
 
@@ -382,15 +357,14 @@ class RestHttpRouter(BasicHttpRouter):
 
     def _get_body_reader(
             self,
-            scope: Scope,
-            content: Content
+            request: HttpRequest
     ) -> Callable[[Any], Awaitable[Any]]:
-        if scope['method'] in {'GET'}:
+        if request.scope['method'] in {'GET'}:
             deserializer: Optional[Deserializer] = None
             serializer_config: SerializerConfig = DEFAULT_JSON_SERIALIZER_CONFIG
         else:
             media_type, params = header.content_type(
-                scope['headers']
+                request.scope['headers']
             ) or (b'application/json', cast(Dict[bytes, Any], {}))
             deserializer = self.consumes[media_type]
             serializer_config = self.serializer_configs[media_type]
@@ -398,7 +372,7 @@ class RestHttpRouter(BasicHttpRouter):
         async def body_reader(annotation: Any) -> Any:
             if deserializer is None:
                 raise RuntimeError('No deserializer')
-            text = await text_reader(content)
+            text = await text_reader(request.body)
             return deserializer(
                 media_type,
                 cast(Dict[bytes, Any], params),

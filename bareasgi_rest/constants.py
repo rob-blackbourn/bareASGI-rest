@@ -1,7 +1,6 @@
 """Constants"""
 
-from baretypes import HttpResponse
-from bareutils import text_writer
+from bareasgi import HttpResponse, text_writer
 from stringcase import camelcase, snakecase, pascalcase
 
 from jetblack_serialization.config import SerializerConfig
@@ -44,11 +43,10 @@ DEFAULT_PRODUCES: DictProduces = {
 
 DEFAULT_COLLECTION_FORMAT = 'multi'
 
-DEFAULT_NOT_FOUND_RESPONSE: HttpResponse = (
+DEFAULT_NOT_FOUND_RESPONSE: HttpResponse = HttpResponse(
     404,
     [(b'content-type', b'text/plain')],
-    text_writer('Not Found'),
-    None
+    text_writer('Not Found')
 )
 
 DEFAULT_JSON_SERIALIZER_CONFIG = SerializerConfig(camelcase, snakecase)

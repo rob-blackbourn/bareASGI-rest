@@ -2,23 +2,12 @@
 
 import logging
 import json
-from typing import (
-    Any,
-    Dict,
-    Mapping,
-    Optional
-)
+from typing import Optional
 
-from bareasgi import text_writer
+from bareasgi import HttpRequest, HttpResponse, text_writer
 from bareasgi.basic_router.http_router import BasicHttpRouter
-from baretypes import (
-    RouteMatches,
-    Scope,
-    Info,
-    Content,
-    HttpResponse
-)
-import bareasgi_jinja2
+from bareasgi_jinja2 import Jinja2TemplateProvider
+from bareutils import response_code
 
 from .repository import SwaggerRepository
 from .config import SwaggerConfig
@@ -63,28 +52,20 @@ class SwaggerController:
             self._swagger_ui
         )
 
-    async def _swagger_json(
-            self,
-            _scope: Scope,
-            _info: Info,
-            _matches: RouteMatches,
-            _content: Content
-    ) -> HttpResponse:
-        spec = json.dumps(self.repo.definition)
-        return 200, [(b'content-type', b'application/json')], text_writer(spec)
+    async def _swagger_json(self, _request: HttpRequest) -> HttpResponse:
+        body = text_writer(json.dumps(self.repo.definition))
+        headers = [(b'content-type', b'application/json')]
+        return HttpResponse(response_code.OK, headers, body)
 
-    @bareasgi_jinja2.template('swagger.html')
-    async def _swagger_ui(
-            self,
-            _scope: Scope,
-            _info: Info,
-            _matches: RouteMatches,
-            _content: Content
-    ) -> Mapping[str, Any]:
-        return {
-            "title": self.title,
-            "specs_url": self.base_path + "/swagger.json",
-            'swagger_base_url': self.swagger_base_url,
-            'typeface_url': self.typeface_url,
-            "config": self.config
-        }
+    async def _swagger_ui(self, request: HttpRequest) -> HttpResponse:
+        return await Jinja2TemplateProvider.apply(
+            request,
+            'swagger.html',
+            {
+                "title": self.title,
+                "specs_url": self.base_path + "/swagger.json",
+                'swagger_base_url': self.swagger_base_url,
+                'typeface_url': self.typeface_url,
+                "config": self.config
+            }
+        )
