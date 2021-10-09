@@ -19,7 +19,7 @@ docstring-parser = "^0.6"
 typing-extensions = "^3.7"
 lxml = "^4.4.2"
 stringcase = "^1.2.0"
-jetblack-serialization = "^2.0.2"
+jetblack-serialization = "^2.1"
 
 [tool.poetry.dev-dependencies]
 autopep8 = "^1.5"

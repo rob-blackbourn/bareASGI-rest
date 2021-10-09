@@ -49,7 +49,8 @@ from .types import (
     DictProduces,
     DictSerializerConfig,
     RestCallback,
-    ArgDeserializerFactory
+    ArgDeserializerFactory,
+    Serializer
 )
 
 LOGGER = logging.getLogger(__name__)
@@ -72,10 +73,10 @@ class RestHttpRouter(BasicHttpRouter):
 
     def __init__(
             self,
-            not_found_response: HttpResponse,
-            *,
             title: str,
             version: str,
+            *,
+            not_found_response: Optional[HttpResponse] = None,
             description: Optional[str] = None,
             base_path: str = '',
             consumes: Optional[DictConsumes] = None,
@@ -97,7 +98,6 @@ class RestHttpRouter(BasicHttpRouter):
         from bareasgi_rest import RestHttpRouter, add_swagger_ui
 
         router = RestHttpRouter(
-            None,
             title="Books",
             version="1",
             description="A book api",
@@ -114,10 +114,10 @@ class RestHttpRouter(BasicHttpRouter):
         ```
 
         Args:
-            not_found_response (HttpResponse): The response sent when a route is
-                not found.
             title (str): The title of the swagger documentation.
             version (str): The version of the exposed API.
+            not_found_response (Optional[HttpResponse], optional): The response
+                sent when a route is not found. Defaults to None.
             description (Optional[str], optional): The API description. Defaults
                 to None.
             base_path (str, optional): The base path of the API. Defaults to ''.
@@ -309,11 +309,15 @@ class RestHttpRouter(BasicHttpRouter):
                     if content_type in accept:
                         break
                 else:
-                    return HttpResponse(
-                        response_code.UNSUPPORTED_MEDIA_TYPE,
-                        [(b'content-type', b'text/plain')],
-                        text_writer('Unsupported media type')
-                    )
+                    if b'*/*' in accept:
+                        # Prefer the first content type that is supported.
+                        content_type = produces[0]
+                    else:
+                        return HttpResponse(
+                            response_code.UNSUPPORTED_MEDIA_TYPE,
+                            [(b'content-type', b'text/plain')],
+                            text_writer('Unsupported media type')
+                        )
 
             headers = [
                 (b'content-type', content_type)
@@ -326,7 +330,7 @@ class RestHttpRouter(BasicHttpRouter):
     def _make_writer(
             self,
             data: Optional[Any],
-            accept: Optional[Mapping[bytes, Tuple[bytes, Any]]],
+            accept: Optional[Mapping[bytes, Mapping[bytes, Any]]],
             return_annotation: Any,
             serializer_configs: DictSerializerConfig
     ) -> Optional[AsyncIterable[bytes]]:
@@ -334,16 +338,20 @@ class RestHttpRouter(BasicHttpRouter):
             # No need for a writer if there is no data.
             return None
 
-        if not accept:
-            accept = {b'application/json': (b'q', 1.0)}
-
-        for media_type in accept.keys():
-            if media_type in self.produces:
-                break
+        # Prefer the media types in the order they are defined.
+        media_type: Optional[bytes] = None
+        serializer: Optional[Serializer] = None
+        if accept:
+            for media_type, serializer in self.produces.items():
+                if media_type in accept:
+                    break
         else:
-            media_type = b'application/json'
+            # If no accept choose the first from produces.
+            media_type, serializer = next(iter(self.produces.items()))
 
-        serializer = self.produces[media_type]
+        if media_type is None or serializer is None:
+            raise ValueError(f'No handler for media types: {accept.keys()}')
+
         serializer_config = serializer_configs[media_type]
 
         text = serializer(

@@ -82,7 +82,7 @@ jinja2 = ">=3.0,<4.0"
 
 [[package]]
 name = "bareutils"
-version = "4.0.0"
+version = "4.0.1"
 description = "Utilities for bareASGI and bareClient"
 category = "main"
 optional = false
@@ -246,7 +246,7 @@ markdown = ">=3.1,<4.0"
 
 [[package]]
 name = "jetblack-serialization"
-version = "2.0.4"
+version = "2.1.0"
 description = "Serialization for JSON and XML using typing"
 category = "main"
 optional = false
@@ -750,7 +750,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "63163367bfd4c69937c37e49b55e10d2433962912e04a7f40bc86cc075a7f2a6"
+content-hash = "3b653d42f2aed01379c513f13f3cc0f31dc5cf5b8d12c0f739b56a97bd22db7a"
 
 [metadata.files]
 asgiref = [
@@ -782,8 +782,8 @@ bareasgi-jinja2 = [
     {file = "bareasgi_jinja2-4.0.0-py3-none-any.whl", hash = "sha256:d1e8de38aa9757e0f9c65cba025e04731524a66375398f2995e27f66ceee0e69"},
 ]
 bareutils = [
-    {file = "bareutils-4.0.0-py3-none-any.whl", hash = "sha256:2dd0c1a0754972bfdfae1c53c0e53a1293c1432b7b7bf92f4d48591780e63572"},
-    {file = "bareutils-4.0.0.tar.gz", hash = "sha256:9faca1128658a362694d658cb5afa780c550897c5964094eef7953595391bdad"},
+    {file = "bareutils-4.0.1-py3-none-any.whl", hash = "sha256:5295cbd5ae226965e9ffe058f667f5c3af3f22789305743067f9ebf4035d5e11"},
+    {file = "bareutils-4.0.1.tar.gz", hash = "sha256:716ab5aac4a21fc532265c136be35459237d7201adea681d238d1790881a421f"},
 ]
 click = [
     {file = "click-8.0.2-py3-none-any.whl", hash = "sha256:3fab8aeb8f15f5452ae7511ad448977b3417325bceddd53df87e0bb81f3a8cf8"},
@@ -841,8 +841,8 @@ jetblack-markdown = [
     {file = "jetblack_markdown-0.6-py3-none-any.whl", hash = "sha256:4215db8076584aea5949ae2323be8d7a17ce4987aa891445d16d91f0a5d3a2ae"},
 ]
 jetblack-serialization = [
-    {file = "jetblack-serialization-2.0.4.tar.gz", hash = "sha256:da95075954fe37d051e9c774f0d5a96a316fc01f701853d1958904964c67a40e"},
-    {file = "jetblack_serialization-2.0.4-py3-none-any.whl", hash = "sha256:53669c5babe55894444a27ca00fc8362a51819dec16299cf09aba029ee1b3e77"},
+    {file = "jetblack-serialization-2.1.0.tar.gz", hash = "sha256:e6ceea4defaf3295845603daafe6785e39d300d729d16ea1d0cae1240be9d110"},
+    {file = "jetblack_serialization-2.1.0-py3-none-any.whl", hash = "sha256:6122644dea343356a84ea351f8c60ad208284fd70cfb54a0c5eca00f99e3aa55"},
 ]
 jinja2 = [
     {file = "Jinja2-3.0.2-py3-none-any.whl", hash = "sha256:8569982d3f0889eed11dd620c706d39b60c36d6d25843961f33f77fb6bc6b20c"},

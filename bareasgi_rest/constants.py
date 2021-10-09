@@ -54,6 +54,7 @@ DEFAULT_XML_SERIALIZER_CONFIG = SerializerConfig(pascalcase, snakecase)
 
 DEFAULT_SERIALIZER_CONFIG: DictSerializerConfig = {
     b'application/json': DEFAULT_JSON_SERIALIZER_CONFIG,
+    b'*/*': DEFAULT_JSON_SERIALIZER_CONFIG,
     b'application/xml': DEFAULT_XML_SERIALIZER_CONFIG,
 }
 
