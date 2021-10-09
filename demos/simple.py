@@ -7,12 +7,11 @@ Try the following endpoints:
 - http://localhost:9009/bar/hello/1
 """
 
-from datetime import datetime
 import logging
 from typing import Dict, Any
 
 from bareasgi import Application, HttpRequest, HttpResponse, text_writer
-from bareasgi_rest import RestHttpRouter, rest_router
+from bareasgi_rest import RestHttpRouter
 
 logging.basicConfig(level=logging.DEBUG)
 
