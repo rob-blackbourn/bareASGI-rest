@@ -34,17 +34,27 @@ class Book(TypedDict):
         author (str): The author
         publication_date (datetime): The publication date
     """
-    book_id: int
     title: str
     author: str
     publication_date: datetime
+
+class BookWithId(Book):
+    """A Book
+
+    Args:
+        book_id (int): The book id
+        title (str): The title
+        author (str): The author
+        publication_date (datetime): The publication date
+    """
+    book_id: int
 
 
 class BookController:
     """The book controller"""
 
     def __init__(self):
-        self.books: Dict[int, Book] = {}
+        self.books: Dict[int, BookWithId] = {}
         self.next_id = 0
 
     def add_routes(self, router: RestHttpRouter):
@@ -70,7 +80,8 @@ class BookController:
             '/books',
             self.create_book,
             tags=tags,
-            status_code=201
+            status_code=201,
+            consumes=[b'application/json', b'application/xml']
         )
         router.add_rest(
             {'PUT'},
@@ -83,7 +94,7 @@ class BookController:
 
     async def get_books(
             self
-    ) -> Annotated[List[Book], JSONValue(), XMLEntity('Book')]:
+    ) -> Annotated[List[BookWithId], JSONValue(), XMLEntity('Book')]:
         """Get all the books.
 
         This method gets all the books in the shop.
@@ -96,7 +107,7 @@ class BookController:
     async def get_book(
             self,
             book_id: int
-    ) -> Annotated[Book, JSONValue(), XMLEntity('Book')]:
+    ) -> Annotated[BookWithId, JSONValue(), XMLEntity('Book')]:
         """Get a book for a given id
 
         Args:
@@ -116,27 +127,23 @@ class BookController:
 
     async def create_book(
             self,
-            author: str,
-            title: str,
-            publication_date: datetime
+            book: Annotated[Book, JSONValue(), XMLEntity('Book')]
     ) -> int:
         """Add a book
 
         Args:
-            author (str): The author
-            title (str): The title
-            publication_date (datetime): The publication date
+            book (Book): The book
 
         Returns:
             int: The id of the new book
         """
         self.next_id += 1
 
-        self.books[self.next_id] = Book(
+        self.books[self.next_id] = BookWithId(
             book_id=self.next_id,
-            title=title,
-            author=author,
-            publication_date=publication_date
+            title=book['title'],
+            author=book['author'],
+            publication_date=book['publication_date']
         )
 
         return self.next_id
@@ -157,7 +164,8 @@ class BookController:
         """
         if book_id not in self.books:
             raise RestError(404, 'Book not found')
-        self.books[book_id] = book
+        found_book = self.books[book_id]
+        found_book.update(book)
 
 
 if __name__ == "__main__":
