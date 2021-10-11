@@ -5,14 +5,13 @@ A simple request handler.
 from datetime import datetime
 import logging
 from typing import Any, Dict, List
-from urllib.error import HTTPError
 
 from bareasgi import Application
 from jetblack_serialization.json import JSONValue
 from typing_extensions import Annotated  # type: ignore
 import uvicorn
 
-from bareasgi_rest import RestHttpRouter, add_swagger_ui
+from bareasgi_rest import RestHttpRouter, RestError, add_swagger_ui
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -82,7 +81,7 @@ class BookController:
         """
 
         if book_id not in self.books:
-            raise HTTPError(None, 404, 'Book not found', None, None)
+            raise RestError(404, 'Book not found')
 
         return self.books[book_id]
 
@@ -128,14 +127,13 @@ class BookController:
             HTTPError: 404, when a book is not found
         """
         if book_id not in self.books:
-            raise HTTPError(None, 404, None, None, None)
+            raise RestError(404, "Unable to find book")
         self.books[book_id] = book
 
 
 if __name__ == "__main__":
 
     rest_router = RestHttpRouter(
-        None,
         title="Books",
         version="1",
         description="A book api",
