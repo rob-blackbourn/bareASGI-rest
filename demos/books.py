@@ -3,6 +3,7 @@ A simple request handler.
 """
 
 from datetime import datetime
+from enum import Enum, auto
 import logging
 from typing import Dict, List
 try:
@@ -24,6 +25,9 @@ from bareasgi_rest import RestHttpRouter, RestError, add_swagger_ui
 
 logging.basicConfig(level=logging.DEBUG)
 
+class Genre(Enum):
+    FICTION = auto()
+    NON_FICTION = auto()
 
 class Book(TypedDict):
     """A Book
@@ -33,10 +37,12 @@ class Book(TypedDict):
         title (str): The title
         author (str): The author
         publication_date (datetime): The publication date
+        genre (Genre): The genre
     """
     title: str
     author: str
     publication_date: datetime
+    genre: Genre
 
 class BookWithId(Book):
     """A Book
@@ -143,7 +149,8 @@ class BookController:
             book_id=self.next_id,
             title=book['title'],
             author=book['author'],
-            publication_date=book['publication_date']
+            publication_date=book['publication_date'],
+            genre=book['genre']
         )
 
         return self.next_id

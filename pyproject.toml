@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bareASGI-rest"
-version = "4.0.0-alpha.0"
+version = "4.0.0-alpha.1"
 description = "REST support for bareASGI"
 repository = "https://github.com/rob-blackbourn/bareASGI-rest"
 authors = ["Rob Blackbourn <rob.blackbourn@gmail.com>"]
@@ -19,7 +19,7 @@ docstring-parser = "^0.6"
 typing-extensions = "^3.7"
 lxml = "^4.4.2"
 stringcase = "^1.2.0"
-jetblack-serialization = "^3.0.0-alpha.0"
+jetblack-serialization = "^3.0.0-alpha.2"
 
 [tool.poetry.dev-dependencies]
 autopep8 = "^1.5"

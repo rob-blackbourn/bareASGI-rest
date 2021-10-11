@@ -246,7 +246,7 @@ markdown = ">=3.1,<4.0"
 
 [[package]]
 name = "jetblack-serialization"
-version = "3.0.0a0"
+version = "3.0.0a2"
 description = "Serialization for JSON and XML using typing"
 category = "main"
 optional = false
@@ -750,7 +750,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "b8265e02119cd7a8a0cf11456d4808ffc42ee287aa65ffb256efa622bcb34f51"
+content-hash = "9798369259a8ad57d4fe380f1a10dabc9af9ec4a4127a34faafd015e54bb7fce"
 
 [metadata.files]
 asgiref = [
@@ -841,8 +841,8 @@ jetblack-markdown = [
     {file = "jetblack_markdown-0.6-py3-none-any.whl", hash = "sha256:4215db8076584aea5949ae2323be8d7a17ce4987aa891445d16d91f0a5d3a2ae"},
 ]
 jetblack-serialization = [
-    {file = "jetblack-serialization-3.0.0a0.tar.gz", hash = "sha256:6a673d33300c5f2d8b061ce3418a3cb9fd8798d561d0a11feb562cda9b0d7032"},
-    {file = "jetblack_serialization-3.0.0a0-py3-none-any.whl", hash = "sha256:e65b6783e508c38447ed8ab691d24a5a535cba0a350ad504aad093d5a293830e"},
+    {file = "jetblack-serialization-3.0.0a2.tar.gz", hash = "sha256:4bf31c638929a59dd0988dff646bf1ca01f5645ddee34675e265e88641fb7960"},
+    {file = "jetblack_serialization-3.0.0a2-py3-none-any.whl", hash = "sha256:ca388a45b308880785a2a0efd27ae2864a521121eeae39530273282542916cf0"},
 ]
 jinja2 = [
     {file = "Jinja2-3.0.2-py3-none-any.whl", hash = "sha256:8569982d3f0889eed11dd620c706d39b60c36d6d25843961f33f77fb6bc6b20c"},
