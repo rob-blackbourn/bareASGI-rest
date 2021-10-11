@@ -90,7 +90,7 @@ python-versions = ">=3.7,<4.0"
 
 [[package]]
 name = "click"
-version = "8.0.2"
+version = "8.0.3"
 description = "Composable command line interface toolkit"
 category = "dev"
 optional = false
@@ -246,7 +246,7 @@ markdown = ">=3.1,<4.0"
 
 [[package]]
 name = "jetblack-serialization"
-version = "2.1.0"
+version = "3.0.0a0"
 description = "Serialization for JSON and XML using typing"
 category = "main"
 optional = false
@@ -254,9 +254,9 @@ python-versions = ">=3.7,<4.0"
 
 [package.dependencies]
 jetblack-iso8601 = ">=1.0,<2.0"
-lxml = ">=4.4.2,<5.0.0"
-typing-extensions = ">=3.7,<4.0"
-typing_inspect = ">=0.5.0,<0.6.0"
+lxml = ">=4.6,<5.0"
+typing-extensions = ">=3.10,<4.0"
+typing_inspect = ">=0.7,<0.8"
 
 [[package]]
 name = "jinja2"
@@ -479,11 +479,11 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [[package]]
 name = "pycodestyle"
-version = "2.7.0"
+version = "2.8.0"
 description = "Python style guide checker"
 category = "dev"
 optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
 name = "pygments"
@@ -660,7 +660,7 @@ python-versions = "*"
 
 [[package]]
 name = "typing-inspect"
-version = "0.5.0"
+version = "0.7.1"
 description = "Runtime inspection utilities for typing module."
 category = "main"
 optional = false
@@ -750,7 +750,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "3b653d42f2aed01379c513f13f3cc0f31dc5cf5b8d12c0f739b56a97bd22db7a"
+content-hash = "b8265e02119cd7a8a0cf11456d4808ffc42ee287aa65ffb256efa622bcb34f51"
 
 [metadata.files]
 asgiref = [
@@ -786,8 +786,8 @@ bareutils = [
     {file = "bareutils-4.0.1.tar.gz", hash = "sha256:716ab5aac4a21fc532265c136be35459237d7201adea681d238d1790881a421f"},
 ]
 click = [
-    {file = "click-8.0.2-py3-none-any.whl", hash = "sha256:3fab8aeb8f15f5452ae7511ad448977b3417325bceddd53df87e0bb81f3a8cf8"},
-    {file = "click-8.0.2.tar.gz", hash = "sha256:7027bc7bbafaab8b2c2816861d8eb372429ee3c02e193fc2f93d6c4ab9de49c5"},
+    {file = "click-8.0.3-py3-none-any.whl", hash = "sha256:353f466495adaeb40b6b5f592f9f91cb22372351c84caeb068132442a4518ef3"},
+    {file = "click-8.0.3.tar.gz", hash = "sha256:410e932b050f5eed773c4cda94de75971c89cdb3155a72a0831139a79e5ecb5b"},
 ]
 colorama = [
     {file = "colorama-0.4.4-py2.py3-none-any.whl", hash = "sha256:9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2"},
@@ -841,8 +841,8 @@ jetblack-markdown = [
     {file = "jetblack_markdown-0.6-py3-none-any.whl", hash = "sha256:4215db8076584aea5949ae2323be8d7a17ce4987aa891445d16d91f0a5d3a2ae"},
 ]
 jetblack-serialization = [
-    {file = "jetblack-serialization-2.1.0.tar.gz", hash = "sha256:e6ceea4defaf3295845603daafe6785e39d300d729d16ea1d0cae1240be9d110"},
-    {file = "jetblack_serialization-2.1.0-py3-none-any.whl", hash = "sha256:6122644dea343356a84ea351f8c60ad208284fd70cfb54a0c5eca00f99e3aa55"},
+    {file = "jetblack-serialization-3.0.0a0.tar.gz", hash = "sha256:6a673d33300c5f2d8b061ce3418a3cb9fd8798d561d0a11feb562cda9b0d7032"},
+    {file = "jetblack_serialization-3.0.0a0-py3-none-any.whl", hash = "sha256:e65b6783e508c38447ed8ab691d24a5a535cba0a350ad504aad093d5a293830e"},
 ]
 jinja2 = [
     {file = "Jinja2-3.0.2-py3-none-any.whl", hash = "sha256:8569982d3f0889eed11dd620c706d39b60c36d6d25843961f33f77fb6bc6b20c"},
@@ -1060,8 +1060,8 @@ py = [
     {file = "py-1.10.0.tar.gz", hash = "sha256:21b81bda15b66ef5e1a777a21c4dcd9c20ad3efd0b3f817e7a809035269e1bd3"},
 ]
 pycodestyle = [
-    {file = "pycodestyle-2.7.0-py2.py3-none-any.whl", hash = "sha256:514f76d918fcc0b55c6680472f0a37970994e07bbb80725808c17089be302068"},
-    {file = "pycodestyle-2.7.0.tar.gz", hash = "sha256:c389c1d06bf7904078ca03399a4816f974a1d590090fecea0c63ec26ebaf1cef"},
+    {file = "pycodestyle-2.8.0-py2.py3-none-any.whl", hash = "sha256:720f8b39dde8b293825e7ff02c475f3077124006db4f440dcbc9a20b76548a20"},
+    {file = "pycodestyle-2.8.0.tar.gz", hash = "sha256:eddd5847ef438ea1c7870ca7eb78a9d47ce0cdb4851a5523949f2601d0cbbe7f"},
 ]
 pygments = [
     {file = "Pygments-2.10.0-py3-none-any.whl", hash = "sha256:b8e67fe6af78f492b3c4b3e2970c0624cbf08beb1e493b2c99b9fa1b67a20380"},
@@ -1156,9 +1156,9 @@ typing-extensions = [
     {file = "typing_extensions-3.10.0.2.tar.gz", hash = "sha256:49f75d16ff11f1cd258e1b988ccff82a3ca5570217d7ad8c5f48205dd99a677e"},
 ]
 typing-inspect = [
-    {file = "typing_inspect-0.5.0-py2-none-any.whl", hash = "sha256:75c97b7854426a129f3184c68588db29091ff58e6908ed520add1d52fc44df6e"},
-    {file = "typing_inspect-0.5.0-py3-none-any.whl", hash = "sha256:c6ed1cd34860857c53c146a6704a96da12e1661087828ce350f34addc6e5eee3"},
-    {file = "typing_inspect-0.5.0.tar.gz", hash = "sha256:811b44f92e780b90cfe7bac94249a4fae87cfaa9b40312765489255045231d9c"},
+    {file = "typing_inspect-0.7.1-py2-none-any.whl", hash = "sha256:b1f56c0783ef0f25fb064a01be6e5407e54cf4a4bf4f3ba3fe51e0bd6dcea9e5"},
+    {file = "typing_inspect-0.7.1-py3-none-any.whl", hash = "sha256:3cd7d4563e997719a710a3bfe7ffb544c6b72069b6812a02e9b414a8fa3aaa6b"},
+    {file = "typing_inspect-0.7.1.tar.gz", hash = "sha256:047d4097d9b17f46531bf6f014356111a1b6fb821a24fe7ac909853ca2a782aa"},
 ]
 uvicorn = [
     {file = "uvicorn-0.15.0-py3-none-any.whl", hash = "sha256:17f898c64c71a2640514d4089da2689e5db1ce5d4086c2d53699bf99513421c1"},

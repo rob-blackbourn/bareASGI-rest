@@ -11,7 +11,7 @@ import logging
 from typing import Dict, Any
 
 from bareasgi import Application, HttpRequest, HttpResponse, text_writer
-from bareasgi_rest import RestHttpRouter
+from bareasgi_rest import RestHttpRouter, add_swagger_ui
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -36,6 +36,9 @@ if __name__ == "__main__":
 
     http_router = RestHttpRouter("Simple", "1")
     app = Application(http_router=http_router)
+
+    add_swagger_ui(app)
+    
     # A non-rest endpoint.
     http_router.add({'GET'}, '/foo', http_request_callback)
     # For http://localhost:9009/bar/hello/1

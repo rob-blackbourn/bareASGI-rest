@@ -29,16 +29,16 @@ DEFAULT_TYPEFACE_URL = "https://fonts.googleapis.com/css?family=Roboto:300,400,5
 
 DEFAULT_CONSUMES: DictConsumes = {
     b'application/json': from_json,
-    b'*/*': from_json,
     b'application/x-www-form-urlencoded': from_query_string,
     b'multipart/form-data': from_form_data,
     b'application/xml': from_xml,
+    b'*/*': from_json,
 }
 
 DEFAULT_PRODUCES: DictProduces = {
     b'application/json': to_json,
-    b'*/*': to_json,
     b'application/xml': to_xml,
+    b'*/*': to_json,
 }
 
 DEFAULT_COLLECTION_FORMAT = 'multi'

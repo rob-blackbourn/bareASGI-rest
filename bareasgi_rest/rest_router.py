@@ -180,8 +180,8 @@ class RestHttpRouter(BasicHttpRouter):
             path: str,
             callback: RestCallback,
             *,
-            consumes: Sequence[bytes] = (b'application/json',),
-            produces: Sequence[bytes] = (b'application/json',),
+            consumes: Optional[Sequence[bytes]] = None,
+            produces: Optional[Sequence[bytes]] = None,
             collection_format: str = DEFAULT_COLLECTION_FORMAT,
             tags: Optional[List[str]] = None,
             status_code: int = response_code.OK,
@@ -197,9 +197,9 @@ class RestHttpRouter(BasicHttpRouter):
             path (str): The path
             callback (RestCallback): The callback
             produces (List[bytes], optional): The accept media type. Defaults to
-                b'application/json'.
+                None.
             consumes (List[bytes], optional): The content media type. Defaults
-                to b'application/json'.
+                to None.
             collection_format (str, optional): The format of repeated values.
                 Defaults to DEFAULT_COLLECTION_FORMAT.
             tags (Optional[List[str]], optional): A list of tags. Defaults to
@@ -215,6 +215,11 @@ class RestHttpRouter(BasicHttpRouter):
                 deserializer configuration for arguments. Defaults to None.
         """
         LOGGER.debug('Adding route for %s on "%s"', methods, path)
+
+        if produces is None:
+            produces = list(self.produces.keys())
+        if consumes is None:
+            consumes = list(self.consumes.keys())
 
         for method in methods:
             self._add_method(
