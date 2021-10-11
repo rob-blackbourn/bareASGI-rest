@@ -13,7 +13,6 @@ try:
     from typing import Annotated  # type: ignore
 except:  # pylint: disable=bare-except
     from typing_extensions import Annotated  # type: ignore
-from urllib.error import HTTPError
 
 from bareasgi import Application
 import uvicorn
@@ -21,7 +20,7 @@ import uvicorn
 from jetblack_serialization.json import JSONValue
 from jetblack_serialization.xml import XMLEntity
 
-from bareasgi_rest import RestHttpRouter, add_swagger_ui
+from bareasgi_rest import RestHttpRouter, RestError, add_swagger_ui
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -104,14 +103,14 @@ class BookController:
             book_id (int): The id of the book
 
         Raises:
-            HTTPError: 404, when a book is not found
+            RestError: 404, when a book is not found
 
         Returns:
             Book: The book
         """
 
         if book_id not in self.books:
-            raise HTTPError(None, 404, 'Book not found', None, None)
+            raise RestError(404, 'Book not found')
 
         return self.books[book_id]
 
@@ -154,17 +153,16 @@ class BookController:
             book (Annotated[Book, T]): The book as the body
 
         Raises:
-            HTTPError: 404, when a book is not found
+            RestError: 404, when a book is not found
         """
         if book_id not in self.books:
-            raise HTTPError(None, 404, None, None, None)
+            raise RestError(404, 'Book not found')
         self.books[book_id] = book
 
 
 if __name__ == "__main__":
 
     rest_router = RestHttpRouter(
-        None,
         title="Books",
         version="1",
         description="A book api",

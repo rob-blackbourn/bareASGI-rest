@@ -19,7 +19,6 @@ from typing import (
     Mapping,
     Optional,
     Sequence,
-    Tuple,
     cast
 )
 from urllib.parse import parse_qs
@@ -50,6 +49,7 @@ from .types import (
     DictSerializerConfig,
     RestCallback,
     ArgDeserializerFactory,
+    RestError,
     Serializer
 )
 
@@ -293,7 +293,20 @@ class RestHttpRouter(BasicHttpRouter):
                     text_writer("Failed to make args:" + ". ".join(error.args))
                 )
 
-            body = await callback(*args, **kwargs)
+            try:
+                body = await callback(*args, **kwargs)
+            except RestError as error:
+                return HttpResponse(
+                    error.status,
+                    [(b'content-type', b'text/plain')],
+                    text_writer(error.message)
+                )
+            except BaseException as error:  # pylint: disable=broad-except
+                return HttpResponse(
+                    response_code.INTERNAL_SERVER_ERROR,
+                    [(b'content-type', b'text/plain')],
+                    text_writer(str(error))
+                )
 
             accept = header.accept(request.scope['headers'])
             writer = self._make_writer(
