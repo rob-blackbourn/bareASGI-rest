@@ -1,7 +1,6 @@
 """Constants"""
 
-from baretypes import HttpResponse
-from bareutils import text_writer
+from bareasgi import HttpResponse, text_writer
 from stringcase import camelcase, snakecase, pascalcase
 
 from jetblack_serialization.config import SerializerConfig
@@ -30,25 +29,24 @@ DEFAULT_TYPEFACE_URL = "https://fonts.googleapis.com/css?family=Roboto:300,400,5
 
 DEFAULT_CONSUMES: DictConsumes = {
     b'application/json': from_json,
-    b'*/*': from_json,
     b'application/x-www-form-urlencoded': from_query_string,
     b'multipart/form-data': from_form_data,
     b'application/xml': from_xml,
+    b'*/*': from_json,
 }
 
 DEFAULT_PRODUCES: DictProduces = {
     b'application/json': to_json,
-    b'*/*': to_json,
     b'application/xml': to_xml,
+    b'*/*': to_json,
 }
 
 DEFAULT_COLLECTION_FORMAT = 'multi'
 
-DEFAULT_NOT_FOUND_RESPONSE: HttpResponse = (
+DEFAULT_NOT_FOUND_RESPONSE: HttpResponse = HttpResponse(
     404,
     [(b'content-type', b'text/plain')],
-    text_writer('Not Found'),
-    None
+    text_writer('Not Found')
 )
 
 DEFAULT_JSON_SERIALIZER_CONFIG = SerializerConfig(camelcase, snakecase)
@@ -56,6 +54,7 @@ DEFAULT_XML_SERIALIZER_CONFIG = SerializerConfig(pascalcase, snakecase)
 
 DEFAULT_SERIALIZER_CONFIG: DictSerializerConfig = {
     b'application/json': DEFAULT_JSON_SERIALIZER_CONFIG,
+    b'*/*': DEFAULT_JSON_SERIALIZER_CONFIG,
     b'application/xml': DEFAULT_XML_SERIALIZER_CONFIG,
 }
 

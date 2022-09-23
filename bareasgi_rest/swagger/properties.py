@@ -2,7 +2,9 @@
 
 from datetime import datetime, timedelta
 from decimal import Decimal
+from enum import Enum
 import inspect
+from inspect import isclass
 from typing import (
     Any,
     Dict,
@@ -95,6 +97,9 @@ def get_property(
         # Note: Swagger has no support for durations. I made up the format.
         prop['type'] = 'string'
         prop['format'] = 'duration'
+    elif isclass(annotation) and issubclass(annotation, Enum):
+        prop['type'] = 'string'
+        prop['enum'] = [name for name, value in annotation.__members__.items()]
     elif typing_inspect.is_list_type(annotation):
         contained_type, *_rest = typing_inspect.get_args(annotation)
         prop['type'] = 'array'

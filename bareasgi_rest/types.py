@@ -47,3 +47,11 @@ ArgDeserializerFactory = Callable[
     [SerializerConfig],
     Callable[[str, Annotation], Any]
 ]
+
+
+class RestError(Exception):
+
+    def __init__(self, status: int, message: str, *args) -> None:
+        super().__init__(*args)
+        self.status = status
+        self.message = message

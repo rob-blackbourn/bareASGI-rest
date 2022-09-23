@@ -19,23 +19,13 @@ from typing import (
     Mapping,
     Optional,
     Sequence,
-    Tuple,
     cast
 )
-from urllib.error import HTTPError
 from urllib.parse import parse_qs
 
-from bareasgi import text_reader, text_writer
+from bareasgi import HttpRequest, HttpResponse, text_reader, text_writer
 from bareasgi.basic_router.http_router import BasicHttpRouter, PathDefinition
-from baretypes import (
-    RouteMatches,
-    Scope,
-    Info,
-    Content,
-    HttpResponse
-)
-import bareutils.header as header
-import bareutils.response_code as response_code
+from bareutils import header, response_code
 from jetblack_serialization.config import SerializerConfig
 
 from .arg_builder import make_args
@@ -58,7 +48,9 @@ from .types import (
     DictProduces,
     DictSerializerConfig,
     RestCallback,
-    ArgDeserializerFactory
+    ArgDeserializerFactory,
+    RestError,
+    Serializer
 )
 
 LOGGER = logging.getLogger(__name__)
@@ -81,10 +73,10 @@ class RestHttpRouter(BasicHttpRouter):
 
     def __init__(
             self,
-            not_found_response: HttpResponse,
-            *,
             title: str,
             version: str,
+            *,
+            not_found_response: Optional[HttpResponse] = None,
             description: Optional[str] = None,
             base_path: str = '',
             consumes: Optional[DictConsumes] = None,
@@ -105,9 +97,7 @@ class RestHttpRouter(BasicHttpRouter):
         from bareasgi import Application
         from bareasgi_rest import RestHttpRouter, add_swagger_ui
 
-
         router = RestHttpRouter(
-            None,
             title="Books",
             version="1",
             description="A book api",
@@ -121,13 +111,13 @@ class RestHttpRouter(BasicHttpRouter):
         )
         app = Application(http_router=router)
         add_swagger_ui(app)
-        ```        
+        ```
 
         Args:
-            not_found_response (HttpResponse): The response sent when a route is
-                not found
-            title (str): The title of the swagger documentation
-            version (str): The version of the exposed API
+            title (str): The title of the swagger documentation.
+            version (str): The version of the exposed API.
+            not_found_response (Optional[HttpResponse], optional): The response
+                sent when a route is not found. Defaults to None.
             description (Optional[str], optional): The API description. Defaults
                 to None.
             base_path (str, optional): The base path of the API. Defaults to ''.
@@ -190,8 +180,8 @@ class RestHttpRouter(BasicHttpRouter):
             path: str,
             callback: RestCallback,
             *,
-            consumes: Sequence[bytes] = (b'application/json',),
-            produces: Sequence[bytes] = (b'application/json',),
+            consumes: Optional[Sequence[bytes]] = None,
+            produces: Optional[Sequence[bytes]] = None,
             collection_format: str = DEFAULT_COLLECTION_FORMAT,
             tags: Optional[List[str]] = None,
             status_code: int = response_code.OK,
@@ -207,9 +197,9 @@ class RestHttpRouter(BasicHttpRouter):
             path (str): The path
             callback (RestCallback): The callback
             produces (List[bytes], optional): The accept media type. Defaults to
-                b'application/json'.
+                None.
             consumes (List[bytes], optional): The content media type. Defaults
-                to b'application/json'.
+                to None.
             collection_format (str, optional): The format of repeated values.
                 Defaults to DEFAULT_COLLECTION_FORMAT.
             tags (Optional[List[str]], optional): A list of tags. Defaults to
@@ -225,6 +215,11 @@ class RestHttpRouter(BasicHttpRouter):
                 deserializer configuration for arguments. Defaults to None.
         """
         LOGGER.debug('Adding route for %s on "%s"', methods, path)
+
+        if produces is None:
+            produces = list(self.produces.keys())
+        if consumes is None:
+            consumes = list(self.consumes.keys())
 
         for method in methods:
             self._add_method(
@@ -275,23 +270,18 @@ class RestHttpRouter(BasicHttpRouter):
             arg_serializer_config or self.arg_serializer_config
         )
 
-        async def rest_callback(
-                scope: Scope,
-                _info: Info,
-                matches: RouteMatches,
-                content: Content
-        ) -> HttpResponse:
+        async def rest_callback(request: HttpRequest) -> HttpResponse:
 
             route_args: Dict[str, str] = {
                 self.arg_serializer_config.deserialize_key(name): value
-                for name, value in matches.items()
+                for name, value in request.matches.items()
             }
-            query_string = scope['query_string'].decode()
+            query_string = request.scope['query_string'].decode()
             query_args: Dict[str, List[str]] = {
                 self.arg_serializer_config.deserialize_key(name): values
                 for name, values in parse_qs(query_string).items()
             }
-            body_reader = self._get_body_reader(scope, content)
+            body_reader = self._get_body_reader(request)
 
             try:
                 args, kwargs = await make_args(
@@ -301,26 +291,29 @@ class RestHttpRouter(BasicHttpRouter):
                     body_reader,
                     arg_deserializer
                 )
-            except BaseException as error:
-                raise HTTPError(
-                    scope['path'],
+            except BaseException as error:  # pylint: disable=broad-except
+                return HttpResponse(
                     response_code.BAD_REQUEST,
-                    ". ".join(error.args),
-                    scope['headers'],
-                    None  # type: ignore
-                ) from error
+                    [(b'content-type', b'text/plain')],
+                    text_writer("Failed to make args:" + ". ".join(error.args))
+                )
+
             try:
                 body = await callback(*args, **kwargs)
-            except HTTPError as error:
-                raise HTTPError(
-                    scope['path'],
-                    error.code if error.code is not None else response_code.INTERNAL_SERVER_ERROR,
-                    str(error.reason),
-                    scope['headers'],
-                    None  # type: ignore
-                ) from error
+            except RestError as error:
+                return HttpResponse(
+                    error.status,
+                    [(b'content-type', b'text/plain')],
+                    text_writer(error.message)
+                )
+            except BaseException as error:  # pylint: disable=broad-except
+                return HttpResponse(
+                    response_code.INTERNAL_SERVER_ERROR,
+                    [(b'content-type', b'text/plain')],
+                    text_writer(str(error))
+                )
 
-            accept = header.accept(scope['headers'])
+            accept = header.accept(request.scope['headers'])
             writer = self._make_writer(
                 body,
                 accept,
@@ -334,24 +327,28 @@ class RestHttpRouter(BasicHttpRouter):
                     if content_type in accept:
                         break
                 else:
-                    raise HTTPError(
-                        scope['path'],
-                        response_code.INTERNAL_SERVER_ERROR,
-                        'Unhandled content type',
-                        scope['headers'],
-                        None  # type: ignore
-                    )
+                    if b'*/*' in accept:
+                        # Prefer the first content type that is supported.
+                        content_type = produces[0]
+                    else:
+                        return HttpResponse(
+                            response_code.UNSUPPORTED_MEDIA_TYPE,
+                            [(b'content-type', b'text/plain')],
+                            text_writer('Unsupported media type')
+                        )
+
             headers = [
                 (b'content-type', content_type)
             ]
-            return status_code, headers, writer
+
+            return HttpResponse(status_code, headers, writer)
 
         self.add_route(method, path_definition, rest_callback)
 
     def _make_writer(
             self,
             data: Optional[Any],
-            accept: Optional[Mapping[bytes, Tuple[bytes, Any]]],
+            accept: Optional[Mapping[bytes, Mapping[bytes, Any]]],
             return_annotation: Any,
             serializer_configs: DictSerializerConfig
     ) -> Optional[AsyncIterable[bytes]]:
@@ -359,16 +356,20 @@ class RestHttpRouter(BasicHttpRouter):
             # No need for a writer if there is no data.
             return None
 
-        if not accept:
-            accept = {b'application/json': (b'q', 1.0)}
-
-        for media_type in accept.keys():
-            if media_type in self.produces:
-                break
+        # Prefer the media types in the order they are defined.
+        media_type: Optional[bytes] = None
+        serializer: Optional[Serializer] = None
+        if accept:
+            for media_type, serializer in self.produces.items():
+                if media_type in accept:
+                    break
         else:
-            media_type = b'application/json'
+            # If no accept choose the first from produces.
+            media_type, serializer = next(iter(self.produces.items()))
 
-        serializer = self.produces[media_type]
+        if media_type is None or serializer is None:
+            raise ValueError(f'No handler for media types: {accept.keys()}')
+
         serializer_config = serializer_configs[media_type]
 
         text = serializer(
@@ -382,15 +383,14 @@ class RestHttpRouter(BasicHttpRouter):
 
     def _get_body_reader(
             self,
-            scope: Scope,
-            content: Content
+            request: HttpRequest
     ) -> Callable[[Any], Awaitable[Any]]:
-        if scope['method'] in {'GET'}:
+        if request.scope['method'] in {'GET'}:
             deserializer: Optional[Deserializer] = None
             serializer_config: SerializerConfig = DEFAULT_JSON_SERIALIZER_CONFIG
         else:
             media_type, params = header.content_type(
-                scope['headers']
+                request.scope['headers']
             ) or (b'application/json', cast(Dict[bytes, Any], {}))
             deserializer = self.consumes[media_type]
             serializer_config = self.serializer_configs[media_type]
@@ -398,7 +398,7 @@ class RestHttpRouter(BasicHttpRouter):
         async def body_reader(annotation: Any) -> Any:
             if deserializer is None:
                 raise RuntimeError('No deserializer')
-            text = await text_reader(content)
+            text = await text_reader(request.body)
             return deserializer(
                 media_type,
                 cast(Dict[bytes, Any], params),

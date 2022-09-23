@@ -3,6 +3,7 @@ A simple request handler.
 """
 
 from datetime import datetime
+from enum import Enum, auto
 import logging
 from typing import Dict, List
 try:
@@ -13,7 +14,6 @@ try:
     from typing import Annotated  # type: ignore
 except:  # pylint: disable=bare-except
     from typing_extensions import Annotated  # type: ignore
-from urllib.error import HTTPError
 
 from bareasgi import Application
 import uvicorn
@@ -21,10 +21,13 @@ import uvicorn
 from jetblack_serialization.json import JSONValue
 from jetblack_serialization.xml import XMLEntity
 
-from bareasgi_rest import RestHttpRouter, add_swagger_ui
+from bareasgi_rest import RestHttpRouter, RestError, add_swagger_ui
 
 logging.basicConfig(level=logging.DEBUG)
 
+class Genre(Enum):
+    FICTION = auto()
+    NON_FICTION = auto()
 
 class Book(TypedDict):
     """A Book
@@ -34,18 +37,30 @@ class Book(TypedDict):
         title (str): The title
         author (str): The author
         publication_date (datetime): The publication date
+        genre (Genre): The genre
     """
-    book_id: int
     title: str
     author: str
     publication_date: datetime
+    genre: Genre
+
+class BookWithId(Book):
+    """A Book
+
+    Args:
+        book_id (int): The book id
+        title (str): The title
+        author (str): The author
+        publication_date (datetime): The publication date
+    """
+    book_id: int
 
 
 class BookController:
     """The book controller"""
 
     def __init__(self):
-        self.books: Dict[int, Book] = {}
+        self.books: Dict[int, BookWithId] = {}
         self.next_id = 0
 
     def add_routes(self, router: RestHttpRouter):
@@ -71,7 +86,8 @@ class BookController:
             '/books',
             self.create_book,
             tags=tags,
-            status_code=201
+            status_code=201,
+            consumes=[b'application/json', b'application/xml']
         )
         router.add_rest(
             {'PUT'},
@@ -84,7 +100,7 @@ class BookController:
 
     async def get_books(
             self
-    ) -> Annotated[List[Book], JSONValue(), XMLEntity('Book')]:
+    ) -> Annotated[List[BookWithId], JSONValue(), XMLEntity('Book')]:
         """Get all the books.
 
         This method gets all the books in the shop.
@@ -97,47 +113,44 @@ class BookController:
     async def get_book(
             self,
             book_id: int
-    ) -> Annotated[Book, JSONValue(), XMLEntity('Book')]:
+    ) -> Annotated[BookWithId, JSONValue(), XMLEntity('Book')]:
         """Get a book for a given id
 
         Args:
             book_id (int): The id of the book
 
         Raises:
-            HTTPError: 404, when a book is not found
+            RestError: 404, when a book is not found
 
         Returns:
             Book: The book
         """
 
         if book_id not in self.books:
-            raise HTTPError(None, 404, 'Book not found', None, None)
+            raise RestError(404, 'Book not found')
 
         return self.books[book_id]
 
     async def create_book(
             self,
-            author: str,
-            title: str,
-            publication_date: datetime
+            book: Annotated[Book, JSONValue(), XMLEntity('Book')]
     ) -> int:
         """Add a book
 
         Args:
-            author (str): The author
-            title (str): The title
-            publication_date (datetime): The publication date
+            book (Book): The book
 
         Returns:
             int: The id of the new book
         """
         self.next_id += 1
 
-        self.books[self.next_id] = Book(
+        self.books[self.next_id] = BookWithId(
             book_id=self.next_id,
-            title=title,
-            author=author,
-            publication_date=publication_date
+            title=book['title'],
+            author=book['author'],
+            publication_date=book['publication_date'],
+            genre=book['genre']
         )
 
         return self.next_id
@@ -154,17 +167,17 @@ class BookController:
             book (Annotated[Book, T]): The book as the body
 
         Raises:
-            HTTPError: 404, when a book is not found
+            RestError: 404, when a book is not found
         """
         if book_id not in self.books:
-            raise HTTPError(None, 404, None, None, None)
-        self.books[book_id] = book
+            raise RestError(404, 'Book not found')
+        found_book = self.books[book_id]
+        found_book.update(book)
 
 
 if __name__ == "__main__":
 
     rest_router = RestHttpRouter(
-        None,
         title="Books",
         version="1",
         description="A book api",
