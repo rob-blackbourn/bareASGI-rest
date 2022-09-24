@@ -32,7 +32,7 @@ def make_swagger_entry(
         config: SwaggerConfig
 ) -> Dict[str, Any]:
     signature = inspect.signature(callback)
-    docstring = docstring_parser.parse(inspect.getdoc(callback))
+    docstring = docstring_parser.parse(inspect.getdoc(callback) or '')
     params = make_swagger_parameters(
         method,
         consumes,

@@ -2,7 +2,7 @@
 
 import inspect
 
-from docstring_parser import parse, Style
+from docstring_parser import parse, DocstringStyle
 
 from bareasgi_rest.swagger.utils import find_docstring_param
 
@@ -11,7 +11,7 @@ from .mocks import mock_func
 
 def test_find_docstring_param():
     """Test find_docstring_param"""
-    docstring = parse(inspect.getdoc(mock_func), Style.auto)
+    docstring = parse(inspect.getdoc(mock_func), DocstringStyle.AUTO)
     arg1_param = find_docstring_param('arg_num1', docstring)
     assert arg1_param is not None
     assert arg1_param.arg_name == 'arg_num1'

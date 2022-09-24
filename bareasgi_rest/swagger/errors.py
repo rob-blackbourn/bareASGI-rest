@@ -21,7 +21,8 @@ def gather_error_responses(docstring_raises: List[DocstringRaises]) -> Dict[int,
     for raises in docstring_raises:
         if raises.type_name != 'HTTPError':
             continue
-        first, sep, rest = raises.description.partition(',')
+        description = raises.description or ''
+        first, sep, rest = description.partition(',')
         if not sep:
             continue
         try:

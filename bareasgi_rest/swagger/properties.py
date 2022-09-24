@@ -118,7 +118,7 @@ def get_property(
         prop['type'] = 'object'
         prop['properties'] = get_properties(
             annotation,
-            docstring_parser.parse(inspect.getdoc(annotation)),
+            docstring_parser.parse(inspect.getdoc(annotation) or ''),
             collection_format,
             config
         )

@@ -4,7 +4,7 @@ from decimal import Decimal
 import inspect
 
 from bareasgi.basic_router.path_definition import PathDefinition
-from docstring_parser import parse, Style
+from docstring_parser import parse, DocstringStyle
 
 from bareasgi_rest.swagger.parameters import (
     _make_swagger_parameter,
@@ -17,7 +17,7 @@ from .mocks import mock_func, MOCK_SWAGGER_CONFIG
 def test_make_swagger_parameter():
     """Test _make_swagger_parameter"""
     sig = inspect.signature(mock_func)
-    docstring = parse(inspect.getdoc(mock_func), Style.auto)
+    docstring = parse(inspect.getdoc(mock_func), DocstringStyle.AUTO)
     param = _make_swagger_parameter(
         'path',
         sig.parameters['arg_num1'],
@@ -100,7 +100,7 @@ def test_make_swagger_parameter():
 def test_swagger_params_get():
     """Test for make_swagger_parameters"""
     sig = inspect.signature(mock_func)
-    docstring = parse(inspect.getdoc(mock_func), Style.auto)
+    docstring = parse(inspect.getdoc(mock_func), DocstringStyle.AUTO)
     accept = b'application/json'
     path_definition = PathDefinition('/foo/bar/{argNum1:str}')
     collection_format = 'multi'
@@ -162,7 +162,7 @@ def test_swagger_params_get():
 def test_swagger_params_form():
     """Test for make_swagger_parameters"""
     sig = inspect.signature(mock_func)
-    docstring = parse(inspect.getdoc(mock_func), Style.auto)
+    docstring = parse(inspect.getdoc(mock_func), DocstringStyle.AUTO)
     accept = b'application/x-www-form-urlencoded'
     path_definition = PathDefinition('/foo/bar/{argNum1:str}')
     collection_format = 'multi'
@@ -224,7 +224,7 @@ def test_swagger_params_form():
 def test_swagger_params_body():
     """Test for make_swagger_parameters"""
     sig = inspect.signature(mock_func)
-    docstring = parse(inspect.getdoc(mock_func), Style.auto)
+    docstring = parse(inspect.getdoc(mock_func), DocstringStyle.AUTO)
     accept = b'application/json'
     path_definition = PathDefinition('/foo/bar/{argNum1:str}')
     collection_format = 'multi'
