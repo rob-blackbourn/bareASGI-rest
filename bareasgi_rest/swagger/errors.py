@@ -8,7 +8,7 @@ from docstring_parser import DocstringRaises
 def gather_error_responses(docstring_raises: List[DocstringRaises]) -> Dict[int, Any]:
     """Gather error responses
 
-    Looks for exceptions of type `HTTPError` with a description starting with
+    Looks for exceptions of type `RestError` with a description starting with
     the error code: e.g. `"404, when a book is not found"`
 
     Args:
@@ -19,7 +19,7 @@ def gather_error_responses(docstring_raises: List[DocstringRaises]) -> Dict[int,
     """
     responses: Dict[int, Any] = {}
     for raises in docstring_raises:
-        if raises.type_name != 'HTTPError':
+        if raises.type_name != 'RestError':
             continue
         description = raises.description or ''
         first, sep, rest = description.partition(',')

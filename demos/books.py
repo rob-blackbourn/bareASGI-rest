@@ -25,9 +25,11 @@ from bareasgi_rest import RestHttpRouter, RestError, add_swagger_ui
 
 logging.basicConfig(level=logging.DEBUG)
 
+
 class Genre(Enum):
     FICTION = auto()
     NON_FICTION = auto()
+
 
 class Book(TypedDict):
     """A Book
@@ -43,6 +45,7 @@ class Book(TypedDict):
     author: str
     publication_date: datetime
     genre: Genre
+
 
 class BookWithId(Book):
     """A Book

@@ -48,9 +48,9 @@ def get_property(
     Returns:
         Dict[str, Any]: The swagger property.
     """
-    if typing_inspect.is_annotated_type(annotation):
+    if typing_inspect.is_annotated_type(annotation):  # type: ignore
         return get_property(
-            typing_inspect.get_origin(annotation),
+            typing_inspect.get_origin(annotation),  # type: ignore
             name,
             description,
             default,
@@ -58,8 +58,10 @@ def get_property(
             config
         )
 
-    if typing_inspect.is_optional_type(annotation):
-        optional_type = typing_inspect.get_optional_type(annotation)
+    if typing_inspect.is_optional_type(annotation):  # type: ignore
+        optional_type = typing_inspect.get_optional_type(  # type: ignore
+            annotation
+        )
         return get_property(
             optional_type,
             name,
@@ -99,9 +101,11 @@ def get_property(
         prop['format'] = 'duration'
     elif isclass(annotation) and issubclass(annotation, Enum):
         prop['type'] = 'string'
-        prop['enum'] = [name for name, value in annotation.__members__.items()]
-    elif typing_inspect.is_list_type(annotation):
-        contained_type, *_rest = typing_inspect.get_args(annotation)
+        prop['enum'] = [name for name, _value in annotation.__members__.items()]
+    elif typing_inspect.is_list_type(annotation):  # type: ignore
+        contained_type, *_rest = typing_inspect.get_args(  # type: ignore
+            annotation
+        )
         prop['type'] = 'array'
         prop['collectionFormat'] = collection_format
         prop['items'] = get_property(
@@ -112,9 +116,9 @@ def get_property(
             collection_format,
             config
         )
-    elif typing_inspect.is_dict_type(annotation):
+    elif typing_inspect.is_dict_type(annotation):  # type: ignore
         prop['type'] = 'object'
-    elif typing_inspect.is_typed_dict_type(annotation):
+    elif typing_inspect.is_typed_dict_type(annotation):  # type: ignore
         prop['type'] = 'object'
         prop['properties'] = get_properties(
             annotation,
@@ -128,7 +132,11 @@ def get_property(
     return prop
 
 
-def _get_default(annotation, member_annotation, name) -> Any:
+def _get_default(
+        annotation: object,
+        member_annotation: Annotation,
+        name: str
+) -> Any:
     if is_any_default_annotation(member_annotation):
         _, default_value = get_default_annotation(member_annotation)
         return default_value.value
@@ -137,7 +145,7 @@ def _get_default(annotation, member_annotation, name) -> Any:
 
 
 def get_properties(
-        annotation,
+        annotation: object,
         docstring: Docstring,
         collection_format: str,
         config: SwaggerConfig
@@ -153,7 +161,7 @@ def get_properties(
     Returns:
         Dict[str, Any]: The swagger properties.
     """
-    annotations: Dict[str, Annotation] = typing_inspect.typed_dict_keys(
+    annotations: Dict[str, Annotation] = typing_inspect.typed_dict_keys(  # type: ignore
         annotation
     )
     properties: Dict[str, Any] = {}

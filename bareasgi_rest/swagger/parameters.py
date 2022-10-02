@@ -9,7 +9,7 @@ from typing import (
     Mapping,
     Optional,
     Sequence,
-    Set
+    Set,
 )
 
 from bareasgi.basic_router.path_definition import PathDefinition
@@ -57,7 +57,7 @@ def _make_swagger_parameters_inline(
         collection_format: str,
         config: SwaggerConfig
 ) -> List[Dict[str, Any]]:
-    """Make inline paramters for query or form"""
+    """Make inline parameters for query or form"""
     props: List[Dict[str, Any]] = []
     for parameter in parameters.values():
         if parameter.name in path_variables:
@@ -141,7 +141,9 @@ def make_swagger_parameters(
         for parameter in available_parameters.values():
             docstring_param = find_docstring_param(parameter.name, docstring)
             if is_any_serialization_annotation(parameter.annotation):
-                body_type = typing_inspect.get_origin(parameter.annotation)
+                body_type = typing_inspect.get_origin(  # type: ignore
+                    parameter.annotation
+                )
                 schema = get_property(
                     body_type,
                     config.serialize_key(parameter.name),

@@ -292,25 +292,22 @@ class RestHttpRouter(BasicHttpRouter):
                     arg_deserializer
                 )
             except BaseException as error:  # pylint: disable=broad-except
-                return HttpResponse(
-                    response_code.BAD_REQUEST,
-                    [(b'content-type', b'text/plain')],
-                    text_writer("Failed to make args:" + ". ".join(error.args))
+                return HttpResponse.from_text(
+                    "Failed to make args:" + ". ".join(error.args),
+                    status=response_code.BAD_REQUEST
                 )
 
             try:
                 body = await callback(*args, **kwargs)
             except RestError as error:
-                return HttpResponse(
-                    error.status,
-                    [(b'content-type', b'text/plain')],
-                    text_writer(error.message)
+                return HttpResponse.from_text(
+                    error.message,
+                    status=error.status
                 )
             except BaseException as error:  # pylint: disable=broad-except
-                return HttpResponse(
-                    response_code.INTERNAL_SERVER_ERROR,
-                    [(b'content-type', b'text/plain')],
-                    text_writer(str(error))
+                return HttpResponse.from_text(
+                    str(error),
+                    status=response_code.INTERNAL_SERVER_ERROR
                 )
 
             accept = header.accept(request.scope['headers'])
@@ -331,10 +328,9 @@ class RestHttpRouter(BasicHttpRouter):
                         # Prefer the first content type that is supported.
                         content_type = produces[0]
                     else:
-                        return HttpResponse(
-                            response_code.UNSUPPORTED_MEDIA_TYPE,
-                            [(b'content-type', b'text/plain')],
-                            text_writer('Unsupported media type')
+                        return HttpResponse.from_text(
+                            'Unsupported media type',
+                            status=response_code.UNSUPPORTED_MEDIA_TYPE
                         )
 
             headers = [

@@ -49,8 +49,12 @@ async def make_args(
                     parameter.annotation
                 )
             elif parameter.name in query:
-                if typing_inspect.is_list_type(parameter.annotation):
-                    element_type, *_rest = typing_inspect.get_args(
+                if typing_inspect.is_list_type(  # type: ignore
+                        parameter.annotation
+                ) or typing_inspect.is_optional_list_type(  # type: ignore
+                    parameter.annotation
+                ):
+                    element_type, *_rest = typing_inspect.get_args(  # type: ignore
                         parameter.annotation
                     )
                     value = [
@@ -66,7 +70,9 @@ async def make_args(
                         parameter.annotation
                     )
 
-            elif typing_inspect.is_optional_type(parameter.annotation):
+            elif typing_inspect.is_optional_type(  # type: ignore
+                    parameter.annotation
+            ):
                 value = None
             else:
                 raise KeyError(parameter.name)

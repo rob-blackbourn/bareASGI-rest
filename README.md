@@ -9,20 +9,14 @@ It includes:
 - A router to simplify the creation of REST APIs,
 - A swagger API endpoint
 
-This is a Python 3.7+ package, and is currently pre-release.
-
-## Branch
-
-This is the v3 maintenance branch.
+This is a Python 3.8+ package.
 
 ## Installation
 
-The package can be install from pypi.
-
-It is currently pre-release so you will need the --pre flag.
+The package can be installed from pypi.
 
 ```bash
-$ pip install --pre bareASGI-rest
+$ pip install bareASGI-rest
 ```
 
 An ASGI server will be required to run the code. The examples below use
@@ -45,12 +39,8 @@ Here is the type of a book. We use `TypedDict` to allow automatic type discovery
 
 ```python
 from datetime import datetime
-try:
-    # Available in 3.8
-    from typing import TypedDict  # type:ignore
-except:
-    # Available in 3.7
-    from typing_extensions import TypedDict
+from typing import TypedDict
+
 
 class Book(TypedDict):
     """A Book
@@ -75,7 +65,8 @@ Now we can build the API.
 
 ```python
 from typing import Dict, List
-from urllib.error import HTTPError
+
+from bareasgi_rest import RestError
 
 
 BOOKS: Dict[int, Book] = {}
@@ -99,14 +90,14 @@ async def get_book(book_id: int) -> Book:
         book_id (int): The id of the book
 
     Raises:
-        HTTPError: 404, when a book is not found
+        RestError: 404, when a book is not found
 
     Returns:
         Book: The book
     """
 
     if book_id not in BOOKS:
-        raise HTTPError(None, 404, None, None, None)
+        raise RestError(404, "Book not found")
 
     return BOOKS[book_id]
 
@@ -151,17 +142,17 @@ async def update_book(
         published (datetime): The publication date
 
     Raises:
-        HTTPError: 404, when a book is not found
+        RestError: 404, when a book is not found
     """
     if book_id not in BOOKS:
-        raise HTTPError(None, 404, None, None, None)
+        raise RestError(404, "Book not found")
     BOOKS[book_id]['title'] = title
     BOOKS[book_id]['author'] = author
     BOOKS[book_id]['published'] = published
 ```
 
-We can see that errors are handler by raising HTTPError
-from the `urllib.errors` standard library package. A convention has been applied such that the status code MUST
+We can see that errors are handler by raising ResetError.
+A convention has been applied such that the status code MUST
 appear before the message, separated by a comma.
 
 ### Adding support for the REST router

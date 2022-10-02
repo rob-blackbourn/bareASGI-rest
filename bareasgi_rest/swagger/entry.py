@@ -53,7 +53,7 @@ def make_swagger_entry(
         config
     )
 
-    entry = {
+    entry: Dict[str, Any] = {
         'parameters': params,
         'produces': [content_type.decode() for content_type in produces],
         'consumes': [accept.decode() for accept in consumes],

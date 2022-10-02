@@ -1,0 +1,12 @@
+GET http://localhost:9009/bar/hello/1
+accept: application/json
+
+###
+
+GET http://localhost:9009/named?name=hello&count=1
+accept: application/json
+
+###
+
+GET http://localhost:9009/bar/hello/1
+accept: application/xml

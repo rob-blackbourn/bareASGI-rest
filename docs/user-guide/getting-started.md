@@ -41,7 +41,8 @@ Now we can build the API.
 
 ```python
 from typing import Dict, List
-from urllib.error import HTTPError
+
+from bareasgi_rest import RestError
 
 
 BOOKS: Dict[int, Book] = {}
@@ -65,14 +66,14 @@ async def get_book(book_id: int) -> Book:
         book_id (int): The id of the book
 
     Raises:
-        HTTPError: 404, when a book is not found
+        ResetError: 404, when a book is not found
 
     Returns:
         Book: The book
     """
 
     if book_id not in BOOKS:
-        raise HTTPError(None, 404, None, None, None)
+        raise ResetError(404, "Book not found")
 
     return BOOKS[book_id]
 
@@ -117,17 +118,17 @@ async def update_book(
         published (datetime): The publication date
 
     Raises:
-        HTTPError: 404, when a book is not found
+        RestError: 404, when a book is not found
     """
     if book_id not in BOOKS:
-        raise HTTPError(None, 404, None, None, None)
+        raise RestError(404, "Book not found")
     BOOKS[book_id]['title'] = title
     BOOKS[book_id]['author'] = author
     BOOKS[book_id]['published'] = published
 ```
 
-We can see that errors are handler by raising HTTPError
-from the `urllib.errors` standard library package. A convention has been applied such that the status code MUST
+We can see that errors are handler by raising RestError.
+A convention has been applied such that the status code MUST
 appear before the message, separated by a comma.
 
 ## Adding support for the REST router

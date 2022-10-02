@@ -10,7 +10,7 @@ from typing import (
     Sequence
 )
 
-from bareasgi.basic_router.http_router import PathDefinition
+from bareasgi.basic_router.path_definition import PathDefinition
 
 from ..types import RestCallback
 

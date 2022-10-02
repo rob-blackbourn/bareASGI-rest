@@ -74,7 +74,7 @@ class BookController:
             book_id (int): The id of the book
 
         Raises:
-            HTTPError: 404, when a book is not found
+            RestError: 404, when a book is not found
 
         Returns:
             Book: The book
@@ -124,7 +124,7 @@ class BookController:
             book (Annotated[Dict[str, Any], JSONValue()]): The book as the body
 
         Raises:
-            HTTPError: 404, when a book is not found
+            RestError: 404, when a book is not found
         """
         if book_id not in self.books:
             raise RestError(404, "Unable to find book")
