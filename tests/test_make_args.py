@@ -64,7 +64,7 @@ async def test_make_args1():
     assert foo_args == ('hello',)
     assert foo_kwargs == {
         'arg_num2': [1, 2],
-        'arg_num3': datetime.fromisoformat('1967-08-12T00:00:00'),
+        'arg_num3': datetime.fromisoformat('1967-08-12T00:00:00Z'),
         'arg_num4': Decimal('3.142'),
         'arg_num5': None
     }

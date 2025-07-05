@@ -5,7 +5,7 @@ from decimal import Decimal
 from enum import Enum
 import inspect
 from inspect import isclass
-from typing import Any
+from typing import Any, get_args, is_typeddict
 
 import docstring_parser
 from docstring_parser import Docstring
@@ -15,7 +15,7 @@ from jetblack_serialization.custom_annotations import (
     is_any_default_annotation
 )
 from jetblack_serialization.types import Annotation
-import jetblack_serialization.typing_inspect_ex as typing_inspect
+from jetblack_serialization import typing_ex
 
 from .config import SwaggerConfig
 from .utils import find_docstring_param
@@ -44,9 +44,9 @@ def get_property(
     Returns:
         dict[str, Any]: The swagger property.
     """
-    if typing_inspect.is_annotated_type(annotation):  # type: ignore
+    if typing_ex.is_annotated(annotation):
         return get_property(
-            typing_inspect.get_origin(annotation),  # type: ignore
+            typing_ex.get_annotated_type(annotation),
             name,
             description,
             default,
@@ -54,12 +54,10 @@ def get_property(
             config
         )
 
-    if typing_inspect.is_optional_type(annotation):  # type: ignore
-        optional_type = typing_inspect.get_optional_type(  # type: ignore
-            annotation
-        )
+    if typing_ex.is_optional(annotation):
+        optional_types = typing_ex.get_optional_types(annotation)
         return get_property(
-            optional_type,
+            optional_types[0],
             name,
             description,
             default,
@@ -98,10 +96,8 @@ def get_property(
     elif isclass(annotation) and issubclass(annotation, Enum):
         prop['type'] = 'string'
         prop['enum'] = [name for name, _value in annotation.__members__.items()]
-    elif typing_inspect.is_list_type(annotation):  # type: ignore
-        contained_type, *_rest = typing_inspect.get_args(  # type: ignore
-            annotation
-        )
+    elif typing_ex.is_list(annotation):
+        contained_type, *_rest = get_args(annotation)
         prop['type'] = 'array'
         prop['collectionFormat'] = collection_format
         prop['items'] = get_property(
@@ -112,9 +108,7 @@ def get_property(
             collection_format,
             config
         )
-    elif typing_inspect.is_dict_type(annotation):  # type: ignore
-        prop['type'] = 'object'
-    elif typing_inspect.is_typed_dict_type(annotation):  # type: ignore
+    elif is_typeddict(annotation):
         prop['type'] = 'object'
         prop['properties'] = get_properties(
             annotation,
@@ -122,6 +116,8 @@ def get_property(
             collection_format,
             config
         )
+    elif typing_ex.is_dict(annotation):
+        prop['type'] = 'object'
     else:
         raise TypeError('Unhandled type annotation')
 
@@ -157,8 +153,8 @@ def get_properties(
     Returns:
         dict[str, Any]: The swagger properties.
     """
-    annotations: dict[str, Annotation] = typing_inspect.typed_dict_keys(  # type: ignore
-        annotation
+    annotations: dict[str, Annotation] = typing_ex.typeddict_keys(
+        annotation  # type: ignore
     )
     properties: dict[str, Any] = {}
     for name, member_annotation in annotations.items():

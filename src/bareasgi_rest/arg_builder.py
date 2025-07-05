@@ -1,15 +1,24 @@
 """Argument builder"""
 
 from inspect import Parameter, Signature
-from typing import Any, Awaitable, Callable
+from typing import Any, Awaitable, Callable, get_args
 
 from jetblack_serialization.custom_annotations import (
     is_any_serialization_annotation
 )
 
-import jetblack_serialization.typing_inspect_ex as typing_inspect
+from jetblack_serialization import typing_ex
 
 from .types import ArgDeserializer
+
+
+def is_optional_list(annotation: Any) -> bool:
+    if not typing_ex.is_optional(annotation):
+        return False
+    optional_types = typing_ex.get_optional_types(annotation)
+    if len(optional_types) != 1:
+        return False
+    return typing_ex.is_list(optional_types[0])
 
 
 async def make_args(
@@ -49,19 +58,14 @@ async def make_args(
                     parameter.annotation
                 )
             elif parameter.name in query:
-                if typing_inspect.is_list_type(  # type: ignore
+                if typing_ex.is_list(
                         parameter.annotation
-                ) or typing_inspect.is_optional_list_type(  # type: ignore
+                ) or is_optional_list(
                     parameter.annotation
                 ):
-                    element_type, *_rest = typing_inspect.get_args(  # type: ignore
-                        parameter.annotation
-                    )
+                    element_type, *_rest = get_args(parameter.annotation)
                     value = [
-                        arg_deserializer(
-                            item,
-                            element_type
-                        )
+                        arg_deserializer(item, element_type)
                         for item in query[parameter.name]
                     ]
                 else:
@@ -70,9 +74,7 @@ async def make_args(
                         parameter.annotation
                     )
 
-            elif typing_inspect.is_optional_type(  # type: ignore
-                    parameter.annotation
-            ):
+            elif typing_ex.is_optional(parameter.annotation):
                 value = None
             else:
                 raise KeyError(parameter.name)

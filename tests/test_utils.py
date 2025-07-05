@@ -87,7 +87,7 @@ async def test_make_args1():
     assert foo_args == ('hello',)
     assert foo_kwargs == {
         'arg_num2': [1, 2],
-        'arg_num3': datetime.fromisoformat('1967-08-12T00:00:00'),
+        'arg_num3': datetime.fromisoformat('1967-08-12T00:00:00Z'),
         'arg_num4': Decimal('3.142'),
         'arg_num5': None
     }
@@ -175,8 +175,8 @@ def test_is_json_literal():
     assert is_value_type(str)
     assert is_value_type(int)
     assert is_value_type(float)
-    assert is_value_type(Decimal)
-    assert is_value_type(datetime)
+    assert is_value_type(Decimal, [Decimal])
+    assert is_value_type(datetime, [datetime])
     assert not is_value_type(list[str])
     assert not is_value_type(dict[str, Any])
     assert not is_value_type(MockDict)

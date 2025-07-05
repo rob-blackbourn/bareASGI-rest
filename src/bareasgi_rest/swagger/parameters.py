@@ -10,7 +10,7 @@ from typing import (
 
 from bareasgi.basic_router.path_definition import PathDefinition
 from docstring_parser import Docstring, DocstringParam
-import jetblack_serialization.typing_inspect_ex as typing_inspect
+from jetblack_serialization import typing_ex
 from jetblack_serialization.custom_annotations import (
     is_any_serialization_annotation
 )
@@ -137,7 +137,7 @@ def make_swagger_parameters(
         for parameter in available_parameters.values():
             docstring_param = find_docstring_param(parameter.name, docstring)
             if is_any_serialization_annotation(parameter.annotation):
-                body_type = typing_inspect.get_origin(  # type: ignore
+                body_type = typing_ex.get_annotated_type(
                     parameter.annotation
                 )
                 schema = get_property(
