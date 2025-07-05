@@ -19,6 +19,7 @@ def test_get_property():
         Returns:
             str: A string
         """
+        return 'A string'
 
     sig = inspect.signature(func1)
     docstring = parse(inspect.getdoc(func1))
@@ -89,7 +90,7 @@ def test_get_property():
     }
 
     async def func3() -> List[MockDict]:
-        pass
+        return []
 
     sig = inspect.signature(func3)
     docstring = parse(inspect.getdoc(func3))
