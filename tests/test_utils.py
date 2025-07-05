@@ -4,20 +4,15 @@ from datetime import datetime
 from decimal import Decimal
 from functools import partial
 import inspect
-from typing import Any, Dict, List, Optional
-from typing import TypedDict
-try:
-    from typing import Annotated  # type: ignore
-except:  # pylint: disable=bare-except
-    from typing_extensions import Annotated  # type: ignore
+from typing import Annotated, Any, TypedDict
 
 import pytest
 from stringcase import snakecase, camelcase
 
 from jetblack_serialization import DefaultValue
-from jetblack_serialization.config import SerializerConfig
+from jetblack_serialization.json.config import SerializerConfig
 from jetblack_serialization.utils import (
-    is_simple_type,
+    is_value_type,
     is_container_type,
 )
 from jetblack_serialization.json import (
@@ -34,14 +29,14 @@ class MockDict(TypedDict):
         arg_num1 (str): The first arg
         arg_num2 (List[int]): The second arg
         arg_num3 (datetime): The third arg
-        arg_num4 (Optional[Decimal], optional): The fourth arg. Defaults to Decimal('1').
-        arg_num5 (Optional[float], optional): The fifth arg. Defaults to None.
+        arg_num4 (Decimal | None, optional): The fourth arg. Defaults to Decimal('1').
+        arg_num5 (float | None, optional): The fifth arg. Defaults to None.
     """
     arg_num1: str
-    arg_num2: List[int]
+    arg_num2: list[int]
     arg_num3: datetime
-    arg_num4: Annotated[Optional[Decimal], DefaultValue(Decimal('1'))]
-    arg_num5: Annotated[Optional[float], DefaultValue(None)]
+    arg_num4: Annotated[Decimal | None, DefaultValue(Decimal('1'))]
+    arg_num5: Annotated[float | None, DefaultValue(None)]
 
 
 @pytest.mark.asyncio
@@ -50,11 +45,11 @@ async def test_make_args1():
     async def foo(
             arg_num1: str,
             *,
-            arg_num2: List[int],
+            arg_num2: list[int],
             arg_num3: datetime,
-            arg_num4: Optional[Decimal] = Decimal('1'),
-            arg_num5: Optional[float] = None
-    ) -> Dict[str, Any]:
+            arg_num4: Decimal | None = Decimal('1'),
+            arg_num5: float | None = None
+    ) -> dict[str, Any]:
         return {
             'arg_num1': arg_num1,
             'arg_num2': arg_num2,
@@ -81,7 +76,13 @@ async def test_make_args1():
         foo_matches,
         foo_query,
         foo_body_reader,
-        partial(from_json_value, SerializerConfig(snakecase, camelcase))
+        partial(
+            from_json_value,
+            SerializerConfig(
+                key_deserializer=snakecase,
+                key_serializer=camelcase
+            )
+        )
     )
     assert foo_args == ('hello',)
     assert foo_kwargs == {
@@ -99,10 +100,10 @@ async def test_make_args2():
             arg_id: int,
             arg_query: str,
             arg_body: Annotated[MockDict, JSONValue()]
-    ) -> Optional[MockDict]:
+    ) -> MockDict | None:
         return None
 
-    bar_matches: Dict[str, Any] = {
+    bar_matches: dict[str, Any] = {
         'arg_id': 42
     }
     bar_query = {
@@ -124,7 +125,13 @@ async def test_make_args2():
         bar_matches,
         bar_query,
         bar_body_reader,
-        partial(from_json_value, SerializerConfig(snakecase, camelcase))
+        partial(
+            from_json_value,
+            SerializerConfig(
+                key_serializer=snakecase,
+                key_deserializer=camelcase
+            )
+        )
     )
     assert len(bar_args) == 3
     assert len(bar_kwargs) == 0
@@ -143,33 +150,33 @@ def test_is_json_container():
     """Test is_container_type"""
 
     def str_func() -> str:
-        pass
+        return "bar"
     str_sig = inspect.signature(str_func)
     assert not is_container_type(str_sig.return_annotation)
 
-    def list_func() -> List[Dict[str, Any]]:
-        pass
+    def list_func() -> list[dict[str, Any]]:
+        return []
     list_sig = inspect.signature(list_func)
     assert is_container_type(list_sig.return_annotation)
 
-    def dict_func() -> Dict[str, Any]:
-        pass
+    def dict_func() -> dict[str, Any]:
+        return {}
     dict_sig = inspect.signature(dict_func)
     assert is_container_type(dict_sig.return_annotation)
 
-    def typed_dict_func() -> List[Dict[str, Any]]:
-        pass
+    def typed_dict_func() -> list[dict[str, Any]]:
+        return []
     typed_dict_sig = inspect.signature(typed_dict_func)
     assert is_container_type(typed_dict_sig.return_annotation)
 
 
 def test_is_json_literal():
     """Test is_simple_type"""
-    assert is_simple_type(str)
-    assert is_simple_type(int)
-    assert is_simple_type(float)
-    assert is_simple_type(Decimal)
-    assert is_simple_type(datetime)
-    assert not is_simple_type(List[str])
-    assert not is_simple_type(Dict[str, Any])
-    assert not is_simple_type(MockDict)
+    assert is_value_type(str)
+    assert is_value_type(int)
+    assert is_value_type(float)
+    assert is_value_type(Decimal)
+    assert is_value_type(datetime)
+    assert not is_value_type(list[str])
+    assert not is_value_type(dict[str, Any])
+    assert not is_value_type(MockDict)

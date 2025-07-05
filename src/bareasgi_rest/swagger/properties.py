@@ -5,11 +5,7 @@ from decimal import Decimal
 from enum import Enum
 import inspect
 from inspect import isclass
-from typing import (
-    Any,
-    Dict,
-    Optional
-)
+from typing import Any
 
 import docstring_parser
 from docstring_parser import Docstring
@@ -27,18 +23,18 @@ from .utils import find_docstring_param
 
 def get_property(
         annotation: Any,
-        name: Optional[str],
-        description: Optional[str],
+        name: str | None,
+        description: str | None,
         default: Any,
         collection_format: str,
         config: SwaggerConfig
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Get a swagger property
 
     Args:
         annotation (Any): The type annotation
-        name (Optional[str]): An optional property name
-        description (Optional[str]): An optional property description
+        name (str | None): An optional property name
+        description (str | None): An optional property description
         default (Any): An optional default where inspect.Parameter.empty indicates no default
         collection_format (str): The swagger collection format
 
@@ -46,7 +42,7 @@ def get_property(
         TypeError: If the property type is not handled.
 
     Returns:
-        Dict[str, Any]: The swagger property.
+        dict[str, Any]: The swagger property.
     """
     if typing_inspect.is_annotated_type(annotation):  # type: ignore
         return get_property(
@@ -71,7 +67,7 @@ def get_property(
             config
         )
 
-    prop: Dict[str, Any] = {}
+    prop: dict[str, Any] = {}
 
     if name:
         prop['name'] = name
@@ -149,7 +145,7 @@ def get_properties(
         docstring: Docstring,
         collection_format: str,
         config: SwaggerConfig
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Get the properties of a TypedDict
 
     Args:
@@ -159,12 +155,12 @@ def get_properties(
         collection_format (str): The collection format
 
     Returns:
-        Dict[str, Any]: The swagger properties.
+        dict[str, Any]: The swagger properties.
     """
-    annotations: Dict[str, Annotation] = typing_inspect.typed_dict_keys(  # type: ignore
+    annotations: dict[str, Annotation] = typing_inspect.typed_dict_keys(  # type: ignore
         annotation
     )
-    properties: Dict[str, Any] = {}
+    properties: dict[str, Any] = {}
     for name, member_annotation in annotations.items():
         camelcase_name = config.serialize_key(name)
         docstring_param = find_docstring_param(name, docstring)

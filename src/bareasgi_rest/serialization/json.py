@@ -7,9 +7,13 @@ from typing import Any, Callable
 
 from urllib.parse import parse_qs
 
-from jetblack_serialization.config import SerializerConfig
 from jetblack_serialization.types import Annotation
-from jetblack_serialization.json import serialize, deserialize, from_json_value
+from jetblack_serialization.json import (
+    serialize,
+    deserialize,
+    from_json_value,
+    SerializerConfig
+)
 
 from ..types import (
     MediaType,

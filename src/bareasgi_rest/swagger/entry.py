@@ -1,13 +1,7 @@
 """Utility functions"""
 
 import inspect
-from typing import (
-    Any,
-    Dict,
-    List,
-    Optional,
-    Sequence
-)
+from typing import Any, Sequence
 
 from bareasgi.basic_router.path_definition import PathDefinition
 import docstring_parser
@@ -26,11 +20,11 @@ def make_swagger_entry(
         consumes: Sequence[bytes],
         produces: Sequence[bytes],
         collection_format: str,
-        tags: Optional[List[str]],
+        tags: list[str] | None,
         ok_status_code: int,
         ok_status_description: str,
         config: SwaggerConfig
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     signature = inspect.signature(callback)
     docstring = docstring_parser.parse(inspect.getdoc(callback) or '')
     params = make_swagger_parameters(
@@ -53,7 +47,7 @@ def make_swagger_entry(
         config
     )
 
-    entry: Dict[str, Any] = {
+    entry: dict[str, Any] = {
         'parameters': params,
         'produces': [content_type.decode() for content_type in produces],
         'consumes': [accept.decode() for accept in consumes],

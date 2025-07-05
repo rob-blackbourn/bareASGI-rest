@@ -1,14 +1,12 @@
 """Swagger Utility functions"""
 
-from typing import Optional
-
 from docstring_parser import Docstring, DocstringParam
 
 
 def find_docstring_param(
         name: str,
         docstring: Docstring
-) -> Optional[DocstringParam]:
+) -> DocstringParam | None:
     """Find the docstring param for the given parameter name.
 
     Args:
@@ -16,7 +14,7 @@ def find_docstring_param(
         docstring (Docstring): The docstring
 
     Returns:
-        Optional[DocstringParam]: The docstring param or None if not found.
+        DocstringParam | None: The docstring param or None if not found.
     """
     for param in docstring.params:
         if param.arg_name == name:

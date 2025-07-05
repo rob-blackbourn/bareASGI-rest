@@ -1,7 +1,7 @@
 """Argument builder"""
 
 from inspect import Parameter, Signature
-from typing import Any, Awaitable, Callable, Dict, List, Tuple
+from typing import Any, Awaitable, Callable
 
 from jetblack_serialization.custom_annotations import (
     is_any_serialization_annotation
@@ -14,18 +14,18 @@ from .types import ArgDeserializer
 
 async def make_args(
         signature: Signature,
-        matches: Dict[str, str],
-        query: Dict[str, List[str]],
+        matches: dict[str, str],
+        query: dict[str, list[str]],
         body: Callable[[Any], Awaitable[Any]],
         arg_deserializer: ArgDeserializer
-) -> Tuple[Tuple[Any, ...], Dict[str, Any]]:
+) -> tuple[tuple[Any, ...], dict[str, Any]]:
     """Make args and kwargs for the given signature from the route matches,
     query args and body.
 
     Args:
         signature (Signature): The function signature
-        matches (Dict[str, str]): The route matches
-        query (Dict[str, Any]): A dictionary built from the query string
+        matches (dict[str, str]): The route matches
+        query (dict[str, Any]): A dictionary built from the query string
         body (Callable[[AsyncIterator[bytes], Any], Any]): Get the body
         arg_deserializer (ArgDeserializer): A deserializer for args
 
@@ -33,11 +33,11 @@ async def make_args(
         KeyError: If a parameter was not found
 
     Returns:
-        Tuple[Tuple[Any, ...], Dict[str, Any]]: A tuple for *args and **kwargs
+        tuple[tuple[Any, ...], dict[str, Any]]: A tuple for *args and **kwargs
     """
 
-    kwargs: Dict[str, Any] = {}
-    args: List[Any] = []
+    kwargs: dict[str, Any] = {}
+    args: list[Any] = []
 
     for parameter in signature.parameters.values():
         if is_any_serialization_annotation(parameter.annotation):

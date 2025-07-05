@@ -3,10 +3,7 @@
 
 from typing import (
     Any,
-    Dict,
-    List,
     Mapping,
-    Optional,
     Sequence
 )
 
@@ -26,16 +23,16 @@ class SwaggerRepository:
             self,
             title: str,
             version: str,
-            description: Optional[str],
+            description: str | None,
             base_path: str,
-            consumes: Optional[List[str]],
-            produces: Optional[List[str]],
-            tags: Optional[List[Mapping[str, Any]]],
+            consumes: list[str] | None,
+            produces: list[str] | None,
+            tags: list[Mapping[str, Any]] | None,
             config: SwaggerConfig
     ) -> None:
         self.config = config
 
-        self.definition: Dict[str, Any] = {
+        self.definition: dict[str, Any] = {
             'swagger': '2.0',
             'basePath': base_path,
             'info': {
@@ -58,7 +55,7 @@ class SwaggerRepository:
             consumes: Sequence[bytes],
             produces: Sequence[bytes],
             collection_format: str,
-            tags: Optional[List[str]],
+            tags: list[str] | None,
             status_code: int,
             status_description: str
     ):
@@ -71,7 +68,7 @@ class SwaggerRepository:
             consumes (Sequence[bytes]): The accept header
             produces (Sequence[bytes]): The content type
             collection_format (str): The collection format
-            tags (Optional[List[str]]): Optional tags
+            tags (list[str] | None): Optional tags
             status_code (int): The ok status code
             status_description (str): The ok status description
         """
@@ -91,6 +88,6 @@ class SwaggerRepository:
 
         swagger_path = make_swagger_path(path_definition)
 
-        paths: Dict[str, Any] = self.definition['paths']
-        current_path: Dict[str, Any] = paths.setdefault(swagger_path, {})
+        paths: dict[str, Any] = self.definition['paths']
+        current_path: dict[str, Any] = paths.setdefault(swagger_path, {})
         current_path[method.lower()] = entry

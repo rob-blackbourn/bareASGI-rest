@@ -2,15 +2,7 @@
 
 from datetime import datetime
 from decimal import Decimal
-from typing import Any, Dict, List, Optional
-try:
-    from typing import TypedDict  # type:ignore
-except:  # pylint: disable=bare-except
-    from typing_extensions import TypedDict
-try:
-    from typing import Annotated  # type: ignore
-except:  # pylint: disable=bare-except
-    from typing_extensions import Annotated
+from typing import Annotated, Any, TypedDict
 
 from jetblack_serialization import DefaultValue
 from stringcase import camelcase, snakecase
@@ -28,36 +20,36 @@ class MockDict(TypedDict):
 
     Args:
         arg_num1 (str): The first arg
-        arg_num2 (List[int]): The second arg
+        arg_num2 (list[int]): The second arg
         arg_num3 (datetime): The third arg
-        arg_num4 (Optional[Decimal], optional): The fourth arg. Defaults to Decimal('1').
-        arg_num5 (Optional[float], optional): The fifth arg. Defaults to None.
+        arg_num4 (Decimal | None, optional): The fourth arg. Defaults to Decimal('1').
+        arg_num5 (float | None, optional): The fifth arg. Defaults to None.
     """
     arg_num1: str
-    arg_num2: List[int]
+    arg_num2: list[int]
     arg_num3: datetime
-    arg_num4: Annotated[Optional[Decimal], DefaultValue(Decimal('1'))]
-    arg_num5: Annotated[Optional[float], DefaultValue(None)]
+    arg_num4: Annotated[Decimal | None, DefaultValue(Decimal('1'))]
+    arg_num5: Annotated[float | None, DefaultValue(None)]
 
 
 async def mock_func(
         arg_num1: str,
         *,
-        arg_num2: List[int],
+        arg_num2: list[int],
         arg_num3: datetime,
-        arg_num4: Optional[Decimal] = Decimal('1'),
-        arg_num5: Optional[float] = None
-) -> Dict[str, Any]:
+        arg_num4: Decimal | None = Decimal('1'),
+        arg_num5: float | None = None
+) -> dict[str, Any]:
     """A mock function
 
     A function to use in tests
 
     Args:
         arg_num1 (str): The first arg
-        arg_num2 (List[int]): The second arg
+        arg_num2 (list[int]): The second arg
         arg_num3 (datetime): The third arg
-        arg_num4 (Optional[Decimal], optional): The fourth arg. Defaults to Decimal('1').
-        arg_num5 (Optional[float], optional): The fifth arg. Defaults to None.
+        arg_num4 (Decimal | None, optional): The fourth arg. Defaults to Decimal('1').
+        arg_num5 (float | None, optional): The fifth arg. Defaults to None.
 
     Raises:
         ValueError: It doesn't actually raise this error

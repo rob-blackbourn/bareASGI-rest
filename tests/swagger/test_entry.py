@@ -1,12 +1,7 @@
 """Tests for entry.py"""
 
 from datetime import datetime
-from typing import Dict, List, Optional
-try:
-    from typing import TypedDict  # type:ignore
-except:  # pylint: disable=bare-except
-    from typing_extensions import TypedDict
-from typing_extensions import Annotated  # type: ignore
+from typing import Annotated, TypedDict
 
 from bareasgi.basic_router.path_definition import PathDefinition
 from jetblack_serialization.json import JSONValue
@@ -31,13 +26,13 @@ class Book(TypedDict):
     publication_date: datetime
 
 
-BOOKS: Dict[int, Book] = {}
+BOOKS: dict[int, Book] = {}
 
 
 def test_get():
     """Tests for get calls"""
 
-    async def get_books() -> List[Book]:
+    async def get_books() -> list[Book]:
         """Get all the books.
 
         This method gets all the books in the shop.
@@ -106,19 +101,19 @@ def test_get():
 
     async def find_books(
             library: str,
-            title: Optional[str] = None,
-            author: Optional[str] = None,
-            before_date: Optional[datetime] = None,
-            after_date: Optional[datetime] = None
-    ) -> List[Book]:
+            title: str | None = None,
+            author: str | None = None,
+            before_date: datetime | None = None,
+            after_date: datetime | None = None
+    ) -> list[Book]:
         """Find books
 
         Args:
             library (str): The library
-            title (Optional[str], optional): The title. Defaults to None.
-            author (Optional[str], optional): The author. Defaults to None.
-            before_date (Optional[datetime], optional): The oldest date. Defaults to None.
-            after_date (Optional[datetime], optional): The newest date. Defaults to None.
+            title (str | None, optional): The title. Defaults to None.
+            author (str | None, optional): The author. Defaults to None.
+            before_date (datetime | None, optional): The oldest date. Defaults to None.
+            after_date (datetime | None, optional): The newest date. Defaults to None.
 
         Returns:
             List[Book]: The matching books
@@ -231,7 +226,7 @@ def test_post():
             library: str,
             is_withdrawn: bool,
             book: Annotated[Book, JSONValue()]
-    ) -> List[Book]:
+    ) -> list[Book]:
         """Update the book if not withdrawn
 
         Args:

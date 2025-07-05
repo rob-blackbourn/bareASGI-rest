@@ -16,7 +16,7 @@ def test_gather_errors():
         RestError: 404, when a book is not found
 
     Returns:
-        Tuple[int, Optional[Dict[str, Any]]]: The book or nothing
+        tuple[int, dict[str, Any] | None]: The book or nothing
     """
     docstring = docstring_parser.parse(docstring_text)
     error_response = gather_error_responses(docstring.raises)

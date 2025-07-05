@@ -4,12 +4,8 @@ from inspect import Parameter
 from typing import (
     AbstractSet,
     Any,
-    Dict,
-    List,
     Mapping,
-    Optional,
     Sequence,
-    Set,
 )
 
 from bareasgi.basic_router.path_definition import PathDefinition
@@ -28,9 +24,9 @@ def _make_swagger_parameter(
         source: str,
         param: Parameter,
         collection_format: str,
-        docstring_param: Optional[DocstringParam],
+        docstring_param: DocstringParam | None,
         config: SwaggerConfig
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     is_required = param.default is Parameter.empty
 
     prop = get_property(
@@ -56,9 +52,9 @@ def _make_swagger_parameters_inline(
         docstring: Docstring,
         collection_format: str,
         config: SwaggerConfig
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """Make inline parameters for query or form"""
-    props: List[Dict[str, Any]] = []
+    props: list[dict[str, Any]] = []
     for parameter in parameters.values():
         if parameter.name in path_variables:
             continue
@@ -83,7 +79,7 @@ def make_swagger_parameters(
         docstring: Docstring,
         collection_format: str,
         config: SwaggerConfig
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """Make the swagger parameters"""
 
     available_parameters = {
@@ -92,8 +88,8 @@ def make_swagger_parameters(
     }
 
     # Path parameters
-    props: List[Dict[str, Any]] = []
-    path_variables: Set[str] = set()
+    props: list[dict[str, Any]] = []
+    path_variables: set[str] = set()
     for segment in path_definition.segments:
         if segment.is_variable:
             path_variable = config.deserialize_key(segment.name)

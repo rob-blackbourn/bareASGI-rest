@@ -1,12 +1,7 @@
 """Utility functions"""
 
 import inspect
-from typing import (
-    Any,
-    Dict,
-    List,
-    Optional
-)
+from typing import Any
 
 from docstring_parser import DocstringReturns, DocstringRaises
 
@@ -17,14 +12,14 @@ from .properties import get_property
 
 def make_swagger_responses(
         return_annotation: Any,
-        docstring_returns: Optional[DocstringReturns],
-        docstring_raises: Optional[List[DocstringRaises]],
+        docstring_returns: DocstringReturns | None,
+        docstring_raises: list[DocstringRaises] | None,
         ok_status_code: int,
         ok_status_description: str,
         collection_format: str,
         config: SwaggerConfig
-) -> Dict[int, Dict[str, Any]]:
-    ok_response: Dict[str, Any] = {
+) -> dict[int, dict[str, Any]]:
+    ok_response: dict[str, Any] = {
         'description': ok_status_description
     }
 
@@ -38,7 +33,7 @@ def make_swagger_responses(
             config
         )
 
-    responses: Dict[int, Dict[str, Any]] = {
+    responses: dict[int, dict[str, Any]] = {
         ok_status_code: ok_response
     }
     if docstring_raises:

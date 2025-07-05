@@ -2,7 +2,6 @@
 
 import logging
 import json
-from typing import Optional
 
 from bareasgi import HttpRequest, HttpResponse, text_writer
 from bareasgi.basic_router.http_router import BasicHttpRouter
@@ -24,7 +23,7 @@ class SwaggerController:
             base_path: str,
             swagger_base_url: str,
             typeface_url: str,
-            config: Optional[SwaggerConfig],
+            config: SwaggerConfig | None,
             repo: SwaggerRepository
     ) -> None:
         self.title = title
