@@ -9,7 +9,7 @@ from typing import Any
 import pytest
 from stringcase import snakecase, camelcase
 
-from jetblack_serialization.json.config import SerializerConfig
+from jetblack_serialization import SerializerConfig
 from jetblack_serialization.json import (
     from_json_value
 )

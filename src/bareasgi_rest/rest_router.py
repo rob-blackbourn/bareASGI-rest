@@ -23,7 +23,7 @@ from urllib.parse import parse_qs
 from bareasgi import HttpRequest, HttpResponse, text_reader, text_writer
 from bareasgi.basic_router.http_router import BasicHttpRouter, PathDefinition
 from bareutils import header, response_code
-from jetblack_serialization.config import BaseSerializerConfig
+from jetblack_serialization.config import SerializerConfig
 
 from .arg_builder import make_args
 from .swagger import SwaggerRepository, SwaggerConfig, SwaggerController
@@ -55,7 +55,7 @@ LOGGER = logging.getLogger(__name__)
 
 def _rename_path_definition(
         path_definition: PathDefinition,
-        config: BaseSerializerConfig
+        config: SerializerConfig
 ) -> PathDefinition:
     for segment in path_definition.segments:
         if segment.is_variable:
@@ -81,7 +81,7 @@ class RestHttpRouter(BasicHttpRouter):
             typeface_url: str = DEFAULT_TYPEFACE_URL,
             config: SwaggerConfig = DEFAULT_SWAGGER_CONFIG,
             serializer_configs: DictSerializerConfig | None = None,
-            arg_serializer_config: BaseSerializerConfig = DEFAULT_JSON_SERIALIZER_CONFIG,
+            arg_serializer_config: SerializerConfig = DEFAULT_JSON_SERIALIZER_CONFIG,
             arg_deserializer_factory: ArgDeserializerFactory = DEFAULT_ARG_DESERIALIZER_FACTORY
     ) -> None:
         """Initialise the REST router
@@ -182,7 +182,7 @@ class RestHttpRouter(BasicHttpRouter):
             status_code: int = response_code.OK,
             status_description: str = 'OK',
             serializer_config: DictSerializerConfig | None = None,
-            arg_serializer_config: BaseSerializerConfig | None = None,
+            arg_serializer_config: SerializerConfig | None = None,
             arg_deserializer_factory: ArgDeserializerFactory | None = None
     ) -> None:
         """Register a callback to a method and path
@@ -250,7 +250,7 @@ class RestHttpRouter(BasicHttpRouter):
             produces: Sequence[bytes],
             status_code: int,
             serializer_configs: DictSerializerConfig | None,
-            arg_serializer_config: BaseSerializerConfig | None,
+            arg_serializer_config: SerializerConfig | None,
             arg_deserializer_factory: ArgDeserializerFactory | None
     ) -> None:
         signature = inspect.signature(callback)
@@ -380,7 +380,7 @@ class RestHttpRouter(BasicHttpRouter):
             media_type = b'application/json'
             params: Mapping[bytes, Any] | None = {}
             deserializer: Deserializer | None = None
-            serializer_config: BaseSerializerConfig = DEFAULT_JSON_SERIALIZER_CONFIG
+            serializer_config: SerializerConfig = DEFAULT_JSON_SERIALIZER_CONFIG
         else:
             media_type, params = header.content_type(
                 request.scope['headers']

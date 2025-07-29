@@ -14,7 +14,7 @@ from jetblack_serialization.custom_annotations import (
     get_default_annotation,
     is_any_default_annotation
 )
-from jetblack_serialization.types import Annotation
+from jetblack_serialization import Annotation
 from jetblack_serialization import typing_ex
 
 from .config import SwaggerConfig

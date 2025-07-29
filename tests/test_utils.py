@@ -9,8 +9,7 @@ from typing import Annotated, Any, TypedDict
 import pytest
 from stringcase import snakecase, camelcase
 
-from jetblack_serialization import DefaultValue
-from jetblack_serialization.json.config import SerializerConfig
+from jetblack_serialization import DefaultValue, SerializerConfig
 from jetblack_serialization.utils import (
     is_value_type,
     is_container_type,

@@ -3,8 +3,7 @@
 from bareasgi import HttpResponse, text_writer
 from stringcase import camelcase, snakecase, pascalcase
 
-from jetblack_serialization.json.config import SerializerConfig as JSONSerializerConfig
-from jetblack_serialization.xml.config import SerializerConfig as XMLSerializerConfig
+from jetblack_serialization import SerializerConfig
 
 from .types import (
     DictConsumes,
@@ -47,11 +46,11 @@ DEFAULT_NOT_FOUND_RESPONSE: HttpResponse = HttpResponse(
     text_writer('Not Found')
 )
 
-DEFAULT_JSON_SERIALIZER_CONFIG = JSONSerializerConfig(
+DEFAULT_JSON_SERIALIZER_CONFIG = SerializerConfig(
     key_serializer=camelcase,
     key_deserializer=snakecase
 )
-DEFAULT_XML_SERIALIZER_CONFIG = XMLSerializerConfig(
+DEFAULT_XML_SERIALIZER_CONFIG = SerializerConfig(
     key_serializer=pascalcase,
     key_deserializer=snakecase
 )

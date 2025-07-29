@@ -2,8 +2,8 @@
 
 from typing import Any
 
-from jetblack_serialization.types import Annotation
-from jetblack_serialization.xml import serialize, deserialize, SerializerConfig
+from jetblack_serialization import Annotation, SerializerConfig
+from jetblack_serialization.xml import serialize, deserialize
 
 from ..types import (
     MediaType,
