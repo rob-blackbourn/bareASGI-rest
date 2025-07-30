@@ -4,11 +4,10 @@ A simple request handler.
 
 from datetime import datetime
 import logging
-from typing import Any, Dict, List
+from typing import Any, Annotated
 
 from bareasgi import Application
 from jetblack_serialization.json import JSONValue
-from typing_extensions import Annotated  # type: ignore
 import uvicorn
 
 from bareasgi_rest import RestHttpRouter, RestError, add_swagger_ui
@@ -20,7 +19,7 @@ class BookController:
     """The book controller"""
 
     def __init__(self):
-        self.books: Dict[int, Dict[str, Any]] = {}
+        self.books: dict[int, dict[str, Any]] = {}
         self.next_id = 0
 
     def add_routes(self, router: RestHttpRouter):
@@ -54,7 +53,7 @@ class BookController:
             status_code=204
         )
 
-    async def get_books(self) -> List[Dict[str, Any]]:
+    async def get_books(self) -> list[dict[str, Any]]:
         """Get all the books.
 
         This method gets all the books in the shop.
@@ -67,7 +66,7 @@ class BookController:
     async def get_book(
             self,
             book_id: int
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get a book for a given id
 
         Args:
@@ -115,7 +114,7 @@ class BookController:
     async def update_book(
             self,
             book_id: int,
-            book: Annotated[Dict[str, Any], JSONValue()]
+            book: Annotated[dict[str, Any], JSONValue()]
     ) -> None:
         """Update a book
 

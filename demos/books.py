@@ -5,15 +5,7 @@ A simple request handler.
 from datetime import datetime
 from enum import Enum, auto
 import logging
-from typing import Dict, List
-try:
-    from typing import TypedDict  # type:ignore
-except:  # pylint: disable=bare-except
-    from typing_extensions import TypedDict
-try:
-    from typing import Annotated  # type: ignore
-except:  # pylint: disable=bare-except
-    from typing_extensions import Annotated  # type: ignore
+from typing import Annotated, TypedDict
 
 from bareasgi import Application
 import uvicorn
@@ -63,7 +55,7 @@ class BookController:
     """The book controller"""
 
     def __init__(self):
-        self.books: Dict[int, BookWithId] = {}
+        self.books: dict[int, BookWithId] = {}
         self.next_id = 0
 
     def add_routes(self, router: RestHttpRouter):
@@ -103,7 +95,7 @@ class BookController:
 
     async def get_books(
             self
-    ) -> Annotated[List[BookWithId], JSONValue(), XMLEntity('Book')]:
+    ) -> Annotated[list[BookWithId], JSONValue(), XMLEntity('Book')]:
         """Get all the books.
 
         This method gets all the books in the shop.

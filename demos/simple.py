@@ -8,7 +8,7 @@ Try the following endpoints:
 """
 
 import logging
-from typing import Dict, Any
+from typing import Any
 
 from bareasgi import Application, HttpRequest, HttpResponse, text_writer
 from bareasgi_rest import RestHttpRouter, add_swagger_ui
@@ -23,7 +23,7 @@ async def http_request_callback(_request: HttpRequest) -> HttpResponse:
     return HttpResponse(200, headers, body)
 
 
-async def rest_callback(name: str, count: int) -> Dict[str, Any]:
+async def rest_callback(name: str, count: int) -> dict[str, Any]:
     """A request handler which returns some text"""
     return {
         'name': name,
@@ -38,7 +38,7 @@ if __name__ == "__main__":
     app = Application(http_router=http_router)
 
     add_swagger_ui(app)
-    
+
     # A non-rest endpoint.
     http_router.add({'GET'}, '/foo', http_request_callback)
     # For http://localhost:9009/bar/hello/1
