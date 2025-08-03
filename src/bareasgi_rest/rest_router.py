@@ -68,8 +68,8 @@ class RestHttpRouter(BasicHttpRouter):
 
     def __init__(
             self,
-            title: str,
-            version: str,
+            title: str = "bareASGI Rest API",
+            version: str = "1",
             *,
             not_found_response: HttpResponse | None = None,
             description: str | None = None,

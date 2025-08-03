@@ -18,7 +18,7 @@ classifiers = [
 ]
 readme = "README.md"
 dependencies = [
-    "bareASGI >=5.0.0-alpha.2",
+    "bareASGI >=5.0.0-alpha.4",
     "bareASGI-jinja2>=5.0.0-alpha.2",
     "docstring-parser>=0.15",
     "lxml>=5.4",
