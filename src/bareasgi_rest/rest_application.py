@@ -5,7 +5,6 @@ from jetblack_serialization.config import SerializerConfig
 from bareasgi import (
     Application,
     HttpMiddlewares,
-    HttpRequestCallback,
     HttpResponse,
     LifespanRequestHandler,
     WebSocketMiddlewares,
