@@ -1,5 +1,6 @@
 """Tests for swagger.py"""
 
+from datetime import datetime
 from decimal import Decimal
 import inspect
 from typing import List
@@ -38,7 +39,13 @@ def test_get_property():
     }
 
     async def func2() -> MockDict:
-        pass
+        return {
+            'arg_num1': 'value1',
+            'arg_num2': [1, 2, 3],
+            'arg_num3': datetime.fromisoformat('2023-10-01T12:00:00Z'),
+            'arg_num4': Decimal('1.23'),
+            'arg_num5': None
+        }
 
     sig = inspect.signature(func2)
     docstring = parse(inspect.getdoc(func2))

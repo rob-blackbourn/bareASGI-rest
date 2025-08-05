@@ -359,7 +359,9 @@ class RestHttpRouter(BasicHttpRouter):
             media_type, serializer = next(iter(self.produces.items()))
 
         if media_type is None or serializer is None:
-            raise ValueError(f'No handler for media types: {accept.keys()}')
+            raise ValueError(
+                f'No handler for media types: {(accept or {}).keys()}'
+            )
 
         serializer_config = serializer_configs[media_type]
 

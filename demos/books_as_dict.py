@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.DEBUG)
 class BookController:
     """The book controller"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.books: dict[int, dict[str, Any]] = {}
         self.next_id = 0
 

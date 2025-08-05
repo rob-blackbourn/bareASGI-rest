@@ -55,7 +55,7 @@ class BookWithId(Book):
 class BookController:
     """The book controller"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.books: dict[int, BookWithId] = {}
         self.next_id = 0
 

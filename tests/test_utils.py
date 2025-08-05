@@ -93,13 +93,16 @@ async def test_make_args1():
 
 
 @pytest.mark.asyncio
-async def test_make_args2():
+async def test_make_args2() -> None:
     """Test for make_args"""
     async def bar(
             arg_id: int,
             arg_query: str,
             arg_body: Annotated[MockDict, JSONValue()]
     ) -> MockDict | None:
+        assert isinstance(arg_id, int)
+        assert isinstance(arg_query, str)
+        assert isinstance(arg_body, dict)
         return None
 
     bar_matches: dict[str, Any] = {
