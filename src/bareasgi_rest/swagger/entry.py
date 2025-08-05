@@ -1,7 +1,7 @@
 """Utility functions"""
 
 import inspect
-from typing import Any, Sequence
+from typing import Sequence
 
 from bareasgi.basic_router.path_definition import PathDefinition
 import docstring_parser
@@ -11,6 +11,7 @@ from ..types import RestCallback
 from .config import SwaggerConfig
 from .parameters import make_swagger_parameters
 from .responses import make_swagger_responses
+from .types import SwaggerEntry
 
 
 def make_swagger_entry(
@@ -24,7 +25,7 @@ def make_swagger_entry(
         ok_status_code: int,
         ok_status_description: str,
         config: SwaggerConfig
-) -> dict[str, Any]:
+) -> SwaggerEntry:
     signature = inspect.signature(callback)
     docstring = docstring_parser.parse(inspect.getdoc(callback) or '')
     params = make_swagger_parameters(
@@ -47,7 +48,7 @@ def make_swagger_entry(
         config
     )
 
-    entry: dict[str, Any] = {
+    entry: SwaggerEntry = {
         'parameters': params,
         'produces': [content_type.decode() for content_type in produces],
         'consumes': [accept.decode() for accept in consumes],

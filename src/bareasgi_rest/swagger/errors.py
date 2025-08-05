@@ -1,11 +1,13 @@
 """Swagger errors"""
 
-from typing import Any
-
 from docstring_parser import DocstringRaises
 
+from .types import SwaggerResponse
 
-def gather_error_responses(docstring_raises: list[DocstringRaises]) -> dict[int, Any]:
+
+def gather_error_responses(
+        docstring_raises: list[DocstringRaises]
+) -> dict[int, SwaggerResponse]:
     """Gather error responses
 
     Looks for exceptions of type `RestError` with a description starting with
@@ -17,7 +19,7 @@ def gather_error_responses(docstring_raises: list[DocstringRaises]) -> dict[int,
     Returns:
         dict[int, Any]: The error response schema.
     """
-    responses: dict[int, Any] = {}
+    responses: dict[int, SwaggerResponse] = {}
     for raises in docstring_raises:
         if raises.type_name != 'RestError':
             continue

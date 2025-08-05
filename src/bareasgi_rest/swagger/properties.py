@@ -18,6 +18,7 @@ from jetblack_serialization import Annotation
 from jetblack_serialization import typing_ex
 
 from .config import SwaggerConfig
+from .types import SwaggerProperty
 from .utils import find_docstring_param
 
 
@@ -28,7 +29,7 @@ def get_property(
         default: Any,
         collection_format: str,
         config: SwaggerConfig
-) -> dict[str, Any]:
+) -> SwaggerProperty:
     """Get a swagger property
 
     Args:
@@ -65,7 +66,60 @@ def get_property(
             config
         )
 
-    prop: dict[str, Any] = {}
+    if annotation is str:
+        prop: SwaggerProperty = {'type': 'string'}
+    elif annotation is bool:
+        prop = {'type': 'boolean'}
+    elif annotation is int:
+        prop = {'type': 'integer'}
+    elif annotation is float:
+        prop = {'type': 'number'}
+    elif annotation is Decimal:
+        prop = {'type': 'number'}
+    elif annotation is datetime:
+        prop = {
+            'type': 'string',
+            'format': 'date-time'
+        }
+    elif annotation is timedelta:
+        # Note: Swagger has no support for durations. I made up the format.
+        prop = {
+            'type': 'string',
+            'format': 'duration'
+        }
+    elif isclass(annotation) and issubclass(annotation, Enum):
+        prop = {
+            'type': 'string',
+            'enum': list(annotation.__members__.keys())
+        }
+    elif typing_ex.is_list(annotation):
+        contained_type, *_rest = get_args(annotation)
+        prop = {
+            'type': 'array',
+            'collectionFormat': collection_format,
+            'items': get_property(
+                contained_type,
+                None,
+                None,
+                default,
+                collection_format,
+                config
+            )
+        }
+    elif is_typeddict(annotation):
+        prop = {
+            'type': 'object',
+            'properties': get_properties(
+                annotation,
+                docstring_parser.parse(inspect.getdoc(annotation) or ''),
+                collection_format,
+                config
+            )
+        }
+    elif typing_ex.is_dict(annotation):
+        prop = {'type': 'object'}
+    else:
+        raise TypeError('Unhandled type annotation')
 
     if name:
         prop['name'] = name
@@ -75,51 +129,6 @@ def get_property(
 
     if default != inspect.Parameter.empty:
         prop['default'] = default
-
-    if annotation is str:
-        prop['type'] = 'string'
-    elif annotation is bool:
-        prop['type'] = 'boolean'
-    elif annotation is int:
-        prop['type'] = 'integer'
-    elif annotation is float:
-        prop['type'] = 'number'
-    elif annotation is Decimal:
-        prop['type'] = 'number'
-    elif annotation is datetime:
-        prop['type'] = 'string'
-        prop['format'] = 'date-time'
-    elif annotation is timedelta:
-        # Note: Swagger has no support for durations. I made up the format.
-        prop['type'] = 'string'
-        prop['format'] = 'duration'
-    elif isclass(annotation) and issubclass(annotation, Enum):
-        prop['type'] = 'string'
-        prop['enum'] = [name for name, _value in annotation.__members__.items()]
-    elif typing_ex.is_list(annotation):
-        contained_type, *_rest = get_args(annotation)
-        prop['type'] = 'array'
-        prop['collectionFormat'] = collection_format
-        prop['items'] = get_property(
-            contained_type,
-            None,
-            None,
-            default,
-            collection_format,
-            config
-        )
-    elif is_typeddict(annotation):
-        prop['type'] = 'object'
-        prop['properties'] = get_properties(
-            annotation,
-            docstring_parser.parse(inspect.getdoc(annotation) or ''),
-            collection_format,
-            config
-        )
-    elif typing_ex.is_dict(annotation):
-        prop['type'] = 'object'
-    else:
-        raise TypeError('Unhandled type annotation')
 
     return prop
 
@@ -141,7 +150,7 @@ def get_properties(
         docstring: Docstring,
         collection_format: str,
         config: SwaggerConfig
-) -> dict[str, Any]:
+) -> dict[str, SwaggerProperty]:
     """Get the properties of a TypedDict
 
     Args:

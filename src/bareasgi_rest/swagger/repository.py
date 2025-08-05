@@ -4,7 +4,7 @@
 from typing import (
     Any,
     Mapping,
-    Sequence
+    Sequence,
 )
 
 from bareasgi.basic_router.path_definition import PathDefinition
@@ -14,6 +14,7 @@ from ..types import RestCallback
 from .config import SwaggerConfig
 from .entry import make_swagger_entry
 from .paths import make_swagger_path
+from .types import SwaggerDefinition
 
 
 class SwaggerRepository:
@@ -32,7 +33,7 @@ class SwaggerRepository:
     ) -> None:
         self.config = config
 
-        self.definition: dict[str, Any] = {
+        self.definition: SwaggerDefinition = {
             'swagger': '2.0',
             'basePath': base_path,
             'info': {

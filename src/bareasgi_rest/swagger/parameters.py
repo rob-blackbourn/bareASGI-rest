@@ -1,12 +1,7 @@
 """Parameters"""
 
 from inspect import Parameter
-from typing import (
-    AbstractSet,
-    Any,
-    Mapping,
-    Sequence,
-)
+from typing import AbstractSet, Mapping, Sequence, cast
 
 from bareasgi.basic_router.path_definition import PathDefinition
 from docstring_parser import Docstring, DocstringParam
@@ -17,6 +12,7 @@ from jetblack_serialization.custom_annotations import (
 
 from .config import SwaggerConfig
 from .properties import get_property
+from .types import SwaggerParameter
 from .utils import find_docstring_param
 
 
@@ -26,16 +22,19 @@ def _make_swagger_parameter(
         collection_format: str,
         docstring_param: DocstringParam | None,
         config: SwaggerConfig
-) -> dict[str, Any]:
+) -> SwaggerParameter:
     is_required = param.default is Parameter.empty
 
-    prop = get_property(
-        param.annotation,
-        config.serialize_key(param.name),
-        docstring_param.description if docstring_param else None,
-        param.default,
-        collection_format,
-        config
+    prop = cast(
+        SwaggerParameter,
+        get_property(
+            param.annotation,
+            config.serialize_key(param.name),
+            docstring_param.description if docstring_param else None,
+            param.default,
+            collection_format,
+            config
+        )
     )
 
     if source != 'body':
@@ -52,9 +51,9 @@ def _make_swagger_parameters_inline(
         docstring: Docstring,
         collection_format: str,
         config: SwaggerConfig
-) -> list[dict[str, Any]]:
+) -> list[SwaggerParameter]:
     """Make inline parameters for query or form"""
-    props: list[dict[str, Any]] = []
+    props: list[SwaggerParameter] = []
     for parameter in parameters.values():
         if parameter.name in path_variables:
             continue
@@ -79,7 +78,7 @@ def make_swagger_parameters(
         docstring: Docstring,
         collection_format: str,
         config: SwaggerConfig
-) -> list[dict[str, Any]]:
+) -> list[SwaggerParameter]:
     """Make the swagger parameters"""
 
     available_parameters = {
@@ -88,7 +87,7 @@ def make_swagger_parameters(
     }
 
     # Path parameters
-    props: list[dict[str, Any]] = []
+    props: list[SwaggerParameter] = []
     path_variables: set[str] = set()
     for segment in path_definition.segments:
         if segment.is_variable:
