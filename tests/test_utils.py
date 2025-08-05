@@ -68,6 +68,7 @@ async def test_make_args1():
     }
 
     async def foo_body_reader(annotation: Any) -> Any:
+        assert annotation is not None
         return {}
 
     foo_args, foo_kwargs = await make_args(
@@ -113,6 +114,7 @@ async def test_make_args2() -> None:
     }
 
     async def bar_body_reader(annotation: Any) -> Any:
+        assert annotation is not None
         return {
             'arg_num1': 'hello',
             'arg_num2': [1, 2],
