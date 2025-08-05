@@ -16,8 +16,8 @@ from bareasgi_rest import (
     RestApplication,
     RestHttpRouter,
     RestError,
-    add_swagger_ui
 )
+from bareasgi_rest.swagger import add_swagger_ui
 
 logging.basicConfig(level=logging.DEBUG)
 

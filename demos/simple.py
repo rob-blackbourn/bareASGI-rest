@@ -11,7 +11,8 @@ import logging
 from typing import Any
 
 from bareasgi import Application, HttpRequest, HttpResponse, text_writer
-from bareasgi_rest import RestHttpRouter, add_swagger_ui
+from bareasgi_rest import RestHttpRouter
+from bareasgi_rest.swagger import add_swagger_ui
 
 logging.basicConfig(level=logging.DEBUG)
 

@@ -13,7 +13,8 @@ import uvicorn
 from jetblack_serialization.json import JSONValue
 from jetblack_serialization.xml import XMLEntity
 
-from bareasgi_rest import RestHttpRouter, RestError, add_swagger_ui
+from bareasgi_rest import RestHttpRouter, RestError
+from bareasgi_rest.swagger import add_swagger_ui
 
 logging.basicConfig(level=logging.DEBUG)
 
