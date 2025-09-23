@@ -44,6 +44,7 @@ from .types import (
     DictProduces,
     DictSerializerConfig,
     RestCallback,
+    ArgDeserializer,
     ArgDeserializerFactory,
     RestError,
     Serializer
@@ -247,6 +248,11 @@ class RestHttpRouter(BasicHttpRouter):
             PathDefinition(self.base_path + path),
             DEFAULT_JSON_SERIALIZER_CONFIG
         )
+        arg_deserializer = (
+            arg_deserializer_factory or self.arg_deserializer_factory
+        )(
+            arg_serializer_config or self.arg_serializer_config
+        )
 
         for method in methods:
             self._add_method(
@@ -261,8 +267,7 @@ class RestHttpRouter(BasicHttpRouter):
                 status_code,
                 status_description,
                 serializer_config,
-                arg_serializer_config,
-                arg_deserializer_factory
+                arg_deserializer
             )
 
     def _add_method(
@@ -278,8 +283,7 @@ class RestHttpRouter(BasicHttpRouter):
             status_code: int,
             status_description: str,
             serializer_configs: DictSerializerConfig | None,
-            arg_serializer_config: SerializerConfig | None,
-            arg_deserializer_factory: ArgDeserializerFactory | None
+            arg_deserializer: ArgDeserializer,
     ) -> None:
         self.swagger_repo.add(
             method,
@@ -291,12 +295,6 @@ class RestHttpRouter(BasicHttpRouter):
             tags,
             status_code,
             status_description
-        )
-
-        arg_deserializer = (
-            arg_deserializer_factory or self.arg_deserializer_factory
-        )(
-            arg_serializer_config or self.arg_serializer_config
         )
 
         async def rest_callback(request: HttpRequest) -> HttpResponse:
