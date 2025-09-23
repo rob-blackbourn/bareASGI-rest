@@ -246,29 +246,31 @@ class RestHttpRouter(BasicHttpRouter):
                 method,
                 path,
                 callback,
+                consumes,
                 produces,
+                collection_format,
+                tags,
                 status_code,
+                status_description,
                 serializer_config,
                 arg_serializer_config,
                 arg_deserializer_factory
             )
-            path_definition = _rename_path_definition(
-                PathDefinition(self.base_path + path),
-                DEFAULT_JSON_SERIALIZER_CONFIG
-            )
-            for route_callback in self._route_callbacks:
-                route_callback(
-                    method,
-                    path_definition,
-                    callback,
-                    consumes,
-                    produces,
-                    collection_format,
-                    tags,
-                    status_code,
-                    status_description
-                )
-            self.swagger_repo.add(
+
+    def _add_swagger(
+            self,
+            method: str,
+            path_definition: PathDefinition,
+            callback: RestCallback,
+            consumes: Sequence[bytes],
+            produces: Sequence[bytes],
+            collection_format: str,
+            tags: list[str] | None,
+            status_code: int,
+            status_description: str,
+    ) -> None:
+        for route_callback in self._route_callbacks:
+            route_callback(
                 method,
                 path_definition,
                 callback,
@@ -280,23 +282,51 @@ class RestHttpRouter(BasicHttpRouter):
                 status_description
             )
 
+        self.swagger_repo.add(
+            method,
+            path_definition,
+            callback,
+            consumes,
+            produces,
+            collection_format,
+            tags,
+            status_code,
+            status_description
+        )
+
     def _add_method(
             self,
             method: str,
             path: str,
             callback: RestCallback,
+            consumes: Sequence[bytes],
             produces: Sequence[bytes],
+            collection_format: str,
+            tags: list[str] | None,
             status_code: int,
+            status_description: str,
             serializer_configs: DictSerializerConfig | None,
             arg_serializer_config: SerializerConfig | None,
             arg_deserializer_factory: ArgDeserializerFactory | None
     ) -> None:
-        signature = inspect.signature(callback)
         path_definition = _rename_path_definition(
             PathDefinition(self.base_path + path),
             DEFAULT_JSON_SERIALIZER_CONFIG
         )
 
+        self._add_swagger(
+            method,
+            path_definition,
+            callback,
+            consumes,
+            produces,
+            collection_format,
+            tags,
+            status_code,
+            status_description
+        )
+
+        signature = inspect.signature(callback)
         arg_deserializer = (
             arg_deserializer_factory or self.arg_deserializer_factory
         )(
