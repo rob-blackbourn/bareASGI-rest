@@ -5,7 +5,7 @@ from decimal import Decimal
 from enum import Enum
 import inspect
 from inspect import isclass
-from typing import Any, TypedDict, get_args, is_typeddict
+from typing import Any, get_args, is_typeddict
 
 import docstring_parser
 from docstring_parser import Docstring
@@ -16,7 +16,6 @@ from jetblack_serialization.custom_annotations import (
 )
 from jetblack_serialization import Annotation
 from jetblack_serialization import typing_ex
-from jetblack_serialization.typing_ex import TypedDictFieldInfo
 
 from .config import SwaggerConfig
 from .types import SwaggerProperty
