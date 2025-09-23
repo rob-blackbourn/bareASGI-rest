@@ -5,7 +5,7 @@ from decimal import Decimal
 from enum import Enum
 import inspect
 from inspect import isclass
-from typing import Any, get_args, is_typeddict
+from typing import Any, TypedDict, get_args, is_typeddict
 
 import docstring_parser
 from docstring_parser import Docstring
@@ -16,6 +16,7 @@ from jetblack_serialization.custom_annotations import (
 )
 from jetblack_serialization import Annotation
 from jetblack_serialization import typing_ex
+from jetblack_serialization.typing_ex import TypedDictFieldInfo
 
 from .config import SwaggerConfig
 from .types import SwaggerProperty
@@ -146,7 +147,7 @@ def _get_default(
 
 
 def get_properties(
-        annotation: object,
+        annotation: type,
         docstring: Docstring,
         collection_format: str,
         config: SwaggerConfig
@@ -162,18 +163,16 @@ def get_properties(
     Returns:
         dict[str, Any]: The swagger properties.
     """
-    annotations: dict[str, Annotation] = typing_ex.typeddict_keys(
-        annotation  # type: ignore
-    )
+    annotations = typing_ex.typeddict_keys(annotation)
     properties: dict[str, Any] = {}
-    for name, member_annotation in annotations.items():
+    for name, info in annotations.items():
         camelcase_name = config.serialize_key(name)
         docstring_param = find_docstring_param(name, docstring)
         description = docstring_param.description if docstring_param else None
-        default = _get_default(annotation, member_annotation, name)
+        default = _get_default(annotation, info.annotation, name)
 
         properties[camelcase_name] = get_property(
-            member_annotation,
+            info.annotation,
             camelcase_name,
             description,
             default,
