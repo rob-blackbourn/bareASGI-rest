@@ -63,6 +63,17 @@ def _rename_path_definition(
 
 
 def _is_simple_callback(signature: inspect.Signature) -> bool:
+    """Determine if the callback is a simple callback
+
+    A simple callback takes a single argument of type HttpRequest, and
+    returns an HttpResponse.
+
+    Args:
+        signature (inspect.Signature): The signature of the request handler.
+
+    Returns:
+        bool: True if the callback is a simple callback.
+    """
     return (
         len(signature.parameters) == 1 and
         next(iter(signature.parameters.values())).annotation is HttpRequest and
