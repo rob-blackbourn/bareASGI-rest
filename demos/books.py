@@ -7,13 +7,12 @@ from enum import Enum, auto
 import logging
 from typing import Annotated, TypedDict
 
-from bareasgi import Application
+from bareasgi import Application, HttpRequest, HttpResponse
 import uvicorn
 
 from jetblack_serialization.json import JSONValue
 from jetblack_serialization.xml import XMLEntity
 
-from bareasgi import HttpRequest, HttpResponse
 from bareasgi_rest import RestHttpRouter, RestError
 from bareasgi_rest.swagger import add_swagger_ui
 

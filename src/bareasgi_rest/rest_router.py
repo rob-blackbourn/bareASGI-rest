@@ -9,7 +9,6 @@ Attributes:
 import inspect
 import logging
 from typing import (
-    AbstractSet,
     Any,
     AsyncIterable,
     Awaitable,
