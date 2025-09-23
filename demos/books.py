@@ -13,6 +13,7 @@ import uvicorn
 from jetblack_serialization.json import JSONValue
 from jetblack_serialization.xml import XMLEntity
 
+from bareasgi import HttpRequest, HttpResponse
 from bareasgi_rest import RestHttpRouter, RestError
 from bareasgi_rest.swagger import add_swagger_ui
 
@@ -93,6 +94,15 @@ class BookController:
             status_code=204,
             consumes=[b'application/json', b'application/xml']
         )
+        router.add(
+            {'GET'},
+            '/',
+            self.redirect_to_swagger
+        )
+
+    async def redirect_to_swagger(self, _request: HttpRequest) -> HttpResponse:
+        """Redirect to the example"""
+        return HttpResponse(303, [(b'Location', b'/api/1/swagger')])
 
     async def get_books(
             self

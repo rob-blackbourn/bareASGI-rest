@@ -59,7 +59,7 @@ class SwaggerRepository:
             tags: list[str] | None,
             status_code: int,
             status_description: str
-    ):
+    ) -> None:
         """Add a swagger entry
 
         Args:

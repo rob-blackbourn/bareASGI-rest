@@ -52,6 +52,21 @@ from .types import (
 
 LOGGER = logging.getLogger(__name__)
 
+type AddRouteCallback = Callable[
+    [
+        str,  # method
+        PathDefinition,  # path_definition
+        RestCallback,  # callback
+        Sequence[bytes],  # consumes
+        Sequence[bytes],  # produces
+        str,  # collection_format
+        list[str] | None,  # tags
+        int,  # status_code
+        str  # status_description
+    ],
+    None
+]
+
 
 def _rename_path_definition(
         path_definition: PathDefinition,
@@ -149,6 +164,8 @@ class RestHttpRouter(BasicHttpRouter):
         self.arg_serializer_config = arg_serializer_config
         self.arg_deserializer_factory = arg_deserializer_factory
 
+        self._route_callbacks = list[AddRouteCallback]()
+
         self.swagger_repo = SwaggerRepository(
             title,
             version,
@@ -168,6 +185,14 @@ class RestHttpRouter(BasicHttpRouter):
             self.swagger_repo
         )
         self.swagger_controller.add_routes(self)
+
+    def add_route_callback(self, callback: AddRouteCallback) -> None:
+        """Add a callback for when a route is added.
+
+        Args:
+            callback (AddRouteCallback): The callback to add.
+        """
+        self._route_callbacks.append(callback)
 
     def add_rest(
             self,
@@ -227,12 +252,25 @@ class RestHttpRouter(BasicHttpRouter):
                 arg_serializer_config,
                 arg_deserializer_factory
             )
+            path_definition = _rename_path_definition(
+                PathDefinition(self.base_path + path),
+                DEFAULT_JSON_SERIALIZER_CONFIG
+            )
+            for route_callback in self._route_callbacks:
+                route_callback(
+                    method,
+                    path_definition,
+                    callback,
+                    consumes,
+                    produces,
+                    collection_format,
+                    tags,
+                    status_code,
+                    status_description
+                )
             self.swagger_repo.add(
                 method,
-                _rename_path_definition(
-                    PathDefinition(path),
-                    DEFAULT_JSON_SERIALIZER_CONFIG
-                ),
+                path_definition,
                 callback,
                 consumes,
                 produces,
