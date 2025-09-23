@@ -3,6 +3,7 @@
 from inspect import Parameter
 from typing import AbstractSet, Mapping, Sequence, cast
 
+from bareasgi import HttpRequest
 from bareasgi.basic_router.path_definition import PathDefinition
 from docstring_parser import Docstring, DocstringParam
 from jetblack_serialization import typing_ex
@@ -56,6 +57,8 @@ def _make_swagger_parameters_inline(
     props: list[SwaggerParameter] = []
     for parameter in parameters.values():
         if parameter.name in path_variables:
+            continue
+        if parameter.annotation is HttpRequest:
             continue
         docstring_param = find_docstring_param(parameter.name, docstring)
         props.append(

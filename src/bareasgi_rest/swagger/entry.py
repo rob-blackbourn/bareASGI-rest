@@ -25,7 +25,7 @@ def make_swagger_entry(
         ok_status_code: int,
         ok_status_description: str,
         config: SwaggerConfig
-) -> SwaggerEntry:
+) -> SwaggerEntry | None:
     signature = inspect.signature(callback)
     docstring = docstring_parser.parse(inspect.getdoc(callback) or '')
     params = make_swagger_parameters(
@@ -47,6 +47,9 @@ def make_swagger_entry(
         collection_format,
         config
     )
+
+    if not params and not responses:
+        return None
 
     entry: SwaggerEntry = {
         'parameters': params,

@@ -62,6 +62,13 @@ class BookController:
 
     def add_routes(self, router: RestHttpRouter):
         tags = ['Books']
+
+        router.add_rest(
+            {'GET'},
+            '/',
+            self.redirect_to_swagger
+        )
+
         router.add_rest(
             {'GET'},
             '/books',
@@ -93,11 +100,6 @@ class BookController:
             tags=tags,
             status_code=204,
             consumes=[b'application/json', b'application/xml']
-        )
-        router.add(
-            {'GET'},
-            '/',
-            self.redirect_to_swagger
         )
 
     async def redirect_to_swagger(self, _request: HttpRequest) -> HttpResponse:

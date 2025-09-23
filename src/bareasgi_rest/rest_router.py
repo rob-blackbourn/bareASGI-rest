@@ -63,6 +63,14 @@ def _rename_path_definition(
     return path_definition
 
 
+def _is_simple_callback(signature: inspect.Signature) -> bool:
+    return (
+        len(signature.parameters) == 1 and
+        next(iter(signature.parameters.values())).annotation is HttpRequest and
+        signature.return_annotation is HttpResponse
+    )
+
+
 class RestHttpRouter(BasicHttpRouter):
     """A REST router"""
 
@@ -171,7 +179,7 @@ class RestHttpRouter(BasicHttpRouter):
 
     def add_rest(
             self,
-            methods: AbstractSet[str],
+            methods: set[str],
             path: str,
             callback: RestCallback,
             *,
@@ -188,7 +196,7 @@ class RestHttpRouter(BasicHttpRouter):
         """Register a callback to a method and path
 
         Args:
-            methods (AbstractSet[str]): The set of methods
+            methods (set[str]): The set of methods
             path (str): The path
             callback (RestCallback): The callback
             produces (List[bytes], optional): The accept media type. Defaults to
@@ -211,15 +219,30 @@ class RestHttpRouter(BasicHttpRouter):
         """
         LOGGER.debug('Adding route for %s on "%s"', methods, path)
 
+        signature = inspect.signature(callback)
+        if _is_simple_callback(signature):
+            self.add(
+                methods,
+                path,
+                callback
+            )
+            return
+
         if produces is None:
             produces = list(self.produces.keys())
         if consumes is None:
             consumes = list(self.consumes.keys())
 
+        path_definition = _rename_path_definition(
+            PathDefinition(self.base_path + path),
+            DEFAULT_JSON_SERIALIZER_CONFIG
+        )
+
         for method in methods:
             self._add_method(
                 method,
-                path,
+                path_definition,
+                signature,
                 callback,
                 consumes,
                 produces,
@@ -235,7 +258,8 @@ class RestHttpRouter(BasicHttpRouter):
     def _add_method(
             self,
             method: str,
-            path: str,
+            path_definition: PathDefinition,
+            signature: inspect.Signature,
             callback: RestCallback,
             consumes: Sequence[bytes],
             produces: Sequence[bytes],
@@ -247,11 +271,6 @@ class RestHttpRouter(BasicHttpRouter):
             arg_serializer_config: SerializerConfig | None,
             arg_deserializer_factory: ArgDeserializerFactory | None
     ) -> None:
-        path_definition = _rename_path_definition(
-            PathDefinition(self.base_path + path),
-            DEFAULT_JSON_SERIALIZER_CONFIG
-        )
-
         self.swagger_repo.add(
             method,
             path_definition,
@@ -264,7 +283,6 @@ class RestHttpRouter(BasicHttpRouter):
             status_description
         )
 
-        signature = inspect.signature(callback)
         arg_deserializer = (
             arg_deserializer_factory or self.arg_deserializer_factory
         )(

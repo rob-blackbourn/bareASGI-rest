@@ -87,6 +87,9 @@ class SwaggerRepository:
             self.config
         )
 
+        if entry is None:
+            return
+
         swagger_path = make_swagger_path(path_definition)
 
         paths: dict[str, Any] = self.definition['paths']

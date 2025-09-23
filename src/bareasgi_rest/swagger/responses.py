@@ -3,6 +3,7 @@
 import inspect
 from typing import Any
 
+from bareasgi import HttpResponse
 from docstring_parser import DocstringReturns, DocstringRaises
 
 from .config import SwaggerConfig
@@ -23,6 +24,9 @@ def make_swagger_responses(
     ok_response: SwaggerResponse = {
         'description': ok_status_description
     }
+
+    if return_annotation is HttpResponse:
+        return {}
 
     if return_annotation is not None:
         ok_response['schema'] = get_property(
