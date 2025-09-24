@@ -1,7 +1,7 @@
 """Parameters"""
 
 from inspect import Parameter
-from typing import AbstractSet, Mapping, Sequence, cast
+from typing import AbstractSet, Literal, Mapping, Sequence, cast
 
 from bareasgi import HttpRequest
 from bareasgi.basic_router.path_definition import PathDefinition
@@ -18,7 +18,7 @@ from .utils import find_docstring_param
 
 
 def _make_swagger_parameter(
-        source: str,
+        source: Literal['path', 'query', 'formData'],
         param: Parameter,
         collection_format: str,
         docstring_param: DocstringParam | None,
@@ -46,7 +46,7 @@ def _make_swagger_parameter(
 
 
 def _make_swagger_parameters_inline(
-        source: str,
+        source: Literal['path', 'query', 'formData'],
         parameters: Mapping[str, Parameter],
         path_variables: AbstractSet[str],
         docstring: Docstring,
