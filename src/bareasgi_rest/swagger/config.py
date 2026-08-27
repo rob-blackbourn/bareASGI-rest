@@ -1,6 +1,6 @@
 """Swagger Configuration"""
 
-from typing import Callable, List, Optional
+from typing import Callable
 
 
 def _same_name(text: str) -> str:
@@ -35,12 +35,12 @@ class SwaggerConfig:
     def __init__(
         self,
         title: str = "The REST API",
-        validator_url: Optional[str] = None,
-        supported_submit_methods: Optional[List[str]] = None,
+        validator_url: str | None = None,
+        supported_submit_methods: list[str] | None = None,
         display_operation_id: bool = False,
         display_request_duration: bool = False,
         doc_expansion: str = "list",
-        oauth2: Optional[SwaggerOauth2Config] = None,
+        oauth2: SwaggerOauth2Config | None = None,
         serialize_key: Callable[[str], str] = _same_name,
         deserialize_key: Callable[[str], str] = _same_name
     ) -> None:
@@ -48,9 +48,9 @@ class SwaggerConfig:
 
             Args:
                 title (str, optional): The page title, defaults to "The REST API"
-                validator_url (Optional[str], optional): The url of the validator,
+                validator_url (str | None, optional): The url of the validator,
                     defaults to None
-                supported_submit_methods (Optional[List[str]], optional): The supported
+                supported_submit_methods (list[str] | None, optional): The supported
                     submit methods, defaults to None
                 display_operation_id (bool, optional): Whether operation ids should be
                     displayed, defaults to False
@@ -58,7 +58,7 @@ class SwaggerConfig:
                     request should be displayed, defaults to False
                 doc_expansion (str, optional): How the methods should be displayed,
                     defaults to "list"
-                oauth2 (Optional[SwaggerOauth2Config], optional): Optional oauth2
+                oauth2 (SwaggerOauth2Config | None, optional): Optional oauth2
                     config, defaults to None
                 serialize_key (Callable[[str], str]): The function to serialize keys
                 deserialize_key (Callable[[str], str]): The function to deserialize keys

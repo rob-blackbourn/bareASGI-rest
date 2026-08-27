@@ -1,10 +1,10 @@
 """Helper functions"""
 
+from pathlib import Path
 
 from bareasgi import Application
 import bareasgi_jinja2
 import jinja2
-import pkg_resources
 
 
 def add_swagger_ui(app: Application) -> None:
@@ -13,7 +13,7 @@ def add_swagger_ui(app: Application) -> None:
     Args:
         app (Application): The bareASGI application
     """
-    templates = pkg_resources.resource_filename("bareasgi_rest", "templates")
+    templates = Path(__file__).parent.parent / "templates"
 
     env = jinja2.Environment(
         loader=jinja2.FileSystemLoader(templates),

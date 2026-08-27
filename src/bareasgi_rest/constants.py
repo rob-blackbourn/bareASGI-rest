@@ -3,7 +3,7 @@
 from bareasgi import HttpResponse, text_writer
 from stringcase import camelcase, snakecase, pascalcase
 
-from jetblack_serialization.config import SerializerConfig
+from jetblack_serialization import SerializerConfig
 
 from .types import (
     DictConsumes,
@@ -18,10 +18,7 @@ from .serialization.json import (
     from_query_string,
     json_arg_deserializer_factory
 )
-from .serialization.xml import (
-    from_xml,
-    to_xml
-)
+from .serialization.xml import from_xml, to_xml
 from .swagger import SwaggerConfig
 
 DEFAULT_SWAGGER_BASE_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/3.4.0"
@@ -49,8 +46,14 @@ DEFAULT_NOT_FOUND_RESPONSE: HttpResponse = HttpResponse(
     text_writer('Not Found')
 )
 
-DEFAULT_JSON_SERIALIZER_CONFIG = SerializerConfig(camelcase, snakecase)
-DEFAULT_XML_SERIALIZER_CONFIG = SerializerConfig(pascalcase, snakecase)
+DEFAULT_JSON_SERIALIZER_CONFIG = SerializerConfig(
+    key_serializer=camelcase,
+    key_deserializer=snakecase
+)
+DEFAULT_XML_SERIALIZER_CONFIG = SerializerConfig(
+    key_serializer=pascalcase,
+    key_deserializer=snakecase
+)
 
 DEFAULT_SERIALIZER_CONFIG: DictSerializerConfig = {
     b'application/json': DEFAULT_JSON_SERIALIZER_CONFIG,

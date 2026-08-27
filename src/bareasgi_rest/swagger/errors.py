@@ -1,23 +1,25 @@
 """Swagger errors"""
 
-from typing import Any, Dict, List
-
 from docstring_parser import DocstringRaises
 
+from .types import SwaggerResponse
 
-def gather_error_responses(docstring_raises: List[DocstringRaises]) -> Dict[int, Any]:
+
+def gather_error_responses(
+        docstring_raises: list[DocstringRaises]
+) -> dict[int, SwaggerResponse]:
     """Gather error responses
 
     Looks for exceptions of type `RestError` with a description starting with
     the error code: e.g. `"404, when a book is not found"`
 
     Args:
-        docstring_raises (List[DocstringRaises]): The raises from the docstring
+        docstring_raises (list[DocstringRaises]): The raises from the docstring
 
     Returns:
-        Dict[int, Any]: The error response schema.
+        dict[int, Any]: The error response schema.
     """
-    responses: Dict[int, Any] = {}
+    responses: dict[int, SwaggerResponse] = {}
     for raises in docstring_raises:
         if raises.type_name != 'RestError':
             continue

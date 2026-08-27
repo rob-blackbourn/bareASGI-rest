@@ -1,32 +1,32 @@
 """Utility functions"""
 
 import inspect
-from typing import (
-    Any,
-    Dict,
-    List,
-    Optional
-)
+from typing import Any
 
+from bareasgi import HttpResponse
 from docstring_parser import DocstringReturns, DocstringRaises
 
 from .config import SwaggerConfig
 from .errors import gather_error_responses
 from .properties import get_property
+from .types import SwaggerResponse
 
 
 def make_swagger_responses(
         return_annotation: Any,
-        docstring_returns: Optional[DocstringReturns],
-        docstring_raises: Optional[List[DocstringRaises]],
+        docstring_returns: DocstringReturns | None,
+        docstring_raises: list[DocstringRaises] | None,
         ok_status_code: int,
         ok_status_description: str,
         collection_format: str,
         config: SwaggerConfig
-) -> Dict[int, Dict[str, Any]]:
-    ok_response: Dict[str, Any] = {
+) -> dict[int, SwaggerResponse]:
+    ok_response: SwaggerResponse = {
         'description': ok_status_description
     }
+
+    if return_annotation is HttpResponse:
+        return {}
 
     if return_annotation is not None:
         ok_response['schema'] = get_property(
@@ -38,11 +38,11 @@ def make_swagger_responses(
             config
         )
 
-    responses: Dict[int, Dict[str, Any]] = {
+    responses: dict[int, SwaggerResponse] = {
         ok_status_code: ok_response
     }
     if docstring_raises:
         error_responses = gather_error_responses(docstring_raises)
-        responses.update(error_responses)
+        responses |= error_responses
 
     return responses

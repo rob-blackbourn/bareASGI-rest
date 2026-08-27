@@ -1,45 +1,41 @@
 """Parameters"""
 
 from inspect import Parameter
-from typing import (
-    AbstractSet,
-    Any,
-    Dict,
-    List,
-    Mapping,
-    Optional,
-    Sequence,
-    Set,
-)
+from typing import AbstractSet, Literal, Mapping, Sequence, cast
 
+from bareasgi import HttpRequest
 from bareasgi.basic_router.path_definition import PathDefinition
 from docstring_parser import Docstring, DocstringParam
-import jetblack_serialization.typing_inspect_ex as typing_inspect
+from jetblack_serialization import typing_ex
 from jetblack_serialization.custom_annotations import (
     is_any_serialization_annotation
 )
 
 from .config import SwaggerConfig
 from .properties import get_property
+from .types import SwaggerParameter
 from .utils import find_docstring_param
 
 
 def _make_swagger_parameter(
-        source: str,
+        source: Literal['path', 'query', 'formData'],
         param: Parameter,
         collection_format: str,
-        docstring_param: Optional[DocstringParam],
+        docstring_param: DocstringParam | None,
         config: SwaggerConfig
-) -> Dict[str, Any]:
+) -> SwaggerParameter:
     is_required = param.default is Parameter.empty
 
-    prop = get_property(
-        param.annotation,
-        config.serialize_key(param.name),
-        docstring_param.description if docstring_param else None,
-        param.default,
-        collection_format,
-        config
+    prop = cast(
+        SwaggerParameter,
+        get_property(
+            param.annotation,
+            config.serialize_key(param.name),
+            docstring_param.description if docstring_param else None,
+            param.default,
+            collection_format,
+            config
+        )
     )
 
     if source != 'body':
@@ -50,17 +46,19 @@ def _make_swagger_parameter(
 
 
 def _make_swagger_parameters_inline(
-        source: str,
+        source: Literal['path', 'query', 'formData'],
         parameters: Mapping[str, Parameter],
         path_variables: AbstractSet[str],
         docstring: Docstring,
         collection_format: str,
         config: SwaggerConfig
-) -> List[Dict[str, Any]]:
+) -> list[SwaggerParameter]:
     """Make inline parameters for query or form"""
-    props: List[Dict[str, Any]] = []
+    props: list[SwaggerParameter] = []
     for parameter in parameters.values():
         if parameter.name in path_variables:
+            continue
+        if parameter.annotation is HttpRequest:
             continue
         docstring_param = find_docstring_param(parameter.name, docstring)
         props.append(
@@ -83,7 +81,7 @@ def make_swagger_parameters(
         docstring: Docstring,
         collection_format: str,
         config: SwaggerConfig
-) -> List[Dict[str, Any]]:
+) -> list[SwaggerParameter]:
     """Make the swagger parameters"""
 
     available_parameters = {
@@ -92,8 +90,8 @@ def make_swagger_parameters(
     }
 
     # Path parameters
-    props: List[Dict[str, Any]] = []
-    path_variables: Set[str] = set()
+    props: list[SwaggerParameter] = []
+    path_variables: set[str] = set()
     for segment in path_definition.segments:
         if segment.is_variable:
             path_variable = config.deserialize_key(segment.name)
@@ -141,7 +139,7 @@ def make_swagger_parameters(
         for parameter in available_parameters.values():
             docstring_param = find_docstring_param(parameter.name, docstring)
             if is_any_serialization_annotation(parameter.annotation):
-                body_type = typing_inspect.get_origin(  # type: ignore
+                body_type = typing_ex.get_annotated_type(
                     parameter.annotation
                 )
                 schema = get_property(

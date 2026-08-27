@@ -9,15 +9,11 @@ Attributes:
 import inspect
 import logging
 from typing import (
-    AbstractSet,
     Any,
     AsyncIterable,
     Awaitable,
     Callable,
-    Dict,
-    List,
     Mapping,
-    Optional,
     Sequence,
     cast
 )
@@ -48,6 +44,7 @@ from .types import (
     DictProduces,
     DictSerializerConfig,
     RestCallback,
+    ArgDeserializer,
     ArgDeserializerFactory,
     RestError,
     Serializer
@@ -62,10 +59,27 @@ def _rename_path_definition(
 ) -> PathDefinition:
     for segment in path_definition.segments:
         if segment.is_variable:
-            segment.name = config.serialize_key(
-                segment.name
-            ) if config.serialize_key else segment.name
+            segment.name = config.serialize_key(segment.name)
     return path_definition
+
+
+def _is_simple_callback(signature: inspect.Signature) -> bool:
+    """Determine if the callback is a simple callback
+
+    A simple callback takes a single argument of type HttpRequest, and
+    returns an HttpResponse.
+
+    Args:
+        signature (inspect.Signature): The signature of the request handler.
+
+    Returns:
+        bool: True if the callback is a simple callback.
+    """
+    return (
+        len(signature.parameters) == 1 and
+        next(iter(signature.parameters.values())).annotation is HttpRequest and
+        signature.return_annotation is HttpResponse
+    )
 
 
 class RestHttpRouter(BasicHttpRouter):
@@ -73,19 +87,19 @@ class RestHttpRouter(BasicHttpRouter):
 
     def __init__(
             self,
-            title: str,
-            version: str,
+            title: str = "bareASGI Rest API",
+            version: str = "1",
             *,
-            not_found_response: Optional[HttpResponse] = None,
-            description: Optional[str] = None,
+            not_found_response: HttpResponse | None = None,
+            description: str | None = None,
             base_path: str = '',
-            consumes: Optional[DictConsumes] = None,
-            produces: Optional[DictProduces] = None,
-            tags: Optional[List[Mapping[str, Any]]] = None,
+            consumes: DictConsumes | None = None,
+            produces: DictProduces | None = None,
+            tags: list[Mapping[str, Any]] | None = None,
             swagger_base_url: str = DEFAULT_SWAGGER_BASE_URL,
             typeface_url: str = DEFAULT_TYPEFACE_URL,
             config: SwaggerConfig = DEFAULT_SWAGGER_CONFIG,
-            serializer_configs: Optional[DictSerializerConfig] = None,
+            serializer_configs: DictSerializerConfig | None = None,
             arg_serializer_config: SerializerConfig = DEFAULT_JSON_SERIALIZER_CONFIG,
             arg_deserializer_factory: ArgDeserializerFactory = DEFAULT_ARG_DESERIALIZER_FACTORY
     ) -> None:
@@ -116,27 +130,27 @@ class RestHttpRouter(BasicHttpRouter):
         Args:
             title (str): The title of the swagger documentation.
             version (str): The version of the exposed API.
-            not_found_response (Optional[HttpResponse], optional): The response
+            not_found_response (HttpResponse | None, optional): The response
                 sent when a route is not found. Defaults to None.
-            description (Optional[str], optional): The API description. Defaults
+            description (str | None, optional): The API description. Defaults
                 to None.
             base_path (str, optional): The base path of the API. Defaults to ''.
-            consumes (Optional[DictConsumes], optional): A map of media types
+            consumes (DictConsumes | None, optional): A map of media types
                 and deserializers. Defaults to DEFAULT_CONSUMES.
-            produces (Optional[DictProduces], optional): A map of media types
+            produces (DictProduces | None, optional): A map of media types
                 and serializers. Defaults to DEFAULT_PRODUCES.
-            tags (Optional[List[Mapping[str, Any]]], optional): The available
+            tags (list[Mapping[str, Any]] | None, optional): The available
                 tags. Defaults to None.
-            swagger_base_url (Optional[str], optional): The base url for the
+            swagger_base_url (str | None, optional): The base url for the
                 swagger CDN. Defaults to DEFAULT_SWAGGER_BASE_URL.
-            typeface_url (Optional[str], optional): The base url for the
+            typeface_url (str | None, optional): The base url for the
                 typeface. Defaults to DEFAULT_TYPEFACE_URL.
-            config (Optional[SwaggerConfig], optional): The swagger
+            config (SwaggerConfig | None, optional): The swagger
                 configuration. Defaults to None.
-            serializer_configs (Optional[DictSerializerConfig], optional): The
+            serializer_configs (DictSerializerConfig | None, optional): The
                 serializer configuration for content. Defaults to
                 DEFAULT_SERIALIZER_CONFIG.
-            arg_serializer_config (SerializerConfig, optional): The serializer
+            arg_serializer_config (BaseSerializerConfig, optional): The serializer
                 configuration for arguments. Defaults to DEFAULT_JSON_SERIALIZER_CONFIG.
             arg_deserializer_factory (ArgDeserializerFactory, optional): The
                 deserializer configuration for arguments. Defaults to
@@ -147,8 +161,8 @@ class RestHttpRouter(BasicHttpRouter):
         self.produces = produces or DEFAULT_PRODUCES
         self.base_path = base_path
 
-        self.accepts: Dict[str, Dict[PathDefinition, bytes]] = {}
-        self.collection_formats: Dict[str, Dict[PathDefinition, str]] = {}
+        self.accepts: dict[str, dict[PathDefinition, bytes]] = {}
+        self.collection_formats: dict[str, dict[PathDefinition, str]] = {}
 
         self.serializer_configs = serializer_configs or DEFAULT_SERIALIZER_CONFIG
         self.arg_serializer_config = arg_serializer_config
@@ -176,24 +190,24 @@ class RestHttpRouter(BasicHttpRouter):
 
     def add_rest(
             self,
-            methods: AbstractSet[str],
+            methods: set[str],
             path: str,
             callback: RestCallback,
             *,
-            consumes: Optional[Sequence[bytes]] = None,
-            produces: Optional[Sequence[bytes]] = None,
+            consumes: Sequence[bytes] | None = None,
+            produces: Sequence[bytes] | None = None,
             collection_format: str = DEFAULT_COLLECTION_FORMAT,
-            tags: Optional[List[str]] = None,
+            tags: list[str] | None = None,
             status_code: int = response_code.OK,
             status_description: str = 'OK',
-            serializer_config: Optional[DictSerializerConfig] = None,
-            arg_serializer_config: Optional[SerializerConfig] = None,
-            arg_deserializer_factory: Optional[ArgDeserializerFactory] = None
+            serializer_config: DictSerializerConfig | None = None,
+            arg_serializer_config: SerializerConfig | None = None,
+            arg_deserializer_factory: ArgDeserializerFactory | None = None
     ) -> None:
         """Register a callback to a method and path
 
         Args:
-            methods (AbstractSet[str]): The set of methods
+            methods (set[str]): The set of methods
             path (str): The path
             callback (RestCallback): The callback
             produces (List[bytes], optional): The accept media type. Defaults to
@@ -202,67 +216,33 @@ class RestHttpRouter(BasicHttpRouter):
                 to None.
             collection_format (str, optional): The format of repeated values.
                 Defaults to DEFAULT_COLLECTION_FORMAT.
-            tags (Optional[List[str]], optional): A list of tags. Defaults to
+            tags (list[str] | None, optional): A list of tags. Defaults to
                 None.
             status_code (int, optional): The ok status code. Defaults to 200.
             status_description (str, optional): The ok status message. Defaults
                 to 'OK'.
-            serializer_config (Optional[DictSerializerConfig], optional): The
+            serializer_config (DictSerializerConfig | None, optional): The
                 serializer configuration for content. Defaults to None.
-            arg_serializer_config (Optional[SerializerConfig], optional): The
+            arg_serializer_config (BaseSerializerConfig | None, optional): The
                 serializer configuration for arguments. Defaults to None.
-            arg_deserializer_factory (Optional[ArgDeserializerFactory], optional): The
+            arg_deserializer_factory (ArgDeserializerFactory | None, optional): The
                 deserializer configuration for arguments. Defaults to None.
         """
         LOGGER.debug('Adding route for %s on "%s"', methods, path)
+
+        signature = inspect.signature(callback)
+        if _is_simple_callback(signature):
+            self.add(
+                methods,
+                path,
+                callback
+            )
+            return
 
         if produces is None:
             produces = list(self.produces.keys())
         if consumes is None:
             consumes = list(self.consumes.keys())
-
-        for method in methods:
-            self._add_method(
-                method,
-                path,
-                callback,
-                produces,
-                status_code,
-                serializer_config,
-                arg_serializer_config,
-                arg_deserializer_factory
-            )
-            self.swagger_repo.add(
-                method,
-                _rename_path_definition(
-                    PathDefinition(path),
-                    DEFAULT_JSON_SERIALIZER_CONFIG
-                ),
-                callback,
-                consumes,
-                produces,
-                collection_format,
-                tags,
-                status_code,
-                status_description
-            )
-
-    def _add_method(
-            self,
-            method: str,
-            path: str,
-            callback: RestCallback,
-            produces: Sequence[bytes],
-            status_code: int,
-            serializer_configs: Optional[DictSerializerConfig],
-            arg_serializer_config: Optional[SerializerConfig],
-            arg_deserializer_factory: Optional[ArgDeserializerFactory]
-    ) -> None:
-        signature = inspect.signature(callback)
-        path_definition = _rename_path_definition(
-            PathDefinition(self.base_path + path),
-            DEFAULT_JSON_SERIALIZER_CONFIG
-        )
 
         arg_deserializer = (
             arg_deserializer_factory or self.arg_deserializer_factory
@@ -270,14 +250,67 @@ class RestHttpRouter(BasicHttpRouter):
             arg_serializer_config or self.arg_serializer_config
         )
 
+        for method in methods:
+            self._add_method(
+                method,
+                path,
+                signature,
+                callback,
+                consumes,
+                produces,
+                collection_format,
+                tags,
+                status_code,
+                status_description,
+                serializer_config,
+                arg_deserializer
+            )
+
+    def _add_method(
+            self,
+            method: str,
+            path: str,
+            signature: inspect.Signature,
+            callback: RestCallback,
+            consumes: Sequence[bytes],
+            produces: Sequence[bytes],
+            collection_format: str,
+            tags: list[str] | None,
+            status_code: int,
+            status_description: str,
+            serializer_configs: DictSerializerConfig | None,
+            arg_deserializer: ArgDeserializer,
+    ) -> None:
+        swagger_path_definition = _rename_path_definition(
+            PathDefinition(path),
+            DEFAULT_JSON_SERIALIZER_CONFIG
+        )
+        
+        self.swagger_repo.add(
+            method,
+            swagger_path_definition,
+            callback,
+            consumes,
+            produces,
+            collection_format,
+            tags,
+            status_code,
+            status_description
+        )
+
+        path_definition = _rename_path_definition(
+            PathDefinition(self.base_path + path),
+            DEFAULT_JSON_SERIALIZER_CONFIG
+        )
+
         async def rest_callback(request: HttpRequest) -> HttpResponse:
 
-            route_args: Dict[str, str] = {
+            route_args: dict[str, str] = {
                 self.arg_serializer_config.deserialize_key(name): value
                 for name, value in request.matches.items()
             }
             query_string = request.scope['query_string'].decode()
-            query_args: Dict[str, List[str]] = {
+            query_args: dict[str, list[str]] = {
                 self.arg_serializer_config.deserialize_key(name): values
                 for name, values in parse_qs(query_string).items()
             }
@@ -343,18 +376,18 @@ class RestHttpRouter(BasicHttpRouter):
 
     def _make_writer(
             self,
-            data: Optional[Any],
-            accept: Optional[Mapping[bytes, Mapping[bytes, Any]]],
+            data: Any | None,
+            accept: Mapping[bytes, Mapping[bytes, Any]] | None,
             return_annotation: Any,
             serializer_configs: DictSerializerConfig
-    ) -> Optional[AsyncIterable[bytes]]:
+    ) -> AsyncIterable[bytes] | None:
         if data is None:
             # No need for a writer if there is no data.
             return None
 
         # Prefer the media types in the order they are defined.
-        media_type: Optional[bytes] = None
-        serializer: Optional[Serializer] = None
+        media_type: bytes | None = None
+        serializer: Serializer | None = None
         if accept:
             for media_type, serializer in self.produces.items():
                 if media_type in accept:
@@ -364,7 +397,9 @@ class RestHttpRouter(BasicHttpRouter):
             media_type, serializer = next(iter(self.produces.items()))
 
         if media_type is None or serializer is None:
-            raise ValueError(f'No handler for media types: {accept.keys()}')
+            raise ValueError(
+                f'No handler for media types: {(accept or {}).keys()}'
+            )
 
         serializer_config = serializer_configs[media_type]
 
@@ -382,12 +417,14 @@ class RestHttpRouter(BasicHttpRouter):
             request: HttpRequest
     ) -> Callable[[Any], Awaitable[Any]]:
         if request.scope['method'] in {'GET'}:
-            deserializer: Optional[Deserializer] = None
+            media_type = b'application/json'
+            params: Mapping[bytes, Any] | None = {}
+            deserializer: Deserializer | None = None
             serializer_config: SerializerConfig = DEFAULT_JSON_SERIALIZER_CONFIG
         else:
             media_type, params = header.content_type(
                 request.scope['headers']
-            ) or (b'application/json', cast(Dict[bytes, Any], {}))
+            ) or (b'application/json', cast(dict[bytes, Any], {}))
             deserializer = self.consumes[media_type]
             serializer_config = self.serializer_configs[media_type]
 
@@ -397,7 +434,7 @@ class RestHttpRouter(BasicHttpRouter):
             text = await text_reader(request.body)
             return deserializer(
                 media_type,
-                cast(Dict[bytes, Any], params),
+                cast(dict[bytes, Any], params),
                 serializer_config,
                 text,
                 annotation
