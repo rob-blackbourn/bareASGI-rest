@@ -25,8 +25,7 @@ dependencies = [
     "stringcase>=1.2",
     "jetblack-serialization>=4.0.13",
     "typing-extensions>=4",
-    "typing_inspect>=0.9",
-    "setuptools>=80.9<81"
+    "typing_inspect>=0.9"
 ]
 license = "Apache-2.0"
 license-files = [

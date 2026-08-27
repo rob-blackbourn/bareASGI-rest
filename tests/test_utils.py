@@ -76,8 +76,9 @@ async def test_make_args1():
         foo_matches,
         foo_query,
         foo_body_reader,
-        partial(
-            from_json_value,
+        lambda json_value, annotation: from_json_value(
+            json_value,
+            annotation,
             SerializerConfig(
                 key_deserializer=snakecase,
                 key_serializer=camelcase
@@ -129,11 +130,12 @@ async def test_make_args2() -> None:
         bar_matches,
         bar_query,
         bar_body_reader,
-        partial(
-            from_json_value,
+        lambda json_value, annotation: from_json_value(
+            json_value,
+            annotation,
             SerializerConfig(
-                key_serializer=snakecase,
-                key_deserializer=camelcase
+                key_deserializer=snakecase,
+                key_serializer=camelcase
             )
         )
     )

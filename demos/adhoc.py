@@ -1,24 +1,27 @@
-"""Tests for make_args"""
-
+import asyncio
 from datetime import datetime
 from decimal import Decimal
 from functools import partial
 import inspect
-from typing import Any
+from typing import Annotated, Any, TypedDict
 
 import pytest
 from stringcase import snakecase, camelcase
 
-from jetblack_serialization import SerializerConfig
+from jetblack_serialization import DefaultValue, SerializerConfig
+from jetblack_serialization.utils import (
+    is_value_type,
+    is_container_type,
+)
 from jetblack_serialization.json import (
-    from_json_value
+    from_json_value,
+    JSONValue
 )
 from bareasgi_rest.arg_builder import make_args
 
 
-@pytest.mark.asyncio
-async def test_make_args1():
-    """Test for make_args"""
+async def main():
+
     async def foo(
             arg_num1: str,
             *,
@@ -46,6 +49,7 @@ async def test_make_args1():
     }
 
     async def foo_body_reader(annotation: Any) -> Any:
+        assert annotation is not None
         return {}
 
     foo_args, foo_kwargs = await make_args(
@@ -69,3 +73,7 @@ async def test_make_args1():
         'arg_num4': Decimal('3.142'),
         'arg_num5': None
     }
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
