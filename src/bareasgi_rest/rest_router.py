@@ -244,10 +244,6 @@ class RestHttpRouter(BasicHttpRouter):
         if consumes is None:
             consumes = list(self.consumes.keys())
 
-        path_definition = _rename_path_definition(
-            PathDefinition(self.base_path + path),
-            DEFAULT_JSON_SERIALIZER_CONFIG
-        )
         arg_deserializer = (
             arg_deserializer_factory or self.arg_deserializer_factory
         )(
@@ -257,7 +253,7 @@ class RestHttpRouter(BasicHttpRouter):
         for method in methods:
             self._add_method(
                 method,
-                path_definition,
+                path,
                 signature,
                 callback,
                 consumes,
@@ -273,7 +269,7 @@ class RestHttpRouter(BasicHttpRouter):
     def _add_method(
             self,
             method: str,
-            path_definition: PathDefinition,
+            path: str,
             signature: inspect.Signature,
             callback: RestCallback,
             consumes: Sequence[bytes],
@@ -285,9 +281,14 @@ class RestHttpRouter(BasicHttpRouter):
             serializer_configs: DictSerializerConfig | None,
             arg_deserializer: ArgDeserializer,
     ) -> None:
+        swagger_path_definition = _rename_path_definition(
+            PathDefinition(path),
+            DEFAULT_JSON_SERIALIZER_CONFIG
+        )
+        
         self.swagger_repo.add(
             method,
-            path_definition,
+            swagger_path_definition,
             callback,
             consumes,
             produces,
@@ -295,6 +296,11 @@ class RestHttpRouter(BasicHttpRouter):
             tags,
             status_code,
             status_description
+        )
+
+        path_definition = _rename_path_definition(
+            PathDefinition(self.base_path + path),
+            DEFAULT_JSON_SERIALIZER_CONFIG
         )
 
         async def rest_callback(request: HttpRequest) -> HttpResponse:

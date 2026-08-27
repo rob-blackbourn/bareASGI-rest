@@ -13,7 +13,7 @@ def add_swagger_ui(app: Application) -> None:
     Args:
         app (Application): The bareASGI application
     """
-    templates = Path(__file__).parent / "templates"
+    templates = Path(__file__).parent.parent / "templates"
 
     env = jinja2.Environment(
         loader=jinja2.FileSystemLoader(templates),
