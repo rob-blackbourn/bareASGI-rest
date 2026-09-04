@@ -1,12 +1,11 @@
 """Serialization"""
 
-from bareutils import parse_form_data
 from functools import partial
-import io
 from typing import Any, Callable
 
 from urllib.parse import parse_qs
 
+from bareutils import parse_form_data
 from jetblack_serialization import Annotation, SerializerConfig
 from jetblack_serialization.json import (
     serialize,
@@ -113,4 +112,13 @@ def from_form_data(
 def json_arg_deserializer_factory(
         config: SerializerConfig,
 ) -> Callable[[str, Annotation], Any]:
+    """Create a JSON argument deserializer factory
+
+    Args:
+        config (SerializerConfig): The serializer config
+
+    Returns:
+        Callable[[str, Annotation], Any]: The deserializer function that takes a
+            string and an annotation and returns the deserialized object.
+    """
     return partial(from_json_value, config)
