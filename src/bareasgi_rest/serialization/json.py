@@ -1,6 +1,6 @@
 """Serialization"""
 
-from cgi import parse_multipart
+from bareutils import parse_form_data
 from functools import partial
 import io
 from typing import Any, Callable
@@ -92,11 +92,11 @@ def from_form_data(
     """Convert form data to a dict
 
     Args:
+        _media_type (MediaType): The media type from the content-type header
+        params (MediaTypeParams): The params from the content-type header.
+        _config (SerializerConfig): The serializer config.
         text (str): The form data
-        _media_type (bytes): The media type from the content-type header
-        params (Dict[bytes, bytes]): The params from the content-type header.
         _annotation(str): The type annotation
-        rename (Callable[[str], str]): A function to rename object keys.
 
     Raises:
         RuntimeError: If 'boundary' was not in the params
@@ -104,13 +104,10 @@ def from_form_data(
     Returns:
         Any: The form data as a dict.
     """
-    if b'boundary' not in params:
+    boundary = params.get(b'boundary')
+    if boundary is None:
         raise RuntimeError('Required "boundary" parameter missing')
-    pdict = {
-        name.decode(): value
-        for name, value in params.items()
-    }
-    return parse_multipart(io.StringIO(text), pdict)
+    return parse_form_data(text.encode('utf-8'), boundary)
 
 
 def json_arg_deserializer_factory(

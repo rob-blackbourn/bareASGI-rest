@@ -18,8 +18,9 @@ classifiers = [
 ]
 readme = "README.md"
 dependencies = [
-    "bareASGI >=5.0.0-alpha.4",
-    "bareASGI-jinja2>=5.0.0-alpha.2",
+    "bareUtils>=5.1.0,<6",
+    "bareASGI >=5.0.0,<6",
+    "bareASGI-jinja2>=5.0.0,<6",
     "docstring-parser>=0.15",
     "lxml>=5.4",
     "stringcase>=1.2",
@@ -88,8 +89,6 @@ disable = [
     "useless-suppression",
     "deprecated-pragma",
     "use-symbolic-message-instead",
-    "use-implicit-booleaness-not-comparison-to-string",
-    "use-implicit-booleaness-not-comparison-to-zero",
     "missing-module-docstring",
 ]
 
